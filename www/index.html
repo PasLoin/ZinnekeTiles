@@ -72,6 +72,8 @@
     .view-toggle button { background: rgba(242, 239, 233, 0.92); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #444; }
     .view-toggle button:hover { background: #fff; }
     .view-toggle button.active { background: #734a08; color: #fff; }
+    .view-toggle button[hidden] { display: none; }
+    .view-toggle button:disabled { opacity: 0.4; cursor: not-allowed; }
     .data-popup .maplibregl-popup-content { padding: 8px; font-size: 10px; max-width: 300px; max-height: 400px; overflow: auto; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; }
     .data-popup table { width: 100%; border-collapse: collapse; }
     .data-popup th, .data-popup td { text-align: left; padding: 2px 4px; border-bottom: 1px solid #eee; word-break: break-all; }
@@ -94,7 +96,7 @@
 
 <div id="map"></div>
 <div class="view-toggle">
-  <button id="toggle-3d">MODE 3D</button> <button id="toggle-data">DATA</button>
+  <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-data">DATA</button>
 </div>
 
 <div class="title panel" id="title-panel">
@@ -145,6 +147,7 @@ import {
   LEVEL_AWARE_SOURCES, poiLevelFilter, levelAwareFilter,
   isIsolated, keepsInIsolation, BUILDING_LAYERS,
 } from './indoor.js';
+import { createRoofsLayer, eavesHeight, ROOFS_URL } from './roofs.js';
 
 window._togglePanel = togglePanel;
 
@@ -224,6 +227,7 @@ function initMap(style, dataInfo) {
     selected: new Set(),
     levels: [],
     isolated: false,
+    roofsOn: false,
   };
   const requestedVisibility = {};
   const buildingLayerIds = new Set([...BUILDING_LAYERS.flat, ...BUILDING_LAYERS.extruded]);
@@ -240,6 +244,9 @@ function initMap(style, dataInfo) {
   }
 
   const toggleBtn = document.getElementById('toggle-3d');
+  const roofsBtn = document.getElementById('toggle-roofs');
+  const originalHeights = {};
+  let roofsLayer = null;
   const levelsPanel = document.getElementById('levels-panel');
   const levelsList = document.getElementById('levels-list');
   const levelsNote = document.getElementById('levels-note');
@@ -278,6 +285,43 @@ function initMap(style, dataInfo) {
       if (!map.getLayer(id)) continue;
       const base = baseOpacity[id] ?? 1;
       map.setPaintProperty(id, 'fill-extrusion-opacity', dimmed ? Math.min(base, DIMMED_OPACITY) : base);
+    }
+    applyRoofs(visibility['buildings-3d'] === 'visible' && !dimmed);
+  }
+
+  function roofsAnchor() {
+    const ids = map.getStyle().layers.map(l => l.id);
+    const last = Math.max(ids.indexOf('buildings-3d'), ids.indexOf('building-parts-3d'));
+    return last >= 0 ? ids[last + 1] : undefined;
+  }
+
+  function disableRoofs() {
+    state.roofsOn = false;
+    roofsBtn.disabled = true;
+    roofsBtn.classList.remove('active');
+    roofsBtn.setAttribute('aria-pressed', 'false');
+    roofsBtn.title = 'Toits indisponibles : roofs.glb n\u2019a pas pu être chargé';
+    applyBuildings();
+  }
+
+  function applyRoofs(extrudedVisible) {
+    const wanted = state.roofsOn && extrudedVisible;
+    if (wanted && !roofsLayer) {
+      roofsLayer = createRoofsLayer({
+        url: ROOFS_URL,
+        minzoom: (map.getLayer('buildings-3d') || {}).minzoom ?? 13,
+        opacity: baseOpacity['buildings-3d'] ?? 0.75,
+        onLoad: () => applyBuildings(),
+        onError: disableRoofs,
+      });
+      map.addLayer(roofsLayer, roofsAnchor());
+    }
+    const shown = wanted && !!roofsLayer && roofsLayer.loaded;
+    if (roofsLayer) roofsLayer.setEnabled(shown);
+    for (const id of ['buildings-3d', 'building-parts-3d']) {
+      if (!map.getLayer(id)) continue;
+      if (!(id in originalHeights)) originalHeights[id] = map.getPaintProperty(id, 'fill-extrusion-height');
+      map.setPaintProperty(id, 'fill-extrusion-height', shown ? eavesHeight(originalHeights[id]) : originalHeights[id]);
     }
   }
 
@@ -417,10 +461,26 @@ function initMap(style, dataInfo) {
     state.is3d = enabled;
     toggleBtn.textContent = enabled ? 'MODE 2D' : 'MODE 3D';
     levelsPanel.hidden = !enabled;
+    roofsBtn.hidden = !enabled;
     if (enabled && lazy) ensureLazyGroup(map, lazy, 'building_parts', location.href);
     applyIndoor();
     map.easeTo({ pitch: enabled ? 45 : 0, duration: 800 });
   }
+
+  function setRoofs(enabled) {
+    state.roofsOn = enabled;
+    roofsBtn.classList.toggle('active', enabled);
+    roofsBtn.setAttribute('aria-pressed', String(enabled));
+    applyBuildings();
+  }
+
+  roofsBtn.onclick = () => {
+    if (!state.loaded) {
+      map.once('load', () => setRoofs(!state.roofsOn));
+      return;
+    }
+    setRoofs(!state.roofsOn);
+  };
 
   toggleBtn.onclick = () => {
     if (!state.loaded) {
