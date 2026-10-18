@@ -29,6 +29,7 @@ def lc(layers, name):
         "subtypes":     r.get("subtypes") or {},
         "extrusion_3d": r.get("extrusion_3d", False),
         "sports":       r.get("sports"),
+        "materials":    {str(k): c(v) for k, v in (r.get("materials") or {}).items()},
     }
 
 def sc(cfg, key):
@@ -296,6 +297,17 @@ def extrusion_exprs(height_fallback, levels_fallback, no_info_height):
     return base, ["max", top, ["+", base, 1]]
 
 
+def facade_color(cfg, fallback):
+    materials = cfg.get("materials") or {}
+    by_material = fallback
+    if materials:
+        by_material = ["match", ["get", "building:material"]]
+        for value, color in sorted(materials.items()):
+            by_material += [value, color]
+        by_material.append(fallback)
+    return ["to-color", ["get", "building:colour"], by_material, fallback]
+
+
 def buildings(cfg):
     col = cfg["color"] or "#fce1c5"
     bc  = cfg["border_color"] or "#d4a574"
@@ -321,7 +333,7 @@ def buildings(cfg):
             "filter": ["all",
                 ["==", ["get", "lod"], "detail"],
                 ["!=", ["get", "covered_by_parts"], "yes"]],
-            "paint":{"fill-extrusion-color": ["case", is_roof, roof_color, col],
+            "paint":{"fill-extrusion-color": ["case", is_roof, roof_color, facade_color(cfg, col)],
                      "fill-extrusion-base": ["case", is_untagged_roof, 7.2, base_expr],
                      "fill-extrusion-height": ["case", is_untagged_roof, 7.5, normal_height_expr],
                      "fill-extrusion-opacity": 0.75}})
@@ -338,7 +350,7 @@ def building_parts_layers(cfg):
              "source": "building_parts", "source-layer": "building_parts", "minzoom": 13,
              "metadata": {"brussels:group": "building_parts"},
              "layout": {"visibility": "none"},
-             "paint": {"fill-extrusion-color": ["to-color", ["coalesce", ["get", "building:colour"], col], col],
+             "paint": {"fill-extrusion-color": facade_color(cfg, col),
                        "fill-extrusion-base": base,
                        "fill-extrusion-height": top,
                        "fill-extrusion-opacity": 0.85}}]
