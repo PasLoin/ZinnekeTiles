@@ -80,7 +80,65 @@ def test_parsers():
 def test_shape_aliases():
     assert gr.roof_kind({"roof:shape": "Domed"}) == "dome"
     assert gr.roof_kind({"roof:shape": "half-hipped"}) == "half_hipped"
+    assert gr.roof_kind({"roof:shape": "many"}) is None
+
+
+def test_flat_roofs_only_when_coloured():
     assert gr.roof_kind({"roof:shape": "flat"}) is None
+    assert gr.roof_kind({}) is None
+    assert gr.roof_kind({"roof:shape": "flat", "roof:colour": "grey"}) == "flat"
+    assert gr.roof_kind({"roof:material": "gravel"}) == "flat"
+    assert gr.roof_kind({"roof:colour": "nimportequoi"}) is None
+
+
+def test_roof_colour_falls_back_to_material_name():
+    assert gr.explicit_roof_color({"roof:colour": "zinc"}) == gr.parse_color(gr.ROOF_MATERIALS["zinc"], {})
+    assert gr.explicit_roof_color({"roof:colour": "light_grey"}) == gr.parse_color(gr.ROOF_NAMED["lightgrey"], {})
+    assert gr.explicit_roof_color({}) is None
+
+
+def test_wall_colour_follows_style_priority():
+    palette = gr.Palette((1, 2, 3), {"brick": (200, 100, 50)})
+    assert gr.wall_color({"building:colour": "Bisque", "building:material": "brick"}, palette) == (255, 228, 196)
+    assert gr.wall_color({"building:colour": "#C0c0c0"}, palette) == (192, 192, 192)
+    assert gr.wall_color({"building:colour": "light grey", "building:material": "Brick"}, palette) == (200, 100, 50)
+    assert gr.wall_color({"building:colour": "c0c0c0"}, palette) == (1, 2, 3)
+    assert gr.wall_color({}, palette) == (1, 2, 3)
+
+
+def test_css_table_is_complete():
+    assert len(gr.CSS_NAMED) == 148
+    for name in ("blanchedalmond", "lightgoldenrodyellow", "gainsboro", "firebrick", "darkgrey"):
+        assert name in gr.CSS_NAMED
+
+
+def test_palette_reads_config(tmp_path):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text('layers:\n  buildings:\n    color: "#101010"\n    materials: { Brick: "#200000", glass: lightblue }\n')
+    palette = gr.load_palette(cfg)
+    assert palette.default == (16, 16, 16)
+    assert palette.materials == {"brick": (32, 0, 0), "glass": (173, 216, 230)}
+    assert gr.load_palette(tmp_path / "absent.yaml").default == gr.parse_color(gr.DEFAULT_WALL, {})
+
+
+def test_project_config_materials_match_style():
+    import yaml
+    cfg = yaml.safe_load((ROOT / "map.config.yaml").read_text())
+    materials = cfg["layers"]["buildings"].get("materials") or {}
+    palette = gr.load_palette(ROOT / "map.config.yaml")
+    assert set(palette.materials) == {k.lower() for k in materials}
+
+
+def test_flat_roof_sits_on_top_without_cut():
+    poly = rect(10, 10)
+    params, reason = gr.plan({"roof:colour": "grey", "height": "12"}, gr.BUILDING_DEFAULTS, poly, "flat")
+    assert reason is None
+    _, z, _ = params
+    assert z == pytest.approx(12.0 + gr.FLAT_OFFSET)
+    roof = gr.build_flat(poly, z, (10, 20, 30))
+    vertices = roof_vertices(roof)
+    assert {round(v[2], 6) for v in vertices} == {round(z, 6)}
+    assert sum(len(t) for _, t, _ in roof.groups) == 2
 
 
 def test_frame_follows_long_side_and_orientation():
@@ -150,6 +208,8 @@ def test_main_writes_eaves_and_valid_glb(tmp_path):
          "properties": {"building": "yes", "lod": "detail", "roof:shape": "flat"}},
         {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.37, 50.85)},
          "properties": {"building": "yes", "lod": "detail", "roof:shape": "hipped", "covered_by_parts": "yes"}},
+        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.39, 50.85)},
+         "properties": {"building": "yes", "lod": "detail", "roof:colour": "black"}},
     ])
     write_fc(parts, [
         {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.38, 50.85)},
@@ -163,6 +223,7 @@ def test_main_writes_eaves_and_valid_glb(tmp_path):
     assert props[0]["roof_eaves"] == 8.0
     assert "roof_eaves" not in props[1]
     assert "roof_eaves" not in props[2]
+    assert "roof_eaves" not in props[3]
     part = json.loads(parts.read_text())["features"][0]["properties"]
     assert part["roof_eaves"] == 9.0
 
@@ -174,6 +235,8 @@ def test_main_writes_eaves_and_valid_glb(tmp_path):
     doc = json.loads(data[20:20 + json_len])
     assert doc["asset"]["extras"]["origin"] == list(gr.ORIGIN)
     assert len(doc["nodes"]) == len(doc["meshes"]) >= 1
+    vertices = sum(acc["count"] for acc in doc["accessors"] if acc["type"] == "VEC3")
+    assert vertices > 4
     bin_len, bin_type = struct.unpack_from("<II", data, 20 + json_len)
     assert bin_type == 0x004E4942 and bin_len == doc["buffers"][0]["byteLength"]
 
