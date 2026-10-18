@@ -24,6 +24,7 @@ MAX_VERTICES = 65535
 MIN_AREA = 4.0
 MIN_RECTANGULARITY = 0.7
 MIN_CONVEXITY = 0.85
+FLAT_OFFSET = 0.15
 EPS = 1e-6
 
 BUILDING_DEFAULTS = (6.0, 2.0, 7.5)
@@ -50,18 +51,39 @@ ROOF_NAMED = {
     "blue": "#50627a", "darkblue": "#3a4760", "yellow": "#d4bd70", "beige": "#d8c9a8",
 }
 
-CSS_NAMED = {
-    "black": "#000000", "white": "#ffffff", "red": "#ff0000", "green": "#008000",
-    "blue": "#0000ff", "yellow": "#ffff00", "orange": "#ffa500", "brown": "#a52a2a",
-    "grey": "#808080", "gray": "#808080", "darkgrey": "#a9a9a9", "darkgray": "#a9a9a9",
-    "lightgrey": "#d3d3d3", "lightgray": "#d3d3d3", "dimgray": "#696969", "dimgrey": "#696969",
-    "silver": "#c0c0c0", "beige": "#f5f5dc", "tan": "#d2b48c", "maroon": "#800000",
-    "darkred": "#8b0000", "ivory": "#fffff0", "wheat": "#f5deb3", "khaki": "#f0e68c",
-    "pink": "#ffc0cb", "purple": "#800080", "navy": "#000080", "teal": "#008080",
-    "olive": "#808000", "sienna": "#a0522d", "peru": "#cd853f", "chocolate": "#d2691e",
-    "linen": "#faf0e6", "lightyellow": "#ffffe0", "cream": "#fffdd0", "darkgreen": "#006400",
-    "darkblue": "#00008b", "lightblue": "#add8e6", "salmon": "#fa8072",
-}
+CSS_TABLE = """
+aliceblue:f0f8ff antiquewhite:faebd7 aqua:00ffff aquamarine:7fffd4 azure:f0ffff beige:f5f5dc
+bisque:ffe4c4 black:000000 blanchedalmond:ffebcd blue:0000ff blueviolet:8a2be2 brown:a52a2a
+burlywood:deb887 cadetblue:5f9ea0 chartreuse:7fff00 chocolate:d2691e coral:ff7f50
+cornflowerblue:6495ed cornsilk:fff8dc crimson:dc143c cyan:00ffff darkblue:00008b darkcyan:008b8b
+darkgoldenrod:b8860b darkgray:a9a9a9 darkgreen:006400 darkgrey:a9a9a9 darkkhaki:bdb76b
+darkmagenta:8b008b darkolivegreen:556b2f darkorange:ff8c00 darkorchid:9932cc darkred:8b0000
+darksalmon:e9967a darkseagreen:8fbc8f darkslateblue:483d8b darkslategray:2f4f4f
+darkslategrey:2f4f4f darkturquoise:00ced1 darkviolet:9400d3 deeppink:ff1493 deepskyblue:00bfff
+dimgray:696969 dimgrey:696969 dodgerblue:1e90ff firebrick:b22222 floralwhite:fffaf0
+forestgreen:228b22 fuchsia:ff00ff gainsboro:dcdcdc ghostwhite:f8f8ff gold:ffd700
+goldenrod:daa520 gray:808080 green:008000 greenyellow:adff2f grey:808080 honeydew:f0fff0
+hotpink:ff69b4 indianred:cd5c5c indigo:4b0082 ivory:fffff0 khaki:f0e68c lavender:e6e6fa
+lavenderblush:fff0f5 lawngreen:7cfc00 lemonchiffon:fffacd lightblue:add8e6 lightcoral:f08080
+lightcyan:e0ffff lightgoldenrodyellow:fafad2 lightgray:d3d3d3 lightgreen:90ee90 lightgrey:d3d3d3
+lightpink:ffb6c1 lightsalmon:ffa07a lightseagreen:20b2aa lightskyblue:87cefa
+lightslategray:778899 lightslategrey:778899 lightsteelblue:b0c4de lightyellow:ffffe0 lime:00ff00
+limegreen:32cd32 linen:faf0e6 magenta:ff00ff maroon:800000 mediumaquamarine:66cdaa
+mediumblue:0000cd mediumorchid:ba55d3 mediumpurple:9370db mediumseagreen:3cb371
+mediumslateblue:7b68ee mediumspringgreen:00fa9a mediumturquoise:48d1cc mediumvioletred:c71585
+midnightblue:191970 mintcream:f5fffa mistyrose:ffe4e1 moccasin:ffe4b5 navajowhite:ffdead
+navy:000080 oldlace:fdf5e6 olive:808000 olivedrab:6b8e23 orange:ffa500 orangered:ff4500
+orchid:da70d6 palegoldenrod:eee8aa palegreen:98fb98 paleturquoise:afeeee palevioletred:db7093
+papayawhip:ffefd5 peachpuff:ffdab9 peru:cd853f pink:ffc0cb plum:dda0dd powderblue:b0e0e6
+purple:800080 rebeccapurple:663399 red:ff0000 rosybrown:bc8f8f royalblue:4169e1
+saddlebrown:8b4513 salmon:fa8072 sandybrown:f4a460 seagreen:2e8b57 seashell:fff5ee sienna:a0522d
+silver:c0c0c0 skyblue:87ceeb slateblue:6a5acd slategray:708090 slategrey:708090 snow:fffafa
+springgreen:00ff7f steelblue:4682b4 tan:d2b48c teal:008080 thistle:d8bfd8 tomato:ff6347
+turquoise:40e0d0 violet:ee82ee wheat:f5deb3 white:ffffff whitesmoke:f5f5f5 yellow:ffff00
+yellowgreen:9acd32
+"""
+
+CSS_NAMED = {k: "#" + v for k, v in (item.split(":") for item in CSS_TABLE.split())}
 
 COMPASS = {
     "N": 0, "NNE": 22.5, "NE": 45, "ENE": 67.5, "E": 90, "ESE": 112.5, "SE": 135, "SSE": 157.5,
@@ -108,13 +130,15 @@ def parse_direction(value):
     return None if number is None else number % 360.0
 
 
-def parse_color(value, named):
+def parse_color(value, named, strict=False):
     if value is None:
         return None
-    text = str(value).strip().lower().replace(" ", "")
+    text = str(value).strip().lower()
+    if not strict:
+        text = text.replace(" ", "").replace("_", "")
     if text in named:
         text = named[text]
-    if re.fullmatch(r"#?[0-9a-f]{6}", text):
+    if re.fullmatch(r"#[0-9a-f]{6}" if strict else r"#?[0-9a-f]{6}", text):
         text = text.lstrip("#")
         return tuple(int(text[i:i + 2], 16) for i in (0, 2, 4))
     if re.fullmatch(r"#[0-9a-f]{3}", text):
@@ -122,18 +146,38 @@ def parse_color(value, named):
     return None
 
 
+def material_key(value):
+    return str(value or "").strip().lower()
+
+
+def explicit_roof_color(props):
+    colour = props.get("roof:colour")
+    return (parse_color(colour, {**CSS_NAMED, **ROOF_NAMED})
+            or parse_color(ROOF_MATERIALS.get(material_key(colour)), {})
+            or parse_color(ROOF_MATERIALS.get(material_key(props.get("roof:material"))), {}))
+
+
 def roof_color(props):
-    return (parse_color(props.get("roof:colour"), {**CSS_NAMED, **ROOF_NAMED})
-            or parse_color(ROOF_MATERIALS.get(str(props.get("roof:material", "")).strip().lower()), {})
-            or parse_color(DEFAULT_ROOF, {}))
+    return explicit_roof_color(props) or parse_color(DEFAULT_ROOF, {})
 
 
-def wall_color(props, default):
-    return parse_color(props.get("building:colour"), CSS_NAMED) or default
+class Palette:
+    def __init__(self, default=None, materials=None):
+        self.default = default or parse_color(DEFAULT_WALL, {})
+        self.materials = materials or {}
+
+
+def wall_color(props, palette):
+    return (parse_color(props.get("building:colour"), CSS_NAMED, strict=True)
+            or palette.materials.get(material_key(props.get("building:material")))
+            or palette.default)
 
 
 def roof_kind(props):
-    return SHAPE_ALIASES.get(str(props.get("roof:shape", "")).strip().lower())
+    shape_value = str(props.get("roof:shape", "")).strip().lower()
+    if shape_value in ("", "flat"):
+        return "flat" if explicit_roof_color(props) else None
+    return SHAPE_ALIASES.get(shape_value)
 
 
 def wall_profile(props, defaults):
@@ -446,9 +490,37 @@ def build_roof(poly, kind, frame, eaves, roof_height, roof_rgb, wall_rgb):
     return roof
 
 
+def build_flat(poly, height, roof_rgb):
+    roof = Roof()
+    index, vertices, triangles = {}, [], []
+    for tri in polygons_of(shapely.constrained_delaunay_triangles(poly)):
+        pts = list(tri.exterior.coords)[:3]
+        area2 = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) - (pts[2][0] - pts[0][0]) * (pts[1][1] - pts[0][1])
+        if abs(area2) < 1e-9:
+            continue
+        if area2 < 0:
+            pts = [pts[0], pts[2], pts[1]]
+        ids = []
+        for x, y in pts:
+            key = (round(x, 4), round(y, 4))
+            if key not in index:
+                index[key] = len(vertices)
+                vertices.append((x, y, height))
+            ids.append(index[key])
+        if len(set(ids)) == 3:
+            triangles.append(tuple(ids))
+    if not triangles:
+        return None
+    roof.add(vertices, triangles, shade(roof_rgb, roof_shade((0.0, 0.0, 0.0), 1.0)))
+    return roof
+
+
 def plan(props, defaults, poly, kind):
     if poly.area < MIN_AREA:
         return None, "too_small"
+    if kind == "flat":
+        _, top, _ = wall_profile(props, defaults)
+        return (None, top + FLAT_OFFSET, 0.0), None
     if kind == "pyramidal":
         if poly.area / poly.convex_hull.area < MIN_CONVEXITY:
             return None, "irregular"
@@ -580,7 +652,7 @@ def write_glb(path, meshes, projector, lon0, lat0):
     return total
 
 
-def process(features, defaults, is_part, projector, chunks, default_wall, stats):
+def process(features, defaults, is_part, projector, chunks, palette, stats):
     for feat in features:
         props = feat.setdefault("properties", {})
         props.pop("roof_eaves", None)
@@ -609,7 +681,10 @@ def process(features, defaults, is_part, projector, chunks, default_wall, stats)
                 roofs = []
                 break
             frame, eaves, roof_height = params
-            roof = build_roof(poly, kind, frame, eaves, roof_height, roof_color(props), wall_color(props, default_wall))
+            if kind == "flat":
+                roof = build_flat(poly, eaves, roof_color(props))
+            else:
+                roof = build_roof(poly, kind, frame, eaves, roof_height, roof_color(props), wall_color(props, palette))
             if roof is None:
                 stats["empty"] += 1
                 roofs = []
@@ -621,18 +696,25 @@ def process(features, defaults, is_part, projector, chunks, default_wall, stats)
         for poly, roof in roofs:
             p = poly.representative_point()
             chunks.add((p.x, p.y), roof)
-        props["roof_eaves"] = round(min(eaves_values), 2)
+        if kind != "flat":
+            props["roof_eaves"] = round(min(eaves_values), 2)
         stats[f"ok:{kind}"] += 1
 
 
-def load_wall_color(config_path):
+def load_palette(config_path):
     try:
         import yaml
         cfg = yaml.safe_load(Path(config_path).read_text()) or {}
-        value = ((cfg.get("layers") or {}).get("buildings") or {}).get("color")
+        layer = (cfg.get("layers") or {}).get("buildings") or {}
     except Exception:
-        value = None
-    return parse_color(value or DEFAULT_WALL, CSS_NAMED) or parse_color(DEFAULT_WALL, {})
+        layer = {}
+    default = parse_color(layer.get("color") or DEFAULT_WALL, CSS_NAMED) or parse_color(DEFAULT_WALL, {})
+    materials = {}
+    for key, value in (layer.get("materials") or {}).items():
+        rgb = parse_color(value, CSS_NAMED)
+        if rgb:
+            materials[material_key(key)] = rgb
+    return Palette(default, materials)
 
 
 def main(argv=None):
@@ -647,7 +729,7 @@ def main(argv=None):
     projector = Projector(*ORIGIN)
     chunks = Chunks(args.chunk)
     stats = Counter()
-    default_wall = load_wall_color(args.config)
+    palette = load_palette(args.config)
 
     for path, defaults, is_part in ((args.buildings, BUILDING_DEFAULTS, False), (args.parts, PART_DEFAULTS, True)):
         if not Path(path).exists():
@@ -655,7 +737,7 @@ def main(argv=None):
             continue
         with open(path) as f:
             data = json.load(f)
-        process(data.get("features", []), defaults, is_part, projector, chunks, default_wall, stats)
+        process(data.get("features", []), defaults, is_part, projector, chunks, palette, stats)
         with open(path, "w") as f:
             json.dump(data, f, ensure_ascii=False)
 
