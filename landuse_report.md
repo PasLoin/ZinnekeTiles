@@ -53,7 +53,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.landus
 
 | landuse | features | couche |
 | :--- | ---: | :--- |
-| `grass` | 9631 | green (green.json) |
+| `grass` | 9635 | green (green.json) |
 | `forest` | 878 | green (green.json, via natural=wood + landuse=forest) |
 | `flowerbed` | 591 | green (green.json) |
 | `meadow` | 497 | green (green.json) |

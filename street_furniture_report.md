@@ -5,7 +5,7 @@ Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` pr�
 - ✓ rendus : 12
 - ⚠ manquants (présents mais sans style) : 10
 - · sans donnée dans le pbf Bxl : 0
-- `entrance=*` (toutes valeurs confondues) : 12489 features — rendu (rendu uniforme par clé, pas par valeur)
+- `entrance=*` (toutes valeurs confondues) : 12490 features — rendu (rendu uniforme par clé, pas par valeur)
 
 ## ⚠ Présents dans Bxl mais non rendus
 

@@ -1,8 +1,8 @@
 {
   "source": "brussels_capital_region-latest.osm.pbf",
-  "timestamp": "2026-10-18T06:35:55Z",
+  "timestamp": "2026-10-18T15:09:48Z",
   "replication_timestamp": null,
   "replication_sequence": null,
-  "sha256": "cee3835cddd9",
-  "generated_at": "2026-10-18T08:11:23Z"
+  "sha256": "502fc9c41cbb",
+  "generated_at": "2026-10-19T01:47:05Z"
 }
