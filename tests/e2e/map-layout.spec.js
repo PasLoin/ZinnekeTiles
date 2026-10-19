@@ -66,7 +66,7 @@ async function expand(page, id) {
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Mise en page — ${viewport.name} ${viewport.width}×${viewport.height}`, () => {
-    test.use({ viewport: { width: viewport.width, height: viewport.height } });
+    test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
 
     test.beforeEach(async ({ page }) => {
       await page.goto('/');
@@ -97,7 +97,7 @@ for (const viewport of VIEWPORTS) {
 }
 
 test.describe('Mode compact', () => {
-  test.use({ viewport: { width: 375, height: 667 } });
+  test.use({ viewport: { width: 375, height: 667 }, deviceScaleFactor: 1 });
 
   test('un seul panneau ouvert à la fois', async ({ page }) => {
     await page.goto('/');
