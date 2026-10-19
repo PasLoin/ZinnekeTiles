@@ -26,16 +26,18 @@ test.describe('Attribution', () => {
     const inner = page.locator('.maplibregl-ctrl-attrib-inner');
     await expect(inner).toBeVisible();
     await expect(inner).toContainText('OpenStreetMap');
-    await expect(inner).toContainText('Données 01/09/2026 05:27 UTC (a10eb5deacbf)');
-    await expect(inner).toContainText(/Config .*\([0-9a-f]{12}\)/);
+    await expect(inner).toContainText('Données 01/09/2026 05:27 UTC · Mise à jour 01/09/2026 06:00 UTC');
+    await expect(inner).not.toContainText('a10eb5deacbf');
+    await expect(inner).not.toContainText('Config');
   });
 
-  test('affiche la config même si data-info.json est absent', async ({ page }) => {
+  test('garde OpenStreetMap même si data-info.json est absent', async ({ page }) => {
     await page.route('**/data-info.json', (route) => route.fulfill({ status: 404, body: '' }));
     await openMap(page);
     const inner = page.locator('.maplibregl-ctrl-attrib-inner');
     await expect(inner).toBeVisible();
-    await expect(inner).toContainText(/Config .*\([0-9a-f]{12}\)/);
+    await expect(inner).toContainText('OpenStreetMap');
     await expect(inner).not.toContainText('Données');
+    await expect(inner).not.toContainText('Mise à jour');
   });
 });
