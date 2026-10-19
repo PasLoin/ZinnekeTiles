@@ -298,6 +298,24 @@ def extract_border_color(layers, prefixes):
     return None
 
 
+def extract_materials(layers):
+    for l in layers:
+        if l.get("type") != "fill-extrusion":
+            continue
+        stack = [l.get("paint", {}).get("fill-extrusion-color")]
+        while stack:
+            expr = stack.pop()
+            if not isinstance(expr, list):
+                continue
+            if (len(expr) >= 4 and expr[0] == "match"
+                    and expr[1] == ["get", "building:material"]):
+                pairs = expr[2:-1]
+                return {str(pairs[i]): pairs[i + 1] for i in range(0, len(pairs) - 1, 2)
+                        if isinstance(pairs[i], str) and isinstance(pairs[i + 1], str)}
+            stack.extend(expr[1:])
+    return {}
+
+
 # ── Analyse principale d'un groupe ───────────────────────────────────────────
 
 def analyse_group(name, style_layers):
@@ -465,6 +483,7 @@ def analyse_group(name, style_layers):
         "border_color": border_color,
         "visible":      visible,
         "extrusion_3d": extrusion_3d,
+        "materials":    extract_materials(matched) if extrusion_3d else {},
         "labels_at":    labels_at,
         "subtypes":     cleaned,
     }
@@ -606,6 +625,8 @@ def dump_layer(name, info):
         lines.append(f"    visible: false")
     if info["extrusion_3d"]:
         lines.append(f"    extrusion_3d: true")
+    if info.get("materials"):
+        lines.append(f"    materials: {flow_value(info['materials'])}")
     lines.append(f"    appear_at: {appear}")
     if la and la != appear + 3:
         lines.append(f"    labels_at: {la}")
@@ -691,6 +712,8 @@ def main():
         "#   border_color   couleur du contour (buildings...)",
         "#   visible        false pour masquer la couche au chargement",
         "#   extrusion_3d   true pour activer le rendu 3D buildings",
+        "#   materials      buildings 3D : couleur par building:material",
+        "#                  (building:colour reste prioritaire)",
         "#   appear_at      zoom minimum d'apparition",
         "#   labels_at      zoom minimum des étiquettes (défaut: appear_at+3)",
         "#   opacity        opacité globale (0.0–1.0)",

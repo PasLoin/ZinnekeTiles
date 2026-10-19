@@ -200,3 +200,25 @@ def test_layer_color_is_fallback_for_subtypes(name):
 def test_roads_have_no_layer_color():
     assert "color" not in CONFIG["layers"]["roads"]
     assert "border_color" not in CONFIG["layers"]["roads"]
+
+
+def _extrusion_colors(style):
+    parts = [l for l in style["metadata"]["brussels:lazy"]["layers"] if l["id"] == "building-parts-3d"]
+    return [layers(style)["buildings-3d"]["paint"]["fill-extrusion-color"],
+            parts[0]["paint"]["fill-extrusion-color"]]
+
+
+def test_building_materials_color_both_3d_layers():
+    cfg = mutated(["layers", "buildings", "materials"], {"brick": PROBE_COLOR})
+    for expr in _extrusion_colors(style_of(cfg)):
+        text = json.dumps(expr)
+        assert '["get", "building:colour"]' in text
+        assert '["match", ["get", "building:material"], "brick", "%s"' % PROBE_COLOR in text
+
+
+def test_building_colour_without_materials():
+    cfg = mutated(["layers", "buildings", "materials"], {})
+    for expr in _extrusion_colors(style_of(cfg)):
+        text = json.dumps(expr)
+        assert '["to-color", ["get", "building:colour"]' in text
+        assert "building:material" not in text

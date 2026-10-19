@@ -7,6 +7,8 @@
 #   border_color   couleur du contour (buildings...)
 #   visible        false pour masquer la couche au chargement
 #   extrusion_3d   true pour activer le rendu 3D buildings
+#   materials      buildings 3D : couleur par building:material
+#                  (building:colour reste prioritaire)
 #   appear_at      zoom minimum d'apparition
 #   labels_at      zoom minimum des étiquettes (défaut: appear_at+3)
 #   opacity        opacité globale (0.0–1.0)
@@ -154,6 +156,7 @@ layers:
     color: "#fce1c5"
     border_color: "#d4a574"
     extrusion_3d: true
+    materials: { bluestone: "#aeb3b8", brick: "#dba48c", cement_block: "#d9d6cf", concrete: "#d9d6cf", glass: "#bfd5df", limestone: "#ece5d3", metal: "#c6cacf", plaster: "#f4ede1", sandstone: "#e8d2ad", stone: "#e6ddcb", wood: "#d3ac84" }
     appear_at: 13
 
   roads:

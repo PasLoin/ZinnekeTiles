@@ -39,6 +39,14 @@ describe('Structure HTML de base', () => {
     expect(html).toContain('id="toggle-data"');
   });
 
+  it('contient le bouton des toits, masqué hors 3D', () => {
+    const btn = document.getElementById('toggle-roofs');
+    expect(btn).not.toBeNull();
+    expect(btn.hidden).toBe(true);
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    expect(html).toContain("from './roofs.js'");
+  });
+
   it('contient le lien d\'édition OSM', () => {
     expect(html).toContain('id="osm-edit"');
   });

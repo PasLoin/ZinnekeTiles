@@ -103,6 +103,9 @@ jobs:
       - name: Extract GeoJSON layers
         run: bash generate_json.bash
 
+      - name: Generate 3D roofs
+        run: python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
+
       # ── Étape 4 : POI icons (poi.json + street_furniture.json, issue #51) ──────────────
       - name: Generate POI icon mapping
         run: python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
@@ -148,6 +151,7 @@ jobs:
             www/style.json \
             www/poi-icons.json \
             www/data-info.json \
+            www/roofs.glb \
             missing-icons.txt \
             sizepmtiles.md \
             brussels_capital_region-latest.osm.pbf

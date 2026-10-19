@@ -3,7 +3,7 @@
 compute_building_coverage.py
 ─────────────────────────────
 Détecte les bâtiments (building=*) entièrement recouverts par leurs
-building:part=yes, afin de ne PAS les rendre en 3D (silhouette
+building:part (toutes valeurs sauf no), afin de ne PAS les rendre en 3D (silhouette
 dédoublée / z-fighting avec les parties détaillées). Issue #40.
 
 Deux méthodes, relation prioritaire sur géométrie :
