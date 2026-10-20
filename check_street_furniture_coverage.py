@@ -60,7 +60,13 @@ WIKI_VALUES = {
                 "planter", "kissing_gate", "block", "full-height_turnstile",
                 "swing_gate", "stile"],
     "highway": ["street_lamp"],
+    "emergency": ["defibrillator", "fire_hydrant", "fire_extinguisher",
+                  "fire_hose", "life_ring", "phone", "assembly_point", "siren",
+                  "water_tank", "suction_point", "fire_alarm_box",
+                  "first_aid_kit"],
 }
+
+TAGS = tuple(WIKI_VALUES)
 
 
 def load_features(path):
@@ -98,7 +104,7 @@ def main():
     subtypes = (config.get("layers", {}).get("street_furniture", {})
                 .get("subtypes") or {})
 
-    configured_by_tag = {"amenity": set(), "barrier": set(), "highway": set()}
+    configured_by_tag = {tag: set() for tag in TAGS}
     has_entrance_subtype = False
     for val, scfg in subtypes.items():
         tag = (scfg or {}).get("tag")
@@ -111,13 +117,13 @@ def main():
     if not all_path.exists():
         print(f"✗  {all_path} introuvable", file=sys.stderr); sys.exit(1)
 
-    counts = {"amenity": {}, "barrier": {}, "highway": {}}
+    counts = {tag: {} for tag in TAGS}
     vending_counts = {}
     entrance_count = 0
 
     for feat in load_features(all_path):
         props = feat.get("properties") or {}
-        for tag in ("amenity", "barrier", "highway"):
+        for tag in TAGS:
             val = props.get(tag)
             candidates = set(WIKI_VALUES.get(tag, [])) | configured_by_tag[tag]
             if val and val in candidates:
@@ -129,7 +135,7 @@ def main():
             vending_counts[v] = vending_counts.get(v, 0) + 1
 
     rendered, missing, no_data = [], [], []
-    for tag in ("amenity", "barrier", "highway"):
+    for tag in TAGS:
         present = set(counts[tag])
         reference = present | configured_by_tag[tag] | set(WIKI_VALUES.get(tag, []))
         for val in sorted(reference):
@@ -145,7 +151,7 @@ def main():
     entrance_status = "rendu" if has_entrance_subtype else "NON CONFIGURÉ"
     lines = ["# Street furniture coverage report", "",
               "Comparaison entre les tags `amenity=*` / `barrier=*` / "
-              "`highway=street_lamp` présents dans l'extrait Bruxelles et "
+              "`highway=street_lamp` / `emergency=*` présents dans l'extrait Bruxelles et "
               "ceux rendus par `map.config.yaml` (cf. issue #51 — "
               "\"Streets furnitures, small object (micromapping)\").", "",
               f"- ✓ rendus : {len(rendered)}",
