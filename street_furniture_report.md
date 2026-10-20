@@ -1,10 +1,10 @@
 # Street furniture coverage report
 
-Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` présents dans l'extrait Bruxelles et ceux rendus par `map.config.yaml` (cf. issue #51 — "Streets furnitures, small object (micromapping)").
+Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` / `emergency=*` présents dans l'extrait Bruxelles et ceux rendus par `map.config.yaml` (cf. issue #51 — "Streets furnitures, small object (micromapping)").
 
-- ✓ rendus : 12
-- ⚠ manquants (présents mais sans style) : 10
-- · sans donnée dans le pbf Bxl : 0
+- ✓ rendus : 37
+- ⚠ manquants (présents mais sans style) : 11
+- · sans donnée dans le pbf Bxl : 4
 - `entrance=*` (toutes valeurs confondues) : 12494 features — rendu (rendu uniforme par clé, pas par valeur)
 
 ## ⚠ Présents dans Bxl mais non rendus
@@ -16,13 +16,14 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `amenity` | `bicycle_parking` | 7666 |
 | `amenity` | `shelter` | 3676 |
 | `barrier` | `block` | 298 |
-| `amenity` | `drinking_water` | 182 |
 | `barrier` | `swing_gate` | 65 |
-| `amenity` | `clock` | 51 |
+| `amenity` | `waste_disposal` | 54 |
+| `amenity` | `motorcycle_parking` | 45 |
 | `barrier` | `full-height_turnstile` | 27 |
 | `barrier` | `stile` | 20 |
+| `amenity` | `kick-scooter_parking` | 6 |
 | `barrier` | `kissing_gate` | 5 |
-| `amenity` | `give_box` | 4 |
+| `emergency` | `water_tank` | 2 |
 
 ## ✓ Rendus
 
@@ -35,11 +36,47 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `barrier` | `fence` | 4617 |
 | `barrier` | `gate` | 3507 |
 | `amenity` | `vending_machine` | 1811 |
+| `tourism` | `artwork` | 1213 |
+| `amenity` | `recycling` | 946 |
 | `barrier` | `lift_gate` | 844 |
+| `amenity` | `charging_station` | 769 |
+| `emergency` | `fire_hydrant` | 647 |
+| `amenity` | `fountain` | 496 |
+| `amenity` | `post_box` | 414 |
+| `amenity` | `dog_toilet` | 384 |
+| `amenity` | `bicycle_rental` | 367 |
+| `emergency` | `defibrillator` | 272 |
+| `amenity` | `car_sharing` | 217 |
+| `amenity` | `toilets` | 211 |
+| `amenity` | `taxi` | 193 |
+| `amenity` | `drinking_water` | 182 |
 | `barrier` | `cycle_barrier` | 132 |
+| `amenity` | `bicycle_repair_station` | 131 |
+| `amenity` | `atm` | 111 |
+| `amenity` | `public_bookcase` | 108 |
 | `barrier` | `planter` | 73 |
+| `amenity` | `clock` | 51 |
 | `amenity` | `lounger` | 48 |
+| `emergency` | `life_ring` | 39 |
+| `amenity` | `parcel_locker` | 36 |
+| `amenity` | `photo_booth` | 24 |
+| `emergency` | `assembly_point` | 22 |
 | `barrier` | `bus_trap` | 15 |
+| `emergency` | `fire_extinguisher` | 6 |
+| `amenity` | `give_box` | 4 |
+| `emergency` | `phone` | 4 |
+| `emergency` | `fire_hose` | 2 |
+
+## · Sans donnée dans le pbf Bxl
+
+Configurés et/ou listés comme candidats (wiki OSM), mais absents de l'extrait actuel — aucun rendu généré pour eux (conforme : on ne rend pas ce qui n'existe pas dans les données).
+
+| tag | valeur | configuré dans map.config.yaml ? |
+| :--- | :--- | :---: |
+| `emergency` | `fire_alarm_box` | non |
+| `emergency` | `first_aid_kit` | non |
+| `emergency` | `siren` | non |
+| `emergency` | `suction_point` | non |
 
 ## Sous-types `vending=*` (raffinement d'icône)
 

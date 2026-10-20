@@ -29,6 +29,16 @@
         "icon_key": "cuisine-friture"
       },
       {
+        "key": "cuisine",
+        "value": "pizza",
+        "icon_key": "cuisine-pizza"
+      },
+      {
+        "key": "cuisine",
+        "value": "sandwich",
+        "icon_key": "cuisine-sandwich"
+      },
+      {
         "key": "door",
         "value": "overhead",
         "icon_key": "door-overhead"
@@ -80,7 +90,19 @@
       }
     ]
   },
+  "accountant": [
+    null,
+    null,
+    null,
+    null
+  ],
   "advertising": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "advertising_agency": [
     null,
     null,
     null,
@@ -92,7 +114,31 @@
     "alcohol-shop",
     null
   ],
+  "alternative": [
+    null,
+    null,
+    null,
+    null
+  ],
   "alternative;counselling;laboratory;psychotherapist;speech_therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "alumni": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ambulance_station": [
+    "ambulance_station",
+    null,
+    null,
+    null
+  ],
+  "amusement_arcade": [
     null,
     null,
     null,
@@ -110,7 +156,25 @@
     null,
     null
   ],
+  "apartment": [
+    null,
+    null,
+    null,
+    null
+  ],
   "appliance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "archaeological_site": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "architect": [
     null,
     null,
     null,
@@ -152,6 +216,12 @@
     null,
     null
   ],
+  "assembly_point": [
+    "assembly_point",
+    null,
+    null,
+    null
+  ],
   "association": [
     null,
     null,
@@ -161,6 +231,12 @@
   "atelier": [
     null,
     null,
+    null,
+    null
+  ],
+  "atm": [
+    null,
+    "atm",
     null,
     null
   ],
@@ -176,7 +252,19 @@
     null,
     null
   ],
+  "auctioneer": [
+    null,
+    null,
+    null,
+    null
+  ],
   "audio_video_professional_supplies": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "audiologist": [
     null,
     null,
     null,
@@ -284,7 +372,19 @@
     null,
     null
   ],
+  "bicycle_repair_station": [
+    null,
+    null,
+    null,
+    null
+  ],
   "bicycle_wash": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "biergarten": [
     null,
     null,
     null,
@@ -293,6 +393,18 @@
   "billboard": [
     null,
     "billboard",
+    null,
+    null
+  ],
+  "binoculars": [
+    null,
+    "binoculars",
+    null,
+    null
+  ],
+  "blood_donation": [
+    null,
+    null,
     null,
     null
   ],
@@ -332,7 +444,25 @@
     null,
     null
   ],
+  "bowling_alley": [
+    null,
+    null,
+    null,
+    "bowling_alley"
+  ],
   "brewery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "broadcaster": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "brothel": [
     null,
     null,
     null,
@@ -350,10 +480,22 @@
     null,
     null
   ],
+  "bureau_de_change": [
+    null,
+    null,
+    null,
+    null
+  ],
   "bus_trap": [
     "bus_trap",
     null,
     "barrier",
+    null
+  ],
+  "business": [
+    null,
+    null,
+    null,
     null
   ],
   "butcher": [
@@ -381,7 +523,7 @@
     null
   ],
   "cannabis": [
-    null,
+    "cannabis",
     null,
     null,
     null
@@ -404,10 +546,28 @@
     null,
     null
   ],
+  "car_rental": [
+    null,
+    null,
+    null,
+    "car_rental"
+  ],
   "car_repair": [
     null,
     null,
     "car",
+    null
+  ],
+  "car_sharing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "car_wash": [
+    null,
+    "car_wash",
+    null,
     null
   ],
   "carpenter": [
@@ -421,6 +581,12 @@
     null,
     null,
     null
+  ],
+  "casino": [
+    null,
+    "casino",
+    "casino",
+    "casino"
   ],
   "castle": [
     null,
@@ -440,11 +606,29 @@
     null,
     null
   ],
+  "chamber": [
+    null,
+    null,
+    null,
+    null
+  ],
   "chapel": [
     null,
     null,
     null,
     null
+  ],
+  "charge_point": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "charging_station": [
+    null,
+    null,
+    null,
+    "charging_station"
   ],
   "charity": [
     null,
@@ -453,12 +637,18 @@
     null
   ],
   "cheese": [
-    null,
+    "cheese",
     null,
     null,
     null
   ],
   "chemist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "childcare": [
     null,
     null,
     null,
@@ -475,6 +665,12 @@
     null,
     "cinema",
     "cinema"
+  ],
+  "city_gate": [
+    null,
+    null,
+    null,
+    null
   ],
   "city_wall": [
     null,
@@ -494,6 +690,12 @@
     "doctor",
     "hospital"
   ],
+  "clock": [
+    null,
+    "clock",
+    null,
+    null
+  ],
   "clockmaker": [
     null,
     null,
@@ -504,6 +706,12 @@
     null,
     null,
     "clothing-store",
+    null
+  ],
+  "coaching": [
+    null,
+    null,
+    null,
     null
   ],
   "coffee": [
@@ -519,6 +727,18 @@
     null
   ],
   "collector": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "college": [
+    null,
+    null,
+    "college",
+    "college"
+  ],
+  "column": [
     null,
     null,
     null,
@@ -554,11 +774,41 @@
     null,
     null
   ],
+  "construction": [
+    null,
+    null,
+    "construction",
+    "construction"
+  ],
+  "construction_company": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "consulting": [
+    null,
+    null,
+    null,
+    null
+  ],
   "convenience": [
     null,
     null,
     "grocery",
     "convenience"
+  ],
+  "cooperative": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "copyright_collective": [
+    null,
+    null,
+    null,
+    null
   ],
   "copyshop": [
     "copyshop",
@@ -567,6 +817,18 @@
     null
   ],
   "cosmetics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "counselling": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "courier": [
     null,
     null,
     null,
@@ -585,6 +847,18 @@
     null
   ],
   "craft": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "crematorium": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "crypt": [
     null,
     null,
     null,
@@ -783,6 +1057,12 @@
     null
   ],
   "cuisine-chips": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-chocolate": [
     null,
     null,
     null,
@@ -1227,7 +1507,7 @@
     null
   ],
   "cuisine-pizza": [
-    null,
+    "cuisine-pizza",
     null,
     null,
     null
@@ -1275,7 +1555,7 @@
     null
   ],
   "cuisine-sandwich": [
-    null,
+    "cuisine-sandwich",
     null,
     null,
     null
@@ -1466,6 +1746,12 @@
     null,
     null
   ],
+  "cuisine-yes": [
+    null,
+    null,
+    null,
+    null
+  ],
   "culture": [
     null,
     null,
@@ -1490,7 +1776,25 @@
     null,
     null
   ],
+  "dancing_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "defibrillator": [
+    null,
+    null,
+    "defibrillator",
+    "defibrillator"
+  ],
   "deli": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "demolition_company": [
     null,
     null,
     null,
@@ -1531,6 +1835,18 @@
     null,
     "doctor",
     null
+  ],
+  "doctor;laboratory": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "doctors": [
+    "doctors",
+    null,
+    null,
+    "doctors"
   ],
   "dog_park": [
     null,
@@ -1724,7 +2040,25 @@
     null,
     null
   ],
+  "drinking_fountain": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "drinking_water": [
+    "drinking_water",
+    null,
+    null,
+    "drinking_water"
+  ],
   "driver_training": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "driving_school": [
     null,
     null,
     null,
@@ -1749,6 +2083,18 @@
     null
   ],
   "ebikes;micro_mobility;scooters": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "education": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "educational_institution": [
     null,
     null,
     null,
@@ -1797,6 +2143,24 @@
     null
   ],
   "emergency_ward_entrance": [
+    "emergency_ward_entrance",
+    null,
+    null,
+    null
+  ],
+  "employment_agency": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "energy_supplier": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "engineer": [
     null,
     null,
     null,
@@ -1809,6 +2173,12 @@
     "entrance"
   ],
   "erotic": [
+    "erotic",
+    null,
+    null,
+    null
+  ],
+  "escape_game": [
     null,
     null,
     null,
@@ -1821,6 +2191,18 @@
     null
   ],
   "events_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "events_venue": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "exhibition_centre": [
     null,
     null,
     null,
@@ -1862,6 +2244,48 @@
     "fence",
     "fence"
   ],
+  "ferry_terminal": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial_advice": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial_advisor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fire_extinguisher": [
+    "fire_extinguisher",
+    null,
+    null,
+    null
+  ],
+  "fire_hose": [
+    "fire_hose",
+    null,
+    null,
+    null
+  ],
+  "fire_hydrant": [
+    null,
+    "fire_hydrant",
+    null,
+    null
+  ],
   "fire_station": [
     null,
     null,
@@ -1879,6 +2303,12 @@
     null,
     null,
     null
+  ],
+  "fitness_centre": [
+    null,
+    null,
+    null,
+    "fitness_centre"
   ],
   "fitness_station": [
     null,
@@ -1916,6 +2346,12 @@
     null,
     null
   ],
+  "food_court": [
+    null,
+    null,
+    null,
+    null
+  ],
   "fort": [
     null,
     null,
@@ -1928,7 +2364,19 @@
     null,
     null
   ],
+  "fountain": [
+    null,
+    "fountain",
+    null,
+    null
+  ],
   "frame": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "freemasonry": [
     null,
     null,
     null,
@@ -1947,7 +2395,7 @@
     "fuel"
   ],
   "funeral_directors": [
-    null,
+    "funeral_directors",
     null,
     null,
     null
@@ -1959,6 +2407,12 @@
     "furniture"
   ],
   "gallery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gambling": [
     null,
     null,
     null,
@@ -2012,6 +2466,12 @@
     "gift",
     "gift"
   ],
+  "give_box": [
+    null,
+    null,
+    null,
+    null
+  ],
   "give_way": [
     null,
     null,
@@ -2042,6 +2502,12 @@
     null,
     null
   ],
+  "graphic_design": [
+    null,
+    null,
+    null,
+    null
+  ],
   "grassland": [
     null,
     null,
@@ -2059,6 +2525,24 @@
     null,
     "grocery",
     "grocery"
+  ],
+  "guest_house": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "guide": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hackerspace": [
+    "hackerspace",
+    null,
+    null,
+    null
   ],
   "hairdresser": [
     null,
@@ -2120,6 +2604,12 @@
     null,
     null
   ],
+  "history": [
+    null,
+    null,
+    null,
+    null
+  ],
   "honey": [
     null,
     null,
@@ -2137,6 +2627,12 @@
     null,
     null,
     null
+  ],
+  "horse_riding": [
+    null,
+    null,
+    null,
+    "horse_riding"
   ],
   "hospital": [
     null,
@@ -2186,6 +2682,18 @@
     null,
     "ice_cream"
   ],
+  "incubator": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "indoor_play": [
+    null,
+    null,
+    null,
+    null
+  ],
   "information": [
     null,
     null,
@@ -2205,6 +2713,12 @@
     null
   ],
   "interior_decoration": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "internet_cafe": [
     null,
     null,
     null,
@@ -2253,7 +2767,7 @@
     null
   ],
   "kindergarten": [
-    null,
+    "kindergarten",
     null,
     null,
     null
@@ -2265,6 +2779,12 @@
     null
   ],
   "kitchen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "label": [
     null,
     null,
     null,
@@ -2282,11 +2802,23 @@
     null,
     null
   ],
+  "language_school": [
+    null,
+    null,
+    null,
+    null
+  ],
   "laundry": [
     null,
     "laundry",
     "laundry",
     "laundry"
+  ],
+  "lawyer": [
+    null,
+    "lawyer",
+    null,
+    null
   ],
   "leather": [
     null,
@@ -2301,7 +2833,7 @@
     "library"
   ],
   "life_ring": [
-    null,
+    "life_ring",
     null,
     null,
     null
@@ -2348,6 +2880,12 @@
     null,
     null
   ],
+  "love_hotel": [
+    null,
+    null,
+    null,
+    null
+  ],
   "luthier": [
     "luthier",
     null,
@@ -2372,8 +2910,14 @@
     null,
     null
   ],
-  "massage": [
+  "marketplace": [
     null,
+    null,
+    null,
+    null
+  ],
+  "massage": [
+    "massage",
     null,
     null,
     null
@@ -2414,9 +2958,21 @@
     null,
     null
   ],
+  "midwife": [
+    null,
+    null,
+    null,
+    null
+  ],
   "milestone": [
     null,
     "milestone",
+    null,
+    null
+  ],
+  "military": [
+    null,
+    "military",
     null,
     null
   ],
@@ -2426,8 +2982,14 @@
     null,
     null
   ],
-  "mobile_phone": [
+  "miniature_golf": [
     null,
+    null,
+    null,
+    null
+  ],
+  "mobile_phone": [
+    "mobile_phone",
     null,
     null,
     null
@@ -2450,11 +3012,29 @@
     null,
     null
   ],
+  "money_transfer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "monitoring_station": [
+    null,
+    null,
+    null,
+    null
+  ],
   "monument": [
     null,
     null,
     "monument",
     "monument"
+  ],
+  "mortgage": [
+    null,
+    null,
+    null,
+    null
   ],
   "motorcycle": [
     null,
@@ -2465,6 +3045,12 @@
   "motorcycle_repair": [
     null,
     "motorcycle_repair",
+    null,
+    null
+  ],
+  "moving_company": [
+    null,
+    null,
     null,
     null
   ],
@@ -2480,7 +3066,25 @@
     "music",
     "music"
   ],
+  "music_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "music_venue": [
+    null,
+    null,
+    null,
+    null
+  ],
   "musical_instrument": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "nature_reserve": [
     null,
     null,
     null,
@@ -2492,13 +3096,37 @@
     null,
     null
   ],
+  "newspaper": [
+    null,
+    null,
+    null,
+    null
+  ],
   "ngo": [
     "ngo",
     null,
     null,
     null
   ],
+  "nightclub": [
+    null,
+    null,
+    "nightclub",
+    null
+  ],
   "no": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "notary": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "nurse": [
     null,
     null,
     null,
@@ -2510,11 +3138,35 @@
     null,
     null
   ],
+  "obelisk": [
+    null,
+    "obelisk",
+    null,
+    null
+  ],
+  "occupational_therapist;speech_therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "office": [
+    null,
+    null,
+    null,
+    null
+  ],
   "optician": [
     null,
     null,
     "optician",
     "optician"
+  ],
+  "optometrist": [
+    null,
+    null,
+    null,
+    null
   ],
   "orthopedics": [
     null,
@@ -2553,6 +3205,18 @@
     "paint"
   ],
   "painter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "parcel_locker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "parish": [
     null,
     null,
     null,
@@ -2630,7 +3294,19 @@
     "pharmacy",
     "pharmacy"
   ],
+  "phone": [
+    null,
+    null,
+    "emergency-phone",
+    "emergency_phone"
+  ],
   "photo": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "photo_booth": [
     null,
     null,
     null,
@@ -2645,6 +3321,18 @@
   "photographic_laboratory": [
     null,
     null,
+    null,
+    null
+  ],
+  "physician": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "physiotherapist": [
+    null,
+    "physiotherapist",
     null,
     null
   ],
@@ -2690,15 +3378,33 @@
     null,
     null
   ],
+  "podiatrist": [
+    null,
+    null,
+    null,
+    null
+  ],
   "police": [
     null,
     null,
     "police",
     "police"
   ],
+  "political_party": [
+    null,
+    null,
+    null,
+    null
+  ],
   "popup": [
     null,
     null,
+    null,
+    null
+  ],
+  "post_box": [
+    null,
+    "post_box",
     null,
     null
   ],
@@ -2744,9 +3450,27 @@
     null,
     null
   ],
+  "prison": [
+    null,
+    null,
+    "prison",
+    "prison"
+  ],
+  "property_management": [
+    null,
+    null,
+    null,
+    null
+  ],
   "psychic": [
     null,
     "psychic",
+    null,
+    null
+  ],
+  "psychotherapist": [
+    null,
+    null,
     null,
     null
   ],
@@ -2756,7 +3480,25 @@
     "beer",
     null
   ],
+  "public_bath": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "public_bookcase": [
+    null,
+    null,
+    null,
+    null
+  ],
   "publisher": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "quango": [
     null,
     null,
     null,
@@ -2781,6 +3523,12 @@
     "recycling"
   ],
   "rehabilitation": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion": [
     null,
     null,
     null,
@@ -2852,6 +3600,12 @@
     null,
     null
   ],
+  "research_institute": [
+    null,
+    null,
+    null,
+    null
+  ],
   "restaurant": [
     null,
     null,
@@ -2865,6 +3619,12 @@
     null
   ],
   "retaining_wall": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "robotics": [
     null,
     null,
     null,
@@ -2889,6 +3649,12 @@
     null
   ],
   "sand": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sauna": [
     null,
     null,
     null,
@@ -3020,6 +3786,12 @@
     null,
     null
   ],
+  "social_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
   "social_facility": [
     null,
     "social_facility",
@@ -3029,6 +3801,12 @@
   "spa": [
     null,
     "spa",
+    null,
+    null
+  ],
+  "speech_therapist": [
+    null,
+    null,
     null,
     null
   ],
@@ -3050,7 +3828,19 @@
     null,
     null
   ],
+  "sports_agent": [
+    null,
+    null,
+    null,
+    null
+  ],
   "sports_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "spring": [
     null,
     null,
     null,
@@ -3062,6 +3852,12 @@
     "stadium",
     "stadium"
   ],
+  "startup_incubator": [
+    null,
+    null,
+    null,
+    null
+  ],
   "stationery": [
     null,
     null,
@@ -3071,6 +3867,12 @@
   "statue": [
     null,
     "statue",
+    null,
+    null
+  ],
+  "stone": [
+    null,
+    null,
     null,
     null
   ],
@@ -3095,6 +3897,12 @@
   "street_lamp": [
     null,
     "street_lamp_arm",
+    null,
+    null
+  ],
+  "stripclub": [
+    null,
+    null,
     null,
     null
   ],
@@ -3134,6 +3942,12 @@
     null,
     null
   ],
+  "swingerclub": [
+    null,
+    null,
+    null,
+    null
+  ],
   "tailor": [
     null,
     null,
@@ -3146,10 +3960,28 @@
     null,
     null
   ],
+  "tap": [
+    null,
+    null,
+    null,
+    null
+  ],
   "tattoo": [
     null,
     null,
     null,
+    null
+  ],
+  "tax_advisor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "taxi": [
+    null,
+    null,
+    "taxi",
     null
   ],
   "tea": [
@@ -3176,6 +4008,18 @@
     "theatre",
     "theatre"
   ],
+  "theme_park": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
   "ticket": [
     null,
     "ticket",
@@ -3189,6 +4033,18 @@
     null
   ],
   "tobacco": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "toilets": [
+    null,
+    null,
+    null,
+    "toilets"
+  ],
+  "tomb": [
     null,
     null,
     null,
@@ -3219,7 +4075,7 @@
     null
   ],
   "trade": [
-    null,
+    "trade",
     null,
     null,
     null
@@ -3230,6 +4086,12 @@
     null,
     null
   ],
+  "training": [
+    null,
+    null,
+    null,
+    null
+  ],
   "trampoline_park": [
     null,
     null,
@@ -3237,6 +4099,12 @@
     null
   ],
   "travel_agency": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "travel_agent": [
     null,
     null,
     null,
@@ -3260,7 +4128,19 @@
     null,
     null
   ],
+  "tutoring": [
+    null,
+    null,
+    null,
+    null
+  ],
   "tyres": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "union": [
     null,
     null,
     null,
@@ -3458,6 +4338,12 @@
     "viewpoint",
     "viewpoint"
   ],
+  "visa": [
+    null,
+    null,
+    null,
+    null
+  ],
   "wall": [
     null,
     "wall",
@@ -3489,6 +4375,30 @@
     "water"
   ],
   "water_filter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water_tap": [
+    null,
+    "water_tap",
+    null,
+    null
+  ],
+  "water_utility": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water_well": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wayside_cross": [
     null,
     null,
     null,

@@ -14,7 +14,7 @@
       "font": "#734a08",
       "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
     },
-    "brussels:config_hash": "fe7369e3ad26",
+    "brussels:config_hash": "ef0cd75dc04e",
     "brussels:patterns": {
       "grave_yard_christian": {
         "file": "assets/patterns/grave_yard_christian.svg",
@@ -1287,11 +1287,44 @@
           "poi-circle",
           "poi-icon"
         ],
-        "items": []
+        "items": [
+          {
+            "id": "company",
+            "label": "Entreprises",
+            "color": "#734a08",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "office"
+              ],
+              "company"
+            ],
+            "appear_at": 16
+          },
+          {
+            "id": "memorial",
+            "label": "Mémoriaux",
+            "color": "#734a08",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "historic"
+              ],
+              "memorial"
+            ],
+            "appear_at": 16
+          }
+        ]
       },
       {
         "id": "street_furniture",
-        "label": "Mobilier urbain",
+        "label": "Mobilier",
         "color": "#555555",
         "swatch": "dot",
         "visible": true,
@@ -1357,6 +1390,261 @@
                 "amenity"
               ],
               "vending_machine"
+            ]
+          },
+          {
+            "id": "atm",
+            "label": "Distributeurs de billets",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "atm"
+            ]
+          },
+          {
+            "id": "charging_station",
+            "label": "Bornes de recharge",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "charging_station"
+            ]
+          },
+          {
+            "id": "bicycle_rental",
+            "label": "Vélos partagés",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "bicycle_rental"
+            ]
+          },
+          {
+            "id": "car_sharing",
+            "label": "Voitures partagées",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "car_sharing"
+            ]
+          },
+          {
+            "id": "taxi",
+            "label": "Stations de taxi",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "taxi"
+            ]
+          },
+          {
+            "id": "parcel_locker",
+            "label": "Consignes à colis",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "parcel_locker"
+            ]
+          },
+          {
+            "id": "toilets",
+            "label": "Toilettes",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "toilets"
+            ]
+          },
+          {
+            "id": "drinking_water",
+            "label": "Eau potable",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "drinking_water"
+            ]
+          },
+          {
+            "id": "fountain",
+            "label": "Fontaines",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "fountain"
+            ]
+          },
+          {
+            "id": "public_bookcase",
+            "label": "Boîtes à livres",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "public_bookcase"
+            ]
+          },
+          {
+            "id": "bicycle_repair_station",
+            "label": "Réparation vélo",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "bicycle_repair_station"
+            ]
+          },
+          {
+            "id": "dog_toilet",
+            "label": "Canisites",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "dog_toilet"
+            ]
+          },
+          {
+            "id": "post_box",
+            "label": "Boîtes aux lettres",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "post_box"
+            ]
+          },
+          {
+            "id": "recycling",
+            "label": "Recyclage",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "recycling"
+            ]
+          },
+          {
+            "id": "clock",
+            "label": "Horloges",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "clock"
+            ]
+          },
+          {
+            "id": "photo_booth",
+            "label": "Photomatons",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "photo_booth"
+            ]
+          },
+          {
+            "id": "give_box",
+            "label": "Boîtes à dons",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "amenity"
+              ],
+              "give_box"
             ]
           },
           {
@@ -1490,6 +1778,126 @@
             "filter": [
               "has",
               "entrance"
+            ]
+          },
+          {
+            "id": "defibrillator",
+            "label": "Défibrillateurs",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "defibrillator"
+            ]
+          },
+          {
+            "id": "fire_hydrant",
+            "label": "Bornes incendie",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "fire_hydrant"
+            ]
+          },
+          {
+            "id": "fire_extinguisher",
+            "label": "Extincteurs",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "fire_extinguisher"
+            ]
+          },
+          {
+            "id": "fire_hose",
+            "label": "Dévidoirs incendie",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "fire_hose"
+            ]
+          },
+          {
+            "id": "life_ring",
+            "label": "Bouées de sauvetage",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "life_ring"
+            ]
+          },
+          {
+            "id": "phone",
+            "label": "Téléphones d’urgence",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "phone"
+            ]
+          },
+          {
+            "id": "assembly_point",
+            "label": "Points de rassemblement",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "emergency"
+              ],
+              "assembly_point"
+            ]
+          },
+          {
+            "id": "artwork",
+            "label": "Œuvres d’art",
+            "color": "#555555",
+            "swatch": "dot",
+            "layers": [],
+            "filter": [
+              "==",
+              [
+                "get",
+                "tourism"
+              ],
+              "artwork"
             ]
           }
         ]
@@ -15139,6 +15547,61 @@
             ]
           ],
           [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "leisure"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "emergency"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "healthcare"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "office"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "historic"
+              ]
+            ]
+          ],
+          [
             "case",
             [
               "has",
@@ -15359,8 +15822,25 @@
             [
               "literal",
               [
+                "atm",
                 "bench",
+                "bicycle_rental",
+                "bicycle_repair_station",
+                "car_sharing",
+                "charging_station",
+                "clock",
+                "dog_toilet",
+                "drinking_water",
+                "fountain",
+                "give_box",
                 "lounger",
+                "parcel_locker",
+                "photo_booth",
+                "post_box",
+                "public_bookcase",
+                "recycling",
+                "taxi",
+                "toilets",
                 "vending_machine",
                 "waste_basket"
               ]
@@ -15386,6 +15866,25 @@
             ]
           ],
           [
+            "in",
+            [
+              "get",
+              "emergency"
+            ],
+            [
+              "literal",
+              [
+                "assembly_point",
+                "defibrillator",
+                "fire_extinguisher",
+                "fire_hose",
+                "fire_hydrant",
+                "life_ring",
+                "phone"
+              ]
+            ]
+          ],
+          [
             "has",
             "entrance"
           ],
@@ -15401,12 +15900,36 @@
                 "street_lamp"
               ]
             ]
+          ],
+          [
+            "in",
+            [
+              "get",
+              "tourism"
+            ],
+            [
+              "literal",
+              [
+                "artwork"
+              ]
+            ]
           ]
         ]
       ],
       "layout": {
         "icon-image": [
           "coalesce",
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "emergency"
+              ]
+            ]
+          ],
           [
             "case",
             [
@@ -15470,6 +15993,17 @@
               [
                 "get",
                 "barrier"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "concat",
+              "poi-",
+              [
+                "get",
+                "tourism"
               ]
             ]
           ],
