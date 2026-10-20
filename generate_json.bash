@@ -213,7 +213,7 @@ echo "→ poi"
 POI_FILTERS=(
   nwr/shop=*
   nwr/disused:shop=*
-  nwr/amenity=restaurant,cafe,bar,pub,fast_food,bank,pharmacy,hospital,clinic,school,university,library,theatre,cinema,post_office,police,fire_station,doctor,dentist,brothel,place_of_worship,townhall,courthouse,community_centre,kindergarten,veterinary,casino
+  nwr/amenity=restaurant,cafe,bar,pub,fast_food,bank,pharmacy,hospital,clinic,school,university,library,theatre,cinema,post_office,police,fire_station,doctors,dentist,brothel,place_of_worship,townhall,courthouse,community_centre,kindergarten,veterinary,casino
   nwr/emergency=ambulance_station
   nwr/tourism=hotel,hostel,museum,attraction,information,viewpoint
   nwr/leisure=playground,hackerspace
