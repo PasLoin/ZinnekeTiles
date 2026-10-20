@@ -5,12 +5,68 @@
  * Importé par index.html et par les tests unitaires.
  */
 
-/**
- * Replie / déplie un panneau.
- * @param {string} id - ID de l'élément panneau
- */
-export function togglePanel(id) {
-  document.getElementById(id).classList.toggle('collapsed');
+export const REPO_URL = 'https://github.com/PasLoin/ZinnekeTiles';
+export const COMPACT_QUERY = '(max-width: 600px), (max-height: 500px)';
+export const MAIN_PANEL = 'title-panel';
+
+export function isCompact(win = globalThis) {
+  return typeof win.matchMedia === 'function' && win.matchMedia(COMPACT_QUERY).matches;
+}
+
+function shownPanels() {
+  return [...document.querySelectorAll('.panel')].filter((p) => !p.hidden);
+}
+
+export function collapseOthers(id) {
+  for (const panel of shownPanels()) {
+    if (panel.id !== id) panel.classList.add('collapsed');
+  }
+}
+
+export function togglePanel(id, compact = isCompact()) {
+  const collapsed = document.getElementById(id).classList.toggle('collapsed');
+  if (!collapsed && compact) collapseOthers(id);
+}
+
+export function enforceSinglePanel() {
+  const open = shownPanels().filter((p) => !p.classList.contains('collapsed'));
+  if (open.length > 1) collapseOthers(open[0].id);
+}
+
+export function initPanels(win = globalThis) {
+  if (isCompact(win)) {
+    for (const panel of document.querySelectorAll('.panel')) {
+      if (panel.id !== MAIN_PANEL) panel.classList.add('collapsed');
+    }
+  }
+  if (typeof win.matchMedia !== 'function') return;
+  const query = win.matchMedia(COMPACT_QUERY);
+  if (typeof query.addEventListener === 'function') {
+    query.addEventListener('change', (e) => { if (e.matches) enforceSinglePanel(); });
+  }
+}
+
+export function showPanel(id, shown, compact = isCompact()) {
+  const panel = document.getElementById(id);
+  if (shown && panel.hidden && compact) panel.classList.add('collapsed');
+  panel.hidden = !shown;
+}
+
+export function trackLayout(container, root = document.documentElement) {
+  const corner = container.querySelector('.maplibregl-ctrl-bottom-right');
+  if (!corner) return null;
+  const update = () => {
+    const attrib = corner.querySelector('.maplibregl-ctrl-attrib');
+    const attribH = attrib ? attrib.getBoundingClientRect().height : 0;
+    root.style.setProperty('--attrib-h', `${Math.ceil(attribH)}px`);
+    root.style.setProperty('--controls-h', `${Math.ceil(corner.getBoundingClientRect().height)}px`);
+  };
+  update();
+  if (typeof ResizeObserver !== 'function') return null;
+  const observer = new ResizeObserver(update);
+  observer.observe(corner);
+  for (const ctrl of corner.children) observer.observe(ctrl);
+  return observer;
 }
 
 /**
@@ -70,25 +126,12 @@ export function formatUtcDate(iso) {
   return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
 }
 
-export function buildAttribution(dataInfo, styleMetadata) {
+export function buildAttribution(dataInfo) {
+  if (!dataInfo) return null;
   const parts = [];
-  if (dataInfo) {
-    const date = formatUtcDate(dataInfo.replication_timestamp || dataInfo.timestamp);
-    const version = dataInfo.replication_sequence
-      ? `seq ${dataInfo.replication_sequence}`
-      : dataInfo.sha256;
-    let txt = `Données ${date || 'date inconnue'}`;
-    if (version) txt += ` (${version})`;
-    parts.push(escapeHtml(txt));
-  }
-  const meta = styleMetadata || {};
-  const map = meta['brussels:map'] || {};
-  const hash = meta['brussels:config_hash'];
-  if (map.version || hash) {
-    let txt = 'Config';
-    if (map.version) txt += ` ${map.version}`;
-    if (hash) txt += ` (${hash})`;
-    parts.push(escapeHtml(txt));
-  }
-  return parts.length ? parts.join(' · ') : null;
+  const data = formatUtcDate(dataInfo.replication_timestamp || dataInfo.timestamp);
+  const updated = formatUtcDate(dataInfo.generated_at);
+  if (data) parts.push(`Données ${data}`);
+  if (updated) parts.push(`Mise à jour ${updated}`);
+  return parts.length ? escapeHtml(parts.join(' · ')) : null;
 }

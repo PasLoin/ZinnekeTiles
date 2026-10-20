@@ -270,6 +270,16 @@ Suite complète :
 npm run test:all
 ```
 
+#### Mise en page mobile
+
+`tests/e2e/map-layout.spec.js` vérifie qu'aucun élément de l'interface (titre, niveaux, légende, boutons, contrôles MapLibre, attribution) ne se chevauche ni ne sort de l'écran, du petit téléphone (360×640) à l'écran d'ordinateur, en 2D comme en 3D et avec chaque panneau ouvert. Il tourne aussi dans le projet `mobile-chrome`. Toute modification de `www/index.html` qui touche aux panneaux ou aux contrôles doit le garder vert.
+
+En mode compact (largeur ≤ 600 px ou hauteur ≤ 500 px) :
+
+- le panneau Niveaux passe sous le titre et les boutons s'empilent à droite ;
+- un seul panneau est ouvert à la fois, la légende démarre repliée ;
+- la légende se place au-dessus de l'attribution, dont la hauteur est suivie en continu (`--attrib-h`, `--controls-h`).
+
 ---
 
 ## Mettre à jour le PBF
@@ -338,6 +348,7 @@ Les icônes POI sont résolues par `www/poi_icons.js` à partir du manifeste `ww
    - Exemple sous-type : `cuisine=friture` produit la clé `cuisine-friture`.
 2. Ajoutez un SVG local dans `www/assets/icons/` si aucune icône CDN ne convient.
    - Utilisez un nom explicite et stable, par exemple `www/assets/icons/butcher.svg`.
+   - L'icône doit être sous licence CC0 (voir [Licences](#licences)) : dessin original ou reprise d'un jeu CC0 comme openstreetmap-carto.
 3. Si le nom local/CDN ne correspond pas à la clé POI, ajoutez ou ajustez l'entrée dans `CDN_NAME_OVERRIDES` dans `generate_poi_icons.py`.
    - Les overrides peuvent pointer vers un fichier local (`local`) ou vers un nom d'icône Temaki, Maki ou Liberty.
 4. Regénérez le manifeste :
@@ -399,3 +410,18 @@ La page `www/index.html` contient actuellement du CSS inline et des handlers `on
 - **Le style référence une couche absente** : comparez `www/style.json`, les noms de fichiers `www/*.pmtiles.gz` et les `vector_layers` extraits par `scripts/extract_pmtiles_metadata.py`.
 - **`map.config.yaml` et `www/style.json` divergent** : lancez `python3 build_map.py` pour régénérer le style depuis la config, ou `python3 retro_style.py` pour reconstruire la config depuis le style.
 - **Les tests round-trip échouent** : comparez le YAML généré par `retro_style.py` avec `map.config.yaml` de référence. Les divergences indiquent un champ non capturé par `retro_style.py` ou un comportement de `build_map.py` qui n'a pas d'équivalent dans la config.
+
+---
+
+## Licences
+
+ZinnekeTiles assemble des éléments sous plusieurs licences :
+
+| Élément | Licence | Détail |
+| :--- | :--- | :--- |
+| Code du projet (scripts, `www/*.js`, `www/index.html`, configuration, tests) | [MIT](LICENSE) | © 2026 PasLoin |
+| Données cartographiques (PMTiles, GeoJSON, `roofs.glb`, `data-info.json`) | [ODbL 1.0](https://opendatacommons.org/licenses/odbl/) | © [contributeurs OpenStreetMap](https://www.openstreetmap.org/copyright) |
+| Rendu : [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js) et [PMTiles](https://github.com/protomaps/PMTiles) | [BSD-3-Clause](https://github.com/maplibre/maplibre-gl-js/blob/main/LICENSE.txt) / [BSD-3-Clause](https://github.com/protomaps/PMTiles/blob/main/LICENSE) | Chargés depuis unpkg, non redistribués dans ce dépôt |
+| Icônes [Temaki](https://github.com/rapideditor/temaki), [Maki](https://github.com/mapbox/maki) et [OSM Liberty](https://github.com/maputnik/osm-liberty) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Chargées depuis leur CDN par `www/poi_icons.js` |
+| Icônes additionnelles reprises d'[openstreetmap-carto](https://github.com/gravitystorm/openstreetmap-carto) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Dans `www/assets/` |
+| Icônes et motifs originaux ZinnekeTiles (non dérivés) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Dans `www/assets/` |

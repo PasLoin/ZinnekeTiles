@@ -7,6 +7,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   togglePanel,
+  collapseOthers,
+  enforceSinglePanel,
+  initPanels,
+  showPanel,
+  isCompact,
+  trackLayout,
+  COMPACT_QUERY,
+  REPO_URL,
   updateOsmLink,
   escapeHtml,
   buildDataPopupHtml,
@@ -34,6 +42,131 @@ describe('togglePanel', () => {
     togglePanel('test-panel');
     togglePanel('test-panel');
     expect(document.getElementById('test-panel').classList.contains('collapsed')).toBe(false);
+  });
+});
+
+const PANELS = `
+  <div id="title-panel" class="panel"><div class="panel-content">t</div></div>
+  <div id="levels-panel" class="panel" hidden><div class="panel-content">n</div></div>
+  <div id="legend-panel" class="panel"><div class="panel-content">l</div></div>
+`;
+const isOpen = (id) => !document.getElementById(id).classList.contains('collapsed');
+const fakeWindow = (matches) => {
+  const listeners = [];
+  return {
+    listeners,
+    matchMedia: (q) => ({ media: q, matches, addEventListener: (_, fn) => listeners.push(fn) }),
+  };
+};
+
+describe('panneaux en mode compact', () => {
+  beforeEach(() => {
+    document.body.innerHTML = PANELS;
+  });
+
+  it('n’est jamais compact sans matchMedia', () => {
+    expect(isCompact({})).toBe(false);
+  });
+
+  it('utilise la requête compacte', () => {
+    let seen = null;
+    isCompact({ matchMedia: (q) => { seen = q; return { matches: true }; } });
+    expect(seen).toBe(COMPACT_QUERY);
+  });
+
+  it('laisse plusieurs panneaux ouverts hors mode compact', () => {
+    togglePanel('legend-panel', false);
+    togglePanel('legend-panel', false);
+    expect(isOpen('title-panel')).toBe(true);
+    expect(isOpen('legend-panel')).toBe(true);
+  });
+
+  it('referme les autres panneaux à l’ouverture en mode compact', () => {
+    document.getElementById('legend-panel').classList.add('collapsed');
+    togglePanel('legend-panel', true);
+    expect(isOpen('legend-panel')).toBe(true);
+    expect(isOpen('title-panel')).toBe(false);
+  });
+
+  it('ne touche pas aux autres panneaux à la fermeture', () => {
+    document.getElementById('legend-panel').classList.add('collapsed');
+    togglePanel('title-panel', true);
+    expect(isOpen('title-panel')).toBe(false);
+    expect(isOpen('legend-panel')).toBe(false);
+  });
+
+  it('ignore les panneaux masqués', () => {
+    collapseOthers('legend-panel');
+    expect(isOpen('levels-panel')).toBe(true);
+    expect(isOpen('title-panel')).toBe(false);
+  });
+
+  it('enforceSinglePanel garde le premier panneau ouvert', () => {
+    enforceSinglePanel();
+    expect(isOpen('title-panel')).toBe(true);
+    expect(isOpen('legend-panel')).toBe(false);
+  });
+
+  it('initPanels ne garde que le titre ouvert en mode compact', () => {
+    initPanels(fakeWindow(true));
+    expect(isOpen('title-panel')).toBe(true);
+    expect(isOpen('levels-panel')).toBe(false);
+    expect(isOpen('legend-panel')).toBe(false);
+  });
+
+  it('initPanels ne change rien sur grand écran', () => {
+    initPanels(fakeWindow(false));
+    expect(isOpen('levels-panel')).toBe(true);
+    expect(isOpen('legend-panel')).toBe(true);
+  });
+
+  it('initPanels réduit à un panneau au passage en mode compact', () => {
+    const win = fakeWindow(false);
+    initPanels(win);
+    win.listeners.forEach((fn) => fn({ matches: true }));
+    expect(isOpen('title-panel')).toBe(true);
+    expect(isOpen('legend-panel')).toBe(false);
+  });
+
+  it('showPanel affiche le panneau replié en mode compact', () => {
+    showPanel('levels-panel', true, true);
+    expect(document.getElementById('levels-panel').hidden).toBe(false);
+    expect(isOpen('levels-panel')).toBe(false);
+  });
+
+  it('showPanel conserve l’état sur grand écran et sait masquer', () => {
+    showPanel('levels-panel', true, false);
+    expect(isOpen('levels-panel')).toBe(true);
+    showPanel('levels-panel', false, false);
+    expect(document.getElementById('levels-panel').hidden).toBe(true);
+  });
+});
+
+describe('trackLayout', () => {
+  it('publie la hauteur de l’attribution et des contrôles', () => {
+    document.body.innerHTML = `
+      <div id="m"><div class="maplibregl-ctrl-bottom-right">
+        <div class="maplibregl-ctrl maplibregl-ctrl-attrib"></div>
+      </div></div>`;
+    const corner = document.querySelector('.maplibregl-ctrl-bottom-right');
+    const attrib = document.querySelector('.maplibregl-ctrl-attrib');
+    corner.getBoundingClientRect = () => ({ height: 180.2 });
+    attrib.getBoundingClientRect = () => ({ height: 31.4 });
+    const root = document.createElement('div');
+    trackLayout(document.getElementById('m'), root);
+    expect(root.style.getPropertyValue('--attrib-h')).toBe('32px');
+    expect(root.style.getPropertyValue('--controls-h')).toBe('181px');
+  });
+
+  it('ne fait rien sans conteneur de contrôles', () => {
+    document.body.innerHTML = '<div id="m"></div>';
+    expect(trackLayout(document.getElementById('m'), document.createElement('div'))).toBeNull();
+  });
+});
+
+describe('REPO_URL', () => {
+  it('pointe vers le dépôt GitHub', () => {
+    expect(REPO_URL).toBe('https://github.com/PasLoin/ZinnekeTiles');
   });
 });
 

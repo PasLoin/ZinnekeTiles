@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ZinnekeTiles — carte mini maximale de Bruxelles</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -16,10 +16,22 @@
       font-family: "DejaVu Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
       background: #f2efe9; 
     }
+    :root { --attrib-h: 20px; --controls-h: 240px; }
     #map { position: absolute; inset: 0; }
 
+    .ui-top {
+      position: absolute; top: 10px; left: 16px; right: 16px; z-index: 5;
+      display: grid; gap: 8px; align-items: start;
+      grid-template-columns: 220px minmax(0, 1fr) auto;
+      grid-template-rows: auto 1fr;
+      grid-template-areas: "title . toggle" "title . levels";
+      pointer-events: none;
+    }
+    .ui-top > *, .ui-stack > * { pointer-events: auto; }
+    .ui-stack { display: contents; }
+
     .panel {
-      position: absolute; left: 16px; z-index: 5;
+      min-width: 0;
       background: rgba(242, 239, 233, 0.92);
       backdrop-filter: blur(8px);
       border-radius: 6px;
@@ -31,18 +43,25 @@
       padding: 10px 14px; display: flex; justify-content: space-between;
       align-items: center; cursor: pointer; user-select: none;
     }
-    .panel-content { padding: 0 14px 10px 14px; overflow-y: auto; }
+    .panel-content { padding: 0 14px 10px 14px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
     .collapsed .panel-content { display: none; }
-    .toggle-icon { font-size: 10px; transition: transform 0.2s; }
+    .toggle-icon { font-size: 10px; transition: transform 0.2s; padding: 8px 10px; margin: -8px -10px; }
     .collapsed .toggle-icon { transform: rotate(-90deg); }
 
-    .title { top: 16px; }
+    .title { grid-area: title; }
     .title h1 { font-size: 14px; font-weight: bold; color: #222; letter-spacing: 0.02em; }
+    .title h1 a { color: inherit; text-decoration: none; }
+    .title h1 a:hover, .title h1 a:focus-visible { color: #734a08; text-decoration: underline; }
     .title p { font-size: 11px; color: #666; margin-top: 2px; }
     .osm-edit { display: block; font-size: 11px; margin-top: 8px; color: #0078ff; text-decoration: none; }
     .osm-edit.disabled { color: #999; pointer-events: none; cursor: default; }
 
-    .legend { bottom: 24px; max-height: 50vh; }
+    .legend {
+      position: absolute; left: 16px; z-index: 5;
+      bottom: calc(var(--attrib-h) + 12px);
+      max-height: min(50vh, calc(100vh - var(--attrib-h) - 150px));
+      max-height: min(50dvh, calc(100dvh - var(--attrib-h) - 150px));
+    }
     .legend h2 { font-size: 13px; font-weight: bold; color: #222; }
     .legend-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; user-select: none; transition: opacity 0.15s; }
     .legend-row.off { opacity: 0.3; }
@@ -68,7 +87,7 @@
 
     .maplibregl-ctrl-group { border-radius: 4px !important; border: 1px solid rgba(0,0,0,0.1) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; }
     .maplibregl-ctrl-attrib { font-size: 10px !important; background: rgba(255,255,255,0.7) !important; }
-    .view-toggle { position: absolute; top: 10px; right: 16px; z-index: 10; display: flex; gap: 8px; }
+    .view-toggle { grid-area: toggle; justify-self: end; display: flex; gap: 8px; }
     .view-toggle button { background: rgba(242, 239, 233, 0.92); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #444; }
     .view-toggle button:hover { background: #fff; }
     .view-toggle button.active { background: #734a08; color: #fff; }
@@ -80,7 +99,11 @@
     .data-popup th { color: #666; font-weight: bold; width: 35%; vertical-align: top; }
     .data-popup .layer-info { border-bottom: 1px solid #ccc; margin-bottom: 5px; padding-bottom: 5px; font-weight: bold; color: #734a08; }
     .panel[hidden] { display: none; }
-    .levels { top: 52px; right: 16px; left: auto; width: 190px; max-height: 60vh; }
+    .levels {
+      grid-area: levels; justify-self: end; width: 190px;
+      max-height: min(60vh, calc(100vh - var(--controls-h) - 70px));
+      max-height: min(60dvh, calc(100dvh - var(--controls-h) - 70px));
+    }
     .levels h2 { font-size: 13px; font-weight: bold; color: #222; }
     .levels fieldset { border: 0; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #444; }
     .levels label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -90,40 +113,71 @@
     .levels-ground { border-top: 1px dashed #b9a98a; margin: 3px 0; font-size: 9px; color: #8a7a5a; text-align: right; line-height: 1.6; }
     .levels-list.disabled { opacity: 0.4; pointer-events: none; }
     .levels-note { font-size: 10px; color: #666; margin-top: 8px; }
+
+    .pitch-ctrl button { display: flex; align-items: center; justify-content: center; color: #333; }
+    .pitch-ctrl button:disabled svg { opacity: 0.25; }
+
+    @media (max-width: 600px), (max-height: 500px) {
+      .ui-top {
+        top: 10px; left: 10px; right: 10px; gap: 8px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto;
+        grid-template-areas: "stack toggle";
+      }
+      .ui-stack { grid-area: stack; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+      .title, .levels { width: min(220px, 100%); }
+      .levels {
+        max-height: calc(100vh - var(--attrib-h) - 115px);
+        max-height: calc(100dvh - var(--attrib-h) - 115px);
+      }
+      .levels-list { max-height: none; }
+      .view-toggle { flex-direction: column; align-items: stretch; gap: 6px; }
+      .view-toggle button { padding: 6px 8px; font-size: 11px; }
+      .legend {
+        left: 10px; width: min(220px, calc(100vw - 70px));
+        max-height: calc(100vh - var(--attrib-h) - 135px);
+        max-height: calc(100dvh - var(--attrib-h) - 135px);
+      }
+      .data-popup .maplibregl-popup-content { max-width: calc(100vw - 40px); max-height: 50vh; }
+    }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
-<div class="view-toggle">
-  <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-data">DATA</button>
-</div>
+<div class="ui-top">
+  <div class="ui-stack">
+    <div class="title panel" id="title-panel">
+      <div class="panel-header" onclick="window._togglePanel('title-panel')">
+        <h1><a id="repo-link" href="https://github.com/PasLoin/ZinnekeTiles" target="_blank" rel="noopener" onclick="event.stopPropagation()">ZinnekeTiles</a></h1>
+        <span class="toggle-icon">v</span>
+      </div>
+      <div class="panel-content">
+        <p>Bruxelles · tuiles vectorielles OpenStreetMap</p>
+        <a id="osm-edit" class="osm-edit disabled" target="_blank" href="#">éditer dans OpenStreetMap</a>
+      </div>
+    </div>
 
-<div class="title panel" id="title-panel">
-  <div class="panel-header" onclick="window._togglePanel('title-panel')">
-    <h1>Bruxelles</h1>
-    <span class="toggle-icon">v</span>
+    <div class="levels panel" id="levels-panel" hidden>
+      <div class="panel-header" onclick="window._togglePanel('levels-panel')">
+        <h2>Niveaux</h2>
+        <span class="toggle-icon">v</span>
+      </div>
+      <div class="panel-content">
+        <fieldset id="levels-mode">
+          <label><input type="radio" name="indoor-mode" value="off" checked /> Désactivé</label>
+          <label><input type="radio" name="indoor-mode" value="above" /> Au-dessus du sol (≥ 0)</label>
+          <label><input type="radio" name="indoor-mode" value="below" /> Souterrain (&lt; 0)</label>
+          <label><input type="radio" name="indoor-mode" value="select" /> Sélection</label>
+        </fieldset>
+        <div class="levels-list disabled" id="levels-list"></div>
+        <p class="levels-note" id="levels-note"></p>
+      </div>
+    </div>
   </div>
-  <div class="panel-content">
-    <p>Tuiles vectorielles · OpenStreetMap</p>
-    <a id="osm-edit" class="osm-edit disabled" target="_blank" href="#">éditer dans OpenStreetMap</a>
-  </div>
-</div>
 
-<div class="levels panel" id="levels-panel" hidden>
-  <div class="panel-header" onclick="window._togglePanel('levels-panel')">
-    <h2>Niveaux</h2>
-    <span class="toggle-icon">v</span>
-  </div>
-  <div class="panel-content">
-    <fieldset id="levels-mode">
-      <label><input type="radio" name="indoor-mode" value="off" checked /> Désactivé</label>
-      <label><input type="radio" name="indoor-mode" value="above" /> Au-dessus du sol (≥ 0)</label>
-      <label><input type="radio" name="indoor-mode" value="below" /> Souterrain (&lt; 0)</label>
-      <label><input type="radio" name="indoor-mode" value="select" /> Sélection</label>
-    </fieldset>
-    <div class="levels-list disabled" id="levels-list"></div>
-    <p class="levels-note" id="levels-note"></p>
+  <div class="view-toggle">
+    <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-data">DATA</button>
   </div>
 </div>
 
@@ -136,7 +190,8 @@
 </div>
 
 <script type="module">
-import { togglePanel, updateOsmLink, buildDataPopupHtml, buildAttribution } from './map_ui.js';
+import { togglePanel, initPanels, showPanel, trackLayout, updateOsmLink, buildDataPopupHtml, buildAttribution } from './map_ui.js';
+import { PitchControl } from './pitch_control.js';
 import { loadAllPoiIcons } from './poi_icons.js';
 import { loadPatterns } from './patterns.js';
 import { legendGroups, createLegend } from './legend.js';
@@ -150,6 +205,7 @@ import {
 import { createRoofsLayer, eavesHeight, ROOFS_URL } from './roofs.js';
 
 window._togglePanel = togglePanel;
+initPanels();
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile.bind(protocol));
@@ -210,14 +266,16 @@ function initMap(style, dataInfo) {
   window.map = map;
   setupSportMarkings(map);
 
-  const customAttribution = buildAttribution(dataInfo, style.metadata);
+  const customAttribution = buildAttribution(dataInfo);
   map.addControl(new maplibregl.AttributionControl({
     compact: false,
     ...(customAttribution ? { customAttribution } : {}),
   }), 'bottom-right');
 
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-right');
-  map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+  map.addControl(new PitchControl(), 'bottom-right');
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+  trackLayout(map.getContainer());
 
   const state = {
     loaded: false,
@@ -247,7 +305,6 @@ function initMap(style, dataInfo) {
   const roofsBtn = document.getElementById('toggle-roofs');
   const originalHeights = {};
   let roofsLayer = null;
-  const levelsPanel = document.getElementById('levels-panel');
   const levelsList = document.getElementById('levels-list');
   const levelsNote = document.getElementById('levels-note');
 
@@ -460,7 +517,7 @@ function initMap(style, dataInfo) {
   function set3d(enabled) {
     state.is3d = enabled;
     toggleBtn.textContent = enabled ? 'MODE 2D' : 'MODE 3D';
-    levelsPanel.hidden = !enabled;
+    showPanel('levels-panel', enabled);
     roofsBtn.hidden = !enabled;
     if (enabled && lazy) ensureLazyGroup(map, lazy, 'building_parts', location.href);
     applyIndoor();
@@ -506,7 +563,7 @@ function initMap(style, dataInfo) {
     else { map.getCanvas().style.cursor = 'crosshair'; }
   };
 
-  map.on('mousemove', (e) => {
+  function inspect(e) {
     if (!isDataMode) return;
     const features = map.queryRenderedFeatures(e.point);
     if (features.length > 0) {
@@ -514,7 +571,10 @@ function initMap(style, dataInfo) {
     } else {
       dataPopup.remove();
     }
-  });
+  }
+
+  map.on('mousemove', inspect);
+  map.on('click', inspect);
 
   map.on('mouseleave', () => { if (isDataMode) dataPopup.remove(); });
 }

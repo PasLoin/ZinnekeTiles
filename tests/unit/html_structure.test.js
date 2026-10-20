@@ -47,6 +47,25 @@ describe('Structure HTML de base', () => {
     expect(html).toContain("from './roofs.js'");
   });
 
+  it('le titre ZinnekeTiles renvoie vers le dépôt GitHub', () => {
+    const link = document.querySelector('#title-panel h1 a');
+    expect(link.textContent).toBe('ZinnekeTiles');
+    expect(link.getAttribute('href')).toBe('https://github.com/PasLoin/ZinnekeTiles');
+    expect(link.getAttribute('rel')).toContain('noopener');
+  });
+
+  it('ajoute le contrôle d\'inclinaison', () => {
+    expect(html).toContain("from './pitch_control.js'");
+    expect(html).toContain('new PitchControl()');
+    expect(html).toContain('visualizePitch: true');
+  });
+
+  it('prévoit une mise en page compacte pour mobile', () => {
+    expect(html).toContain('@media (max-width: 600px), (max-height: 500px)');
+    expect(html).toContain('initPanels()');
+    expect(html).toContain('trackLayout(');
+  });
+
   it('contient le lien d\'édition OSM', () => {
     expect(html).toContain('id="osm-edit"');
   });

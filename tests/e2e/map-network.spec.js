@@ -46,7 +46,7 @@ test.describe('Réseau : CDN d\'icônes down', () => {
     await expect(canvas).toBeVisible();
 
     // Les panneaux doivent fonctionner
-    await expect(page.locator('#title-panel h1')).toHaveText('Bruxelles');
+    await expect(page.locator('#title-panel h1')).toHaveText('ZinnekeTiles');
     await expect(page.locator('#legend-panel h2')).toHaveText('Légende');
 
     // Les boutons doivent fonctionner
@@ -100,7 +100,7 @@ test.describe('Réseau : poi-icons.json indisponible', () => {
 
     // La carte est visible et fonctionnelle
     await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible();
-    await expect(page.locator('#title-panel h1')).toHaveText('Bruxelles');
+    await expect(page.locator('#title-panel h1')).toHaveText('ZinnekeTiles');
 
     // Pas de crash JS
     expect(errors, 'Erreurs JS inattendues').toHaveLength(0);
@@ -140,7 +140,7 @@ test.describe('Réseau : poi-icons.json indisponible', () => {
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
 
     await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible();
-    await expect(page.locator('#title-panel h1')).toHaveText('Bruxelles');
+    await expect(page.locator('#title-panel h1')).toHaveText('ZinnekeTiles');
   });
 });
 

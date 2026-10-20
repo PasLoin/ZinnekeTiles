@@ -36,9 +36,21 @@ test.describe('Chargement de la carte', () => {
     expect(box.height).toBeGreaterThan(100);
   });
 
-  test('le titre "Bruxelles" est affiché', async ({ page }) => {
-    const title = page.locator('#title-panel h1');
-    await expect(title).toHaveText('Bruxelles');
+  test('le titre "ZinnekeTiles" renvoie vers le dépôt GitHub', async ({ page }) => {
+    const link = page.locator('#title-panel h1 a');
+    await expect(link).toHaveText('ZinnekeTiles');
+    await expect(link).toHaveAttribute('href', 'https://github.com/PasLoin/ZinnekeTiles');
+    await expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  test('cliquer sur le titre ne replie pas le panneau', async ({ page, context }) => {
+    await context.route('https://github.com/**', (route) => route.fulfill({ status: 200, body: '' }));
+    const panel = page.locator('#title-panel');
+    const before = await panel.getAttribute('class');
+    const popup = context.waitForEvent('page');
+    await page.locator('#title-panel h1 a').click();
+    await (await popup).close();
+    await expect(panel).toHaveAttribute('class', before);
   });
 
   test('le sous-titre mentionne OpenStreetMap', async ({ page }) => {
@@ -55,21 +67,22 @@ test.describe('Panneau titre', () => {
 
   test('se replie au clic sur le header', async ({ page }) => {
     const panel = page.locator('#title-panel');
-    const header = panel.locator('.panel-header');
+    const toggle = panel.locator('.panel-header .toggle-icon');
     const content = panel.locator('.panel-content');
 
     await expect(content).toBeVisible();
-    await header.click();
+    await toggle.click();
     await expect(panel).toHaveClass(/collapsed/);
-    // Le contenu est masqué via CSS display:none
+    await expect(content).toBeHidden();
   });
 
   test('se déplie au second clic', async ({ page }) => {
     const panel = page.locator('#title-panel');
-    const header = panel.locator('.panel-header');
+    const toggle = panel.locator('.panel-header .toggle-icon');
 
-    await header.click(); // replier
-    await header.click(); // déplier
+    await toggle.click();
+    await expect(panel).toHaveClass(/collapsed/);
+    await toggle.click();
     await expect(panel).not.toHaveClass(/collapsed/);
   });
 });
@@ -88,12 +101,13 @@ test.describe('Panneau légende', () => {
   test('se replie et se déplie', async ({ page }) => {
     const panel = page.locator('#legend-panel');
     const header = panel.locator('.panel-header');
+    const wasCollapsed = /collapsed/.test(await panel.getAttribute('class'));
 
     await header.click();
-    await expect(panel).toHaveClass(/collapsed/);
+    await expect(panel).toHaveClass(wasCollapsed ? /^(?!.*collapsed)/ : /collapsed/);
 
     await header.click();
-    await expect(panel).not.toHaveClass(/collapsed/);
+    await expect(panel).toHaveClass(wasCollapsed ? /collapsed/ : /^(?!.*collapsed)/);
   });
 });
 
@@ -168,6 +182,18 @@ test.describe('Contrôles MapLibre', () => {
   test('le contrôle de zoom est présent', async ({ page }) => {
     const zoomIn = page.locator('.maplibregl-ctrl-zoom-in');
     await expect(zoomIn).toBeVisible();
+  });
+
+  test('le contrôle d\'inclinaison incline puis redresse la vue', async ({ page }) => {
+    const up = page.locator('.pitch-ctrl .pitch-up');
+    const down = page.locator('.pitch-ctrl .pitch-down');
+    await expect(up).toBeVisible();
+    await expect(down).toBeDisabled();
+    await up.click();
+    await expect.poll(() => page.evaluate(() => Math.round(window.map.getPitch()))).toBe(15);
+    await expect(down).toBeEnabled();
+    await down.click();
+    await expect.poll(() => page.evaluate(() => Math.round(window.map.getPitch()))).toBe(0);
   });
 
   test('le contrôle d\'échelle est présent', async ({ page }) => {
