@@ -188,7 +188,7 @@ extract boundaries \
   nwr/boundary=administrative
 
 SF_FILTERS=$(config_filters street_furniture \
-  "nwr/amenity=bench,lounger,waste_basket,vending_machine nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=*")
+  "nwr/amenity=bench,lounger,waste_basket,vending_machine nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=* nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone")
 echo "  filtres street_furniture (map.config.yaml) : ${SF_FILTERS}"
 read -r -a SF_FILTER_ARGS <<< "$SF_FILTERS"
 extract street_furniture "${SF_FILTER_ARGS[@]}"
@@ -199,6 +199,7 @@ osmium tags-filter "$SRC" \
   nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence,kissing_gate,block,full-height_turnstile,swing_gate,stile \
   nwr/highway=street_lamp \
   n/entrance=* \
+  nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone,siren,water_tank,suction_point,fire_alarm_box,first_aid_kit,emergency_ward_entrance \
   -o "_tmp_street_furniture_all.osm.pbf" --overwrite
 osmium export "_tmp_street_furniture_all.osm.pbf" -o "_tmp_street_furniture_all.json" --overwrite
 python3 check_street_furniture_coverage.py \
@@ -211,9 +212,11 @@ rm -f _tmp_street_furniture_all.osm.pbf _tmp_street_furniture_all.json
 echo "→ poi"
 POI_FILTERS=(
   nwr/shop=*
-  nwr/amenity=restaurant,cafe,bar,pub,fast_food,bank,pharmacy,hospital,clinic,school,university,library,theatre,cinema,post_office,police,fire_station,doctor,dentist,place_of_worship,townhall,courthouse,community_centre,kindergarten,veterinary
+  nwr/disused:shop=*
+  nwr/amenity=restaurant,cafe,bar,pub,fast_food,bank,pharmacy,hospital,clinic,school,university,library,theatre,cinema,post_office,police,fire_station,doctor,dentist,place_of_worship,townhall,courthouse,community_centre,kindergarten,veterinary,casino
+  nwr/emergency=ambulance_station
   nwr/tourism=hotel,hostel,museum,attraction,information,viewpoint
-  nwr/leisure=playground
+  nwr/leisure=playground,hackerspace
   nwr/craft=*
 )
 osmium tags-filter "$SRC" "${POI_FILTERS[@]}" -o "_tmp_poi.osm.pbf" --overwrite
@@ -306,6 +309,9 @@ print(f"  {before} → {len(kept)} POI "
       f"({stats['pt']} points, {stats['conv']} surfaces→centroïde, "
       f"{stats['dup']} doublons, {stats['skip']} ignorés)")
 POI_POINTS
+
+echo "  → disused:shop=* → shop=vacant"
+python3 normalize_disused_shops.py poi.json
 
 echo "  → valeurs multiples cuisine/religion/vending/door"
 python3 normalize_multi_values.py poi.json street_furniture.json
