@@ -2,7 +2,6 @@
  * tests/unit/poi_icons.test.js
  * ────────────────────────────
  * Tests unitaires de www/poi_icons.js.
- * Importe le VRAI module.
  */
 import { describe, it, expect, vi } from 'vitest';
 import {
@@ -14,6 +13,7 @@ import {
   LIBERTY,
   buildIconImageExpression,
   loadPoiIcon,
+  recolorSvg,
 } from '../../www/poi_icons.js';
 
 // ══════════════════════════════════════════════════════════
@@ -193,5 +193,39 @@ describe('loadPoiIcon', () => {
     expect(result).toBe(false);
 
     globalThis.fetch = originalFetch;
+  });
+});
+
+describe('recolorSvg', () => {
+  it('recolore fill, stroke et currentColor', () => {
+    const out = recolorSvg('<svg><path fill="#000" stroke="black" style="fill:red"/><stop stop-color="currentColor"/></svg>', '#734a08');
+    expect(out).toContain('fill="#734a08"');
+    expect(out).toContain('stroke="#734a08"');
+    expect(out).toContain('fill:#734a08');
+    expect(out).toContain('stop-color="#734a08"');
+    expect(out).not.toContain('currentColor');
+  });
+
+  it('conserve les références de dégradé url(#id)', () => {
+    const out = recolorSvg('<svg><path fill="url(#g)" stroke="url(#h)" style="fill:url(#g)"/></svg>', '#734a08');
+    expect(out).toContain('fill="url(#g)"');
+    expect(out).toContain('stroke="url(#h)"');
+    expect(out).toContain('fill:url(#g)');
+  });
+
+  it('conserve fill="none" et fill="transparent"', () => {
+    const out = recolorSvg('<svg fill="none"><path fill="transparent" stroke="none"/></svg>', '#734a08');
+    expect(out).toContain('fill="none"');
+    expect(out).toContain('fill="transparent"');
+    expect(out).toContain('stroke="none"');
+  });
+
+  it('les dégradés de cannabis.svg prennent la couleur des icônes', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const svg = fs.readFileSync(path.resolve(__dirname, '../../www/assets/icons/cannabis.svg'), 'utf-8');
+    const out = recolorSvg(svg, ICON_COLOR);
+    expect(out).toMatch(/fill="url\(#[^)]+\)"/);
+    expect(out).toContain(`stop-color="${ICON_COLOR}"`);
   });
 });
