@@ -126,6 +126,7 @@ CDN_NAME_OVERRIDES = {
     'vending-newspapers':                 {'temaki': 'vending_newspaper'},
     'vending-condoms':                    {'temaki': 'vending_love'},
     'vending-excrement_bags':             {'temaki': 'vending_pet_waste'},
+    'phone':             {'temaki': None, 'maki': 'emergency-phone', 'liberty': 'emergency_phone'},
 }
 
 
