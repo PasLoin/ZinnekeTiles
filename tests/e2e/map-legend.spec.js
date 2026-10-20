@@ -250,7 +250,7 @@ test.describe('Légende : construite depuis les données', () => {
 
   test('toutes les catégories avec des layers correspondants sont affichées', async ({ page }) => {
     const labels = await page.locator('#legend-content .legend-row span').allTextContents();
-    for (const label of ['Bâtiments', 'Routes', 'POI', 'Loisirs', 'Mobilier urbain']) {
+    for (const label of ['Bâtiments', 'Routes', 'POI', 'Loisirs', 'Mobilier']) {
       expect(labels, label).toContain(label);
     }
   });
