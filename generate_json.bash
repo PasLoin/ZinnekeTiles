@@ -188,14 +188,15 @@ extract boundaries \
   nwr/boundary=administrative
 
 SF_FILTERS=$(config_filters street_furniture \
-  "nwr/amenity=bench,lounger,waste_basket,vending_machine nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=* nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone")
+  "nwr/amenity=bench,lounger,waste_basket,vending_machine,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,drinking_water,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,clock,photo_booth,give_box nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=* nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone nwr/tourism=artwork")
 echo "  filtres street_furniture (map.config.yaml) : ${SF_FILTERS}"
 read -r -a SF_FILTER_ARGS <<< "$SF_FILTERS"
 extract street_furniture "${SF_FILTER_ARGS[@]}"
 
 echo "→ street_furniture coverage check (vs wiki + map.config.yaml)"
 osmium tags-filter "$SRC" \
-  nwr/amenity=bench,lounger,waste_basket,vending_machine,drinking_water,clock,bicycle_parking,shelter,give_box \
+  nwr/amenity=bench,lounger,waste_basket,vending_machine,drinking_water,clock,bicycle_parking,shelter,give_box,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,photo_booth,kick-scooter_parking,motorcycle_parking,waste_disposal \
+  nwr/tourism=artwork \
   nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence,kissing_gate,block,full-height_turnstile,swing_gate,stile \
   nwr/highway=street_lamp \
   n/entrance=* \
@@ -213,10 +214,13 @@ echo "→ poi"
 POI_FILTERS=(
   nwr/shop=*
   nwr/disused:shop=*
-  nwr/amenity=restaurant,cafe,bar,pub,fast_food,bank,pharmacy,hospital,clinic,school,university,library,theatre,cinema,post_office,police,fire_station,doctors,dentist,brothel,place_of_worship,townhall,courthouse,community_centre,kindergarten,veterinary,casino
+  nwr/amenity=restaurant,cafe,bar,pub,fast_food,ice_cream,biergarten,food_court,bank,bureau_de_change,money_transfer,pharmacy,hospital,clinic,doctors,dentist,veterinary,social_facility,school,college,university,kindergarten,childcare,library,driving_school,music_school,language_school,dancing_school,research_institute,theatre,cinema,arts_centre,nightclub,events_venue,conference_centre,exhibition_centre,social_centre,community_centre,studio,music_venue,planetarium,casino,gambling,brothel,stripclub,love_hotel,swingerclub,hookah_lounge,internet_cafe,post_office,police,fire_station,townhall,courthouse,prison,crematorium,place_of_worship,marketplace,fuel,car_wash,car_rental,ferry_terminal
   nwr/emergency=ambulance_station
-  nwr/tourism=hotel,hostel,museum,attraction,information,viewpoint
-  nwr/leisure=playground,hackerspace
+  nwr/healthcare=physiotherapist,psychotherapist,laboratory,alternative,blood_donation,optometrist,audiologist,podiatrist,speech_therapist,rehabilitation,midwife,nurse,counselling
+  nwr/office=*
+  nwr/tourism=hotel,hostel,guest_house,apartment,museum,gallery,attraction,information,viewpoint,zoo,theme_park
+  nwr/leisure=playground,hackerspace,sports_centre,fitness_centre,dance,escape_game,stadium,sauna,amusement_arcade,bowling_alley,indoor_play,trampoline_park,tanning_salon,miniature_golf,horse_riding
+  nwr/historic=castle,monument,memorial,manor,ruins,wayside_shrine,wayside_cross,archaeological_site,city_gate
   nwr/craft=*
 )
 osmium tags-filter "$SRC" "${POI_FILTERS[@]}" -o "_tmp_poi.osm.pbf" --overwrite
