@@ -224,7 +224,7 @@ layers:
     labels_at: 15
 
   street_furniture:
-    label: Mobilier urbain
+    label: Mobilier
     color: "#555555"
     swatch: dot
     appear_at: 17
@@ -248,6 +248,14 @@ layers:
       # build_map.py — door=* affine seulement l'icône (comme
       # cuisine=*/religion=* pour les POI), pas une couche à part.
       entrance: { tag: entrance }
+      # emergency
+      defibrillator: { tag: emergency }
+      fire_hydrant: { tag: emergency }
+      fire_extinguisher: { tag: emergency }
+      fire_hose: { tag: emergency }
+      life_ring: { tag: emergency }
+      phone: { tag: emergency }
+      assembly_point: { tag: emergency }
 
   boundaries:
     label: Limites administratives
