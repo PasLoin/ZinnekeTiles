@@ -222,6 +222,9 @@ layers:
     color: "#734a08"
     appear_at: 14
     labels_at: 15
+    subtypes:
+      company: { tag: office, label: Entreprises, appear_at: 16 }
+      memorial: { tag: historic, label: Mémoriaux, appear_at: 16 }
 
   street_furniture:
     label: Mobilier
@@ -234,6 +237,23 @@ layers:
       lounger: { tag: amenity }
       waste_basket: { tag: amenity }
       vending_machine: { tag: amenity }
+      atm: { tag: amenity }
+      charging_station: { tag: amenity }
+      bicycle_rental: { tag: amenity }
+      car_sharing: { tag: amenity }
+      taxi: { tag: amenity }
+      parcel_locker: { tag: amenity }
+      toilets: { tag: amenity }
+      drinking_water: { tag: amenity }
+      fountain: { tag: amenity }
+      public_bookcase: { tag: amenity }
+      bicycle_repair_station: { tag: amenity }
+      dog_toilet: { tag: amenity }
+      post_box: { tag: amenity }
+      recycling: { tag: amenity }
+      clock: { tag: amenity }
+      photo_booth: { tag: amenity }
+      give_box: { tag: amenity }
       # barrier
       bollard: { tag: barrier }
       gate: { tag: barrier }
@@ -256,6 +276,8 @@ layers:
       life_ring: { tag: emergency }
       phone: { tag: emergency }
       assembly_point: { tag: emergency }
+      # tourism
+      artwork: { tag: tourism }
 
   boundaries:
     label: Limites administratives
