@@ -148,7 +148,7 @@ describe('Catégories de la légende', () => {
       'Résidentiel', 'Industriel', 'Commercial', 'Éducation',
       'Forêt', 'Parcs', 'Pelouse', 'Eau', 'Bâtiments',
       'Rail', 'Tram', 'Métro', 'Routes', 'Piétons', 'Cyclable',
-      'POI', 'Limites', 'Loisirs', 'Mobilier urbain',
+      'POI', 'Limites', 'Loisirs', 'Mobilier',
     ];
     for (const label of expectedLabels) {
       expect(labels.some((l) => l.startsWith(label)), label).toBe(true);

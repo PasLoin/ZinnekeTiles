@@ -56,7 +56,7 @@ LABELS = {
     "public_transport": "Transport STIB",
     "boundaries":       "Limites administratives",
     "poi":              "POI",
-    "street_furniture": "Mobilier urbain",
+    "street_furniture": "Mobilier",
 }
 
 # Tag OSM principal par couche (pour identifier les sous-types)
@@ -70,11 +70,11 @@ GROUP_TAGS = {
     "roads":            ["highway"],
     "pedestrian":       ["highway"],
     "railway":          ["railway"],
-    "poi":              ["amenity", "shop", "tourism"],
+    "poi":              ["amenity", "shop", "tourism", "office", "historic"],
     "boundaries":       ["boundary"],
     "cycleway":         ["highway"],
     "public_transport": ["route"],
-    "street_furniture": ["amenity", "barrier", "highway", "entrance"],
+    "street_furniture": ["amenity", "barrier", "highway", "entrance", "emergency", "tourism"],
 }
 
 # ── Helpers d'extraction d'expressions MapLibre ───────────────────────────────
@@ -573,6 +573,18 @@ def dump_sports(sports):
 NO_LAYER_COLOR = {"roads"}
 
 
+def subtype_from_legend_item(item):
+    filt = item.get("filter")
+    if not (isinstance(filt, list) and len(filt) == 3 and filt[0] == "=="
+            and isinstance(filt[1], list) and filt[1][:1] == ["get"]
+            and filt[2] == item.get("id")):
+        return None
+    restored = {"tag": filt[1][1]}
+    if item.get("appear_at") is not None:
+        restored["appear_at"] = item["appear_at"]
+    return restored
+
+
 def apply_legend(name, info, group, style_layers):
     if not group:
         return info
@@ -589,7 +601,10 @@ def apply_legend(name, info, group, style_layers):
     for item in group.get("items") or []:
         key = item.get("id")
         if key not in info["subtypes"]:
-            continue
+            restored = subtype_from_legend_item(item)
+            if not restored:
+                continue
+            info["subtypes"][key] = restored
         order.append(key)
         if item.get("label") and item["label"] != default_subtype_label(name, key):
             info["subtypes"][key]["label"] = item["label"]

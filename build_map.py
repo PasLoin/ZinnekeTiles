@@ -1046,6 +1046,11 @@ def poi(cfg):
                  ["image",["concat","poi-",["get","shop"]]],
                  ["image",["concat","poi-",["get","amenity"]]],
                  ["image",["concat","poi-",["get","tourism"]]],
+                 ["image",["concat","poi-",["get","leisure"]]],
+                 ["image",["concat","poi-",["get","emergency"]]],
+                 ["image",["concat","poi-",["get","healthcare"]]],
+                 ["image",["concat","poi-",["get","office"]]],
+                 ["image",["concat","poi-",["get","historic"]]],
                  ["case",["has","shop"],["image","poi-shop"],["image",""]]],
              "icon-size":zoom([(ap,.7),(18,1.0)]),
              "icon-allow-overlap":True,"icon-padding":2,"icon-anchor":"center",
@@ -1100,12 +1105,14 @@ def street_furniture(cfg):
     fence_color = c((st.get("fence") or {}).get("color") or cfg["color"] or "#9c9c9c")
 
     icon_expr = ["coalesce",
+        ["image",["concat","poi-",["get","emergency"]]],
         ["case",["has","vending"],
                 ["image",["concat","poi-vending-",["get","vending"]]],["image",""]],
         ["case",["has","door"],
                 ["image",["concat","poi-door-",["get","door"]]],["image",""]],
         ["image",["concat","poi-",["get","amenity"]]],
         ["image",["concat","poi-",["get","barrier"]]],
+        ["image",["concat","poi-",["get","tourism"]]],
         ["case",["==",["get","highway"],"street_lamp"],
                 ["image","poi-street_lamp"],["image",""]],
         ["case",["has","entrance"],["image","poi-entrance"],["image",""]]]
@@ -1319,6 +1326,18 @@ SUBTYPE_LABELS = {
         "gate": "Portails", "lift_gate": "Barrières levantes", "lounger": "Transats",
         "planter": "Bacs à plantes", "street_lamp": "Lampadaires",
         "vending_machine": "Distributeurs", "waste_basket": "Poubelles",
+        "defibrillator": "Défibrillateurs", "fire_hydrant": "Bornes incendie",
+        "fire_extinguisher": "Extincteurs", "fire_hose": "Dévidoirs incendie",
+        "life_ring": "Bouées de sauvetage", "phone": "Téléphones d’urgence",
+        "assembly_point": "Points de rassemblement",
+        "atm": "Distributeurs de billets", "charging_station": "Bornes de recharge",
+        "bicycle_rental": "Vélos partagés", "car_sharing": "Voitures partagées",
+        "taxi": "Stations de taxi", "parcel_locker": "Consignes à colis",
+        "toilets": "Toilettes", "drinking_water": "Eau potable", "fountain": "Fontaines",
+        "public_bookcase": "Boîtes à livres", "bicycle_repair_station": "Réparation vélo",
+        "dog_toilet": "Canisites", "post_box": "Boîtes aux lettres",
+        "recycling": "Recyclage", "clock": "Horloges", "photo_booth": "Photomatons",
+        "give_box": "Boîtes à dons", "artwork": "Œuvres d’art",
     },
 }
 
@@ -1437,6 +1456,8 @@ def build_legend(config, layers):
             filt = subtype_filter(name, key, raw) if own else None
             if filt:
                 item["filter"] = filt
+                if not item_layers and raw.get("appear_at") not in (None, cfg["appear_at"]):
+                    item["appear_at"] = raw["appear_at"]
             items.append(item)
         color = (cfg["color"] or (items[0]["color"] if items else None)
                  or paint_color(own) or LEGEND_FALLBACK_COLOR)
@@ -1460,7 +1481,8 @@ def config_hash(config):
 
 SUBTYPE_ONLY_LAYERS = {"landuse", "trees", "railway", "pedestrian"}
 
-POI_PROPS = ["amenity","shop","tourism","craft","office","healthcare","leisure","historic",
+POI_PROPS = ["amenity","shop","disused:shop","tourism","craft","office","healthcare","leisure",
+             "historic","emergency",
              "name","name:fr","name:nl",
              "cuisine","opening_hours","addr:street","addr:housenumber","website","religion",
              "level","level_min","level_max","level_approx","level_hint"]
