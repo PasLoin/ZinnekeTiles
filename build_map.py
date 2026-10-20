@@ -1046,6 +1046,8 @@ def poi(cfg):
                  ["image",["concat","poi-",["get","shop"]]],
                  ["image",["concat","poi-",["get","amenity"]]],
                  ["image",["concat","poi-",["get","tourism"]]],
+                 ["image",["concat","poi-",["get","leisure"]]],
+                 ["image",["concat","poi-",["get","emergency"]]],
                  ["case",["has","shop"],["image","poi-shop"],["image",""]]],
              "icon-size":zoom([(ap,.7),(18,1.0)]),
              "icon-allow-overlap":True,"icon-padding":2,"icon-anchor":"center",
@@ -1100,6 +1102,7 @@ def street_furniture(cfg):
     fence_color = c((st.get("fence") or {}).get("color") or cfg["color"] or "#9c9c9c")
 
     icon_expr = ["coalesce",
+        ["image",["concat","poi-",["get","emergency"]]],
         ["case",["has","vending"],
                 ["image",["concat","poi-vending-",["get","vending"]]],["image",""]],
         ["case",["has","door"],
@@ -1319,6 +1322,10 @@ SUBTYPE_LABELS = {
         "gate": "Portails", "lift_gate": "Barrières levantes", "lounger": "Transats",
         "planter": "Bacs à plantes", "street_lamp": "Lampadaires",
         "vending_machine": "Distributeurs", "waste_basket": "Poubelles",
+        "defibrillator": "Défibrillateurs", "fire_hydrant": "Bornes incendie",
+        "fire_extinguisher": "Extincteurs", "fire_hose": "Dévidoirs incendie",
+        "life_ring": "Bouées de sauvetage", "phone": "Téléphones d’urgence",
+        "assembly_point": "Points de rassemblement",
     },
 }
 
@@ -1460,7 +1467,8 @@ def config_hash(config):
 
 SUBTYPE_ONLY_LAYERS = {"landuse", "trees", "railway", "pedestrian"}
 
-POI_PROPS = ["amenity","shop","tourism","craft","office","healthcare","leisure","historic",
+POI_PROPS = ["amenity","shop","disused:shop","tourism","craft","office","healthcare","leisure",
+             "historic","emergency",
              "name","name:fr","name:nl",
              "cuisine","opening_hours","addr:street","addr:housenumber","website","religion",
              "level","level_min","level_max","level_approx","level_hint"]
