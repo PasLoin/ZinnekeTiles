@@ -29,20 +29,20 @@ export const MAKI    = 'https://cdn.jsdelivr.net/npm/@mapbox/maki/icons/';
  * @param {string} color - Couleur cible (ex: '#734a08')
  * @returns {string} SVG retravaillé
  */
-function recolorSvg(svg, color) {
+export function recolorSvg(svg, color) {
   // 1. currentColor → couleur cible (pattern le plus propre, local et Temaki)
   svg = svg.replace(/currentColor/g, color);
 
   // 2. Attributs fill="..." — préserver fill="none" et fill="transparent"
-  svg = svg.replace(/\bfill="(?!none|transparent)([^"]*)"/g, `fill="${color}"`);
+  svg = svg.replace(/\bfill="(?!none|transparent|url\()([^"]*)"/g, `fill="${color}"`);
 
   // 3. Attributs stroke="..." — préserver stroke="none"
-  svg = svg.replace(/\bstroke="(?!none)([^"]*)"/g, `stroke="${color}"`);
+  svg = svg.replace(/\bstroke="(?!none|url\()([^"]*)"/g, `stroke="${color}"`);
 
   // 4. style inline : fill: ... et stroke: ... (avec ou sans espace, hex/named/rgb)
   //    Préserver fill: none et stroke: none
-  svg = svg.replace(/(fill\s*:\s*)(?!none|transparent)([^;}"']+)/g, `$1${color}`);
-  svg = svg.replace(/(stroke\s*:\s*)(?!none)([^;}"']+)/g,           `$1${color}`);
+  svg = svg.replace(/(fill\s*:\s*)(?!none|transparent|url\()([^;}"']+)/g, `$1${color}`);
+  svg = svg.replace(/(stroke\s*:\s*)(?!none|url\()([^;}"']+)/g,           `$1${color}`);
 
   // 5. Si aucun fill n'est présent sur <svg>, en ajouter un comme filet de sécurité
   if (!/<svg[^>]+\bfill=/.test(svg)) {
