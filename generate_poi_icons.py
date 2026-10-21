@@ -78,6 +78,20 @@ COMPOSITE_CASES = [
      'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'no']]},
     {'icon_key': 'toilets-unisex',
      'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'yes']]},
+] + [
+    {'icon_key': f'artwork-{icon}',
+     'conditions': [['tourism', 'artwork'], ['artwork_type', artwork_type]]}
+    for artwork_type, icon in (
+        ('sculpture', 'sculpture'),
+        ('statue', 'statue'),
+        ('bust', 'bust'),
+        ('mural', 'mural'),
+        ('sgraffito', 'mural'),
+        ('graffiti', 'mural'),
+        ('mosaic', 'mosaic'),
+        ('tilework', 'mosaic'),
+        ('pinwheel', 'pinwheel'),
+    )
 ]
 
 # ═══════════════════════════════════════════════════════════
