@@ -69,6 +69,17 @@ OSM_TYPE_KEYS = {
 # ═══════════════════════════════════════════════════════════
 SUB_TYPE_KEYS = {'cuisine', 'religion', 'vending', 'door'}
 
+COMPOSITE_CASES = [
+    {'icon_key': 'toilets-urinal',
+     'conditions': [['amenity', 'toilets'], ['toilets:position', 'urinal']]},
+    {'icon_key': 'toilets-female',
+     'conditions': [['amenity', 'toilets'], ['female', 'yes'], ['male', 'no']]},
+    {'icon_key': 'toilets-male',
+     'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'no']]},
+    {'icon_key': 'toilets-unisex',
+     'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'yes']]},
+]
+
 # ═══════════════════════════════════════════════════════════
 # Mapping OSM tag value → CDN icon name quand ils diffèrent
 # ═══════════════════════════════════════════════════════════
@@ -254,6 +265,26 @@ def extract_poi_types(poi_json_paths):
     return types, detected_keys, presence_keys, sub_types
 
 
+def matches_conditions(props, conditions):
+    return all(props.get(key) == value for key, value in conditions)
+
+
+def extract_composite_cases(poi_json_paths, cases=COMPOSITE_CASES):
+    if isinstance(poi_json_paths, (str, os.PathLike)):
+        poi_json_paths = [poi_json_paths]
+    counts = Counter()
+    for poi_json_path in poi_json_paths:
+        with open(poi_json_path) as f:
+            data = json.load(f)
+        for feat in data.get('features', []):
+            props = feat.get('properties', {})
+            for case in cases:
+                if matches_conditions(props, case['conditions']):
+                    counts[case['icon_key']] += 1
+                    break
+    return counts
+
+
 def main():
     parser = argparse.ArgumentParser(description='Génère poi-icons.json et missing-icons.txt')
     parser.add_argument('--poi-json', nargs='+', default=['poi.json'],
@@ -276,10 +307,14 @@ def main():
     # ── 1. Extraire les types POI ──────────────────────────
     print(f'→ Lecture de {", ".join(args.poi_json)}...')
     poi_types, detected_keys, presence_keys, sub_types = extract_poi_types(args.poi_json)
+    composite_counts = extract_composite_cases(args.poi_json)
+    poi_types.update(composite_counts)
     print(f'  {len(poi_types)} types POI trouvés ({sum(poi_types.values())} features)')
     print(f'  Tag-keys détectés : {", ".join(sorted(detected_keys))}')
     if presence_keys:
         print(f'  Clés "présence" détectées : {", ".join(sorted(presence_keys))}')
+    if composite_counts:
+        print(f'  Cas combinés détectés : {", ".join(f"{k} ({n}x)" for k, n in composite_counts.items())}')
     if sub_types:
         print(f'  Sous-types détectés : {len(sub_types)} ({", ".join(sorted(SUB_TYPE_KEYS & {st["key"] for st in sub_types.values()}))})')
 
@@ -303,6 +338,13 @@ def main():
     # ── 3. Générer poi-icons.json ──────────────────────────
     # special_cases : seulement les sous-types qui ont au moins une icône
     special_cases = []
+    for case in COMPOSITE_CASES:
+        icon_key = case['icon_key']
+        if icon_key in composite_counts and any(s is not None for s in icons.get(icon_key, [])):
+            special_cases.append({
+                'conditions': case['conditions'],
+                'icon_key': icon_key,
+            })
     for icon_key, info in sorted(sub_types.items()):
         if icon_key in icons and any(s is not None for s in icons[icon_key]):
             special_cases.append({
