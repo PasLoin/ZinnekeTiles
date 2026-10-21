@@ -27,6 +27,15 @@ describe('buildNoIconFilter', () => {
     expect(buildNoIconFilter(META, ['cuisine-friture'])[1]).toContainEqual(['==', ['get', 'cuisine'], 'friture']);
   });
 
+  it('reprend les conditions multiples d\'un cas spécial chargé', () => {
+    const meta = {
+      special_cases: [{ conditions: [['amenity', 'toilets'], ['toilets:position', 'urinal']], icon_key: 'toilets-urinal' }],
+    };
+    expect(buildNoIconFilter(meta, ['toilets-urinal'])[1]).toContainEqual([
+      'all', ['==', ['get', 'amenity'], 'toilets'], ['==', ['get', 'toilets:position'], 'urinal'],
+    ]);
+  });
+
   it('gère les clés de présence et le repli shop', () => {
     const f = buildNoIconFilter(META, ['entrance', 'shop']);
     expect(f[1]).toContainEqual(['has', 'entrance']);
