@@ -24,6 +24,36 @@
     ],
     "special_cases": [
       {
+        "conditions": [
+          [
+            "amenity",
+            "toilets"
+          ],
+          [
+            "toilets:position",
+            "urinal"
+          ]
+        ],
+        "icon_key": "toilets-urinal"
+      },
+      {
+        "conditions": [
+          [
+            "amenity",
+            "toilets"
+          ],
+          [
+            "male",
+            "yes"
+          ],
+          [
+            "female",
+            "yes"
+          ]
+        ],
+        "icon_key": "toilets-unisex"
+      },
+      {
         "key": "cuisine",
         "value": "friture",
         "icon_key": "cuisine-friture"
@@ -37,6 +67,11 @@
         "key": "cuisine",
         "value": "sandwich",
         "icon_key": "cuisine-sandwich"
+      },
+      {
+        "key": "door",
+        "value": "hinged",
+        "icon_key": "door-hinged"
       },
       {
         "key": "door",
@@ -463,7 +498,7 @@
     null
   ],
   "brothel": [
-    null,
+    "brothel",
     null,
     null,
     null
@@ -559,7 +594,7 @@
     null
   ],
   "car_sharing": [
-    null,
+    "car_sharing",
     null,
     null,
     null
@@ -625,7 +660,7 @@
     null
   ],
   "charging_station": [
-    null,
+    "charging_station",
     null,
     null,
     "charging_station"
@@ -1963,7 +1998,7 @@
     null
   ],
   "door-hinged": [
-    null,
+    "door-hinged",
     null,
     null,
     null
@@ -2305,7 +2340,7 @@
     null
   ],
   "fitness_centre": [
-    null,
+    "fitness_centre",
     null,
     null,
     "fitness_centre"
@@ -2677,7 +2712,7 @@
     null
   ],
   "ice_cream": [
-    null,
+    "ice_cream",
     null,
     null,
     "ice_cream"
@@ -3355,7 +3390,7 @@
     null
   ],
   "planetarium": [
-    null,
+    "planetarium",
     null,
     null,
     null
@@ -4039,10 +4074,22 @@
     null
   ],
   "toilets": [
-    null,
+    "toilets",
     null,
     null,
     "toilets"
+  ],
+  "toilets-unisex": [
+    "toilets-unisex",
+    null,
+    null,
+    null
+  ],
+  "toilets-urinal": [
+    "toilets-urinal",
+    null,
+    null,
+    null
   ],
   "tomb": [
     null,
