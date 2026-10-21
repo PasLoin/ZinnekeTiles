@@ -236,15 +236,17 @@ def ring_area_and_centroid(ring):
     if len(ring) < 3:
         return 0.0, None
     area2, cx, cy = 0.0, 0.0, 0.0
+    x0, y0 = ring[0][0], ring[0][1]
     pts = ring if ring[0] == ring[-1] else ring + [ring[0]]
     for (x1, y1, *_), (x2, y2, *_) in zip(pts, pts[1:]):
+        x1, y1, x2, y2 = x1 - x0, y1 - y0, x2 - x0, y2 - y0
         cross = x1 * y2 - x2 * y1
         area2 += cross
         cx += (x1 + x2) * cross
         cy += (y1 + y2) * cross
     if area2 == 0:
         return 0.0, None
-    return area2 / 2.0, [cx / (3.0 * area2), cy / (3.0 * area2)]
+    return area2 / 2.0, [x0 + cx / (3.0 * area2), y0 + cy / (3.0 * area2)]
 
 def avg_point(coords):
     pts = []
