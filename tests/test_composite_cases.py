@@ -45,3 +45,28 @@ def test_composite_case_not_selected(tmp_path, props):
 def test_composite_icons_exist_locally():
     for case in gpi.COMPOSITE_CASES:
         assert gpi.check_local(case["icon_key"]) == case["icon_key"]
+
+
+@pytest.mark.parametrize("artwork_type, expected", [
+    ("sculpture", "artwork-sculpture"),
+    ("statue", "artwork-statue"),
+    ("bust", "artwork-bust"),
+    ("mural", "artwork-mural"),
+    ("sgraffito", "artwork-mural"),
+    ("graffiti", "artwork-mural"),
+    ("mosaic", "artwork-mosaic"),
+    ("tilework", "artwork-mosaic"),
+    ("pinwheel", "artwork-pinwheel"),
+])
+def test_artwork_type_selected(tmp_path, artwork_type, expected):
+    props = {"tourism": "artwork", "artwork_type": artwork_type}
+    assert gpi.extract_composite_cases(write(tmp_path, [props])) == {expected: 1}
+
+
+@pytest.mark.parametrize("props", [
+    {"tourism": "artwork"},
+    {"tourism": "artwork", "artwork_type": "installation"},
+    {"historic": "memorial", "artwork_type": "statue"},
+])
+def test_artwork_type_not_selected(tmp_path, props):
+    assert gpi.extract_composite_cases(write(tmp_path, [props])) == {}
