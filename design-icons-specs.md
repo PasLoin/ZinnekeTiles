@@ -19,6 +19,7 @@ Une icône locale est donc toujours rastérisée à 20 px, quelle que soit sa ta
 | Tag principal : `shop`, `amenity`, `tourism`, `craft`, `leisure`, `emergency`, `barrier`… | la **valeur** du tag, ex. `shop=cheese` → `cheese` | `cheese.svg` |
 | Sous-type : `cuisine`, `religion`, `vending`, `door` | `<clé>-<valeur>`, ex. `cuisine=pizza` → `cuisine-pizza` | `cuisine-pizza.svg` ou `cuisine_pizza.svg` |
 | Clé de présence : `entrance` | la **clé**, quelle que soit la valeur | `entrance.svg` |
+| Cas combiné : plusieurs tags à la fois, déclaré dans `COMPOSITE_CASES` de `generate_poi_icons.py` | l'`icon_key` du cas, ex. `amenity=toilets` + `male=yes` + `female=no` → `toilets-male` | `toilets-male.svg` |
 
 Points à connaître :
 
@@ -31,12 +32,24 @@ Points à connaître :
 
 Quand un objet porte plusieurs tags, la première icône disponible l'emporte, dans cet ordre :
 
-1. les sous-types (`cuisine`, `religion`, `vending`, `door`) ;
-2. les tags principaux, par **ordre alphabétique** de clé (`amenity` avant `emergency` avant `leisure` avant `shop`…) ;
-3. les clés de présence (`entrance`) ;
-4. l'icône générique `shop` pour tout commerce sans icône propre.
+1. les cas combinés (`COMPOSITE_CASES`), dans l'ordre de leur déclaration : le premier cas dont toutes les conditions sont remplies l'emporte ;
+2. les sous-types (`cuisine`, `religion`, `vending`, `door`) ;
+3. les tags principaux, par **ordre alphabétique** de clé (`amenity` avant `emergency` avant `leisure` avant `shop`…) ;
+4. les clés de présence (`entrance`) ;
+5. l'icône générique `shop` pour tout commerce sans icône propre.
 
 Exemple : une fromagerie avec `cuisine=sandwich` affiche le sandwich, pas le fromage.
+
+Les toilettes utilisent les cas combinés, testés dans cet ordre :
+
+| Conditions (en plus de `amenity=toilets`) | Icône |
+| :--- | :--- |
+| `toilets:position=urinal` | `toilets-urinal.svg` |
+| `female=yes` et `male=no` | `toilets-female.svg` |
+| `male=yes` et `female=no` | `toilets-male.svg` |
+| `male=yes` et `female=yes` | `toilets-unisex.svg` |
+
+Les valeurs doivent être exactes : `toilets:position=seated;urinal` ou `male=yes` sans `female` ne correspondent à aucun cas et gardent l'icône `toilets`.
 
 ## Format du SVG
 
