@@ -1,12 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- foliage: three overlapping circles forming a small bush -->
-  <circle cx="9"  cy="6.5" r="3"   fill="currentColor"/>
-  <circle cx="15" cy="6.5" r="3"   fill="currentColor"/>
-  <circle cx="12" cy="4.3" r="3.4" fill="currentColor"/>
-  <!-- stem -->
-  <rect x="11" y="8.5" width="2" height="3.5" fill="currentColor"/>
-  <!-- pot rim -->
-  <rect x="6" y="11" width="12" height="2" rx="0.6" fill="currentColor"/>
-  <!-- pot body (trapezoid, narrower at the base) -->
-  <path d="M7.2 13 L16.8 13 L15 21 L9 21 Z" fill="currentColor"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+<path d="M3.121 4.126A1.939 1.939 0 1 1 7 4.126A1.939 1.939 0 1 1 3.121 4.126Z"/>
+<path d="M7 4.126A1.939 1.939 0 1 1 10.879 4.126A1.939 1.939 0 1 1 7 4.126Z"/>
+<path d="M4.802 2.704A2.198 2.198 0 1 1 9.198 2.704A2.198 2.198 0 1 1 4.802 2.704Z"/>
+<path d="M6.354 5.419L7.646 5.419L7.646 7.682L6.354 7.682L6.354 5.419Z"/>
+<path d="M3.509 7.035L10.491 7.035A.388 .388 0 0 1 10.879 7.423L10.879 7.94A.388 .388 0 0 1 10.491 8.328L3.509 8.328A.388 .388 0 0 1 3.121 7.94L3.121 7.423A.388 .388 0 0 1 3.509 7.035Z"/>
+<path d="M3.897 8.328L10.103 8.328L8.939 13.5L5.061 13.5L3.897 8.328Z"/>
 </svg>

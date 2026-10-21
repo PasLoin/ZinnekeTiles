@@ -1,9 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <g style="fill:currentColor">
-    <path d="M1 6h11v.5H1zM2 8h9.5v.5H2z" transform="matrix(1.7 0 0 1.7 9 10.7)"/>
-    <path d="M3 4.5h.5V10H3zM5 4.5h.5V10H5zM7.5 4.5H8V10h-.5zM9.5 4.5h.5V10h-.5z" transform="matrix(1.7 0 0 1.7 9 10.7)"/>
-    <path d="m5.9 5 2-3a.506.506 0 0 1 .93.4L7.1 5Z" transform="matrix(1.7 0 0 1.7 9 9)"/>
-    <path d="M0 5h13l-2 7H2zm1.25 1h10.5l-1.5 5h-7.5z" style="fill-rule:evenodd" transform="matrix(1.7 0 0 1.7 9 9)"/>
-  </g>
-  <path d="m4 4 24 24m0-24L4 28" style="stroke:currentColor;stroke-width:2;stroke-linecap:round;fill:none" transform="translate(6 6)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+<g opacity=".5">
+<path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M4 6.2C4 3.4 10 3.4 10 6.2"/>
+<path d="M1 6h12l-1.7 6.5H2.7Z"/>
+</g>
+<path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M2.4 2.4 11.6 11.6M11.6 2.4 2.4 11.6"/>
 </svg>
