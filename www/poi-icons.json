@@ -54,6 +54,123 @@
         "icon_key": "toilets-unisex"
       },
       {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "sculpture"
+          ]
+        ],
+        "icon_key": "artwork-sculpture"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "statue"
+          ]
+        ],
+        "icon_key": "artwork-statue"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "bust"
+          ]
+        ],
+        "icon_key": "artwork-bust"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "mural"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "sgraffito"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "graffiti"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "mosaic"
+          ]
+        ],
+        "icon_key": "artwork-mosaic"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "tilework"
+          ]
+        ],
+        "icon_key": "artwork-mosaic"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "pinwheel"
+          ]
+        ],
+        "icon_key": "artwork-pinwheel"
+      },
+      {
         "key": "cuisine",
         "value": "friture",
         "icon_key": "cuisine-friture"
@@ -246,7 +363,43 @@
     null
   ],
   "artwork": [
+    "artwork",
     null,
+    null,
+    null
+  ],
+  "artwork-bust": [
+    "artwork-bust",
+    null,
+    null,
+    null
+  ],
+  "artwork-mosaic": [
+    "artwork-mosaic",
+    null,
+    null,
+    null
+  ],
+  "artwork-mural": [
+    "artwork-mural",
+    null,
+    null,
+    null
+  ],
+  "artwork-pinwheel": [
+    "artwork-pinwheel",
+    null,
+    null,
+    null
+  ],
+  "artwork-sculpture": [
+    "artwork-sculpture",
+    null,
+    null,
+    null
+  ],
+  "artwork-statue": [
+    "artwork-statue",
     null,
     null,
     null
@@ -1530,12 +1683,6 @@
     null
   ],
   "cuisine-pita": [
-    null,
-    null,
-    null,
-    null
-  ],
-  "cuisine-pitta": [
     null,
     null,
     null,
