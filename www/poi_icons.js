@@ -128,6 +128,13 @@ export async function loadPoiIcon(map, poiType, localName, temakiName, makiName,
  * @param {object} meta - Objet { type_keys: string[], presence_keys: string[], special_cases: Array }
  * @returns {Array} Expression MapLibre GL
  */
+export function specialCaseCondition(sc) {
+  if (Array.isArray(sc.conditions)) {
+    return ['all', ...sc.conditions.map(([key, value]) => ['==', ['get', key], value])];
+  }
+  return ['==', ['get', sc.key], sc.value];
+}
+
 export function buildIconImageExpression(meta) {
   const expr = ['coalesce'];
 
@@ -135,7 +142,7 @@ export function buildIconImageExpression(meta) {
   for (const sc of (meta.special_cases || [])) {
     expr.push([
       'case',
-      ['==', ['get', sc.key], sc.value],
+      specialCaseCondition(sc),
       ['image', 'poi-' + sc.icon_key],
       ['image', '']
     ]);
@@ -173,7 +180,7 @@ export function buildNoIconFilter(meta, loadedTypes) {
   const loaded = new Set(loadedTypes || []);
   const hasIcon = ['any'];
   for (const sc of (meta.special_cases || [])) {
-    if (loaded.has(sc.icon_key)) hasIcon.push(['==', ['get', sc.key], sc.value]);
+    if (loaded.has(sc.icon_key)) hasIcon.push(specialCaseCondition(sc));
   }
   const values = [...loaded].sort();
   if (values.length) {
