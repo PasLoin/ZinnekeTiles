@@ -79,6 +79,26 @@ describe('buildIconImageExpression', () => {
     expect(expr[2]).toEqual(['image', ['concat', 'poi-', ['get', 'amenity']]]);
   });
 
+  it('combine les conditions multiples d\'un special_case en all', () => {
+    const expr = buildIconImageExpression({
+      type_keys: ['amenity'],
+      special_cases: [
+        { conditions: [['amenity', 'toilets'], ['male', 'yes'], ['female', 'no']], icon_key: 'toilets-male' },
+      ],
+    });
+
+    expect(expr[1]).toEqual([
+      'case',
+      ['all',
+        ['==', ['get', 'amenity'], 'toilets'],
+        ['==', ['get', 'male'], 'yes'],
+        ['==', ['get', 'female'], 'no']],
+      ['image', 'poi-toilets-male'],
+      ['image', ''],
+    ]);
+    expect(expr[2]).toEqual(['image', ['concat', 'poi-', ['get', 'amenity']]]);
+  });
+
   it('gère plusieurs special_cases', () => {
     const expr = buildIconImageExpression({
       type_keys: [],

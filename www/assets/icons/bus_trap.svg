@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
-  <g fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
-    <line x1="1.5" y1="2.8" x2="14.5" y2="2.8" stroke-width="1.2"/>
-    <line x1="1.5" y1="13.2" x2="14.5" y2="13.2" stroke-width="1.2"/>
-    <rect x="5" y="4.2" width="1.6" height="7.6" rx="0.4" stroke-width="1"/>
-    <rect x="9.4" y="4.2" width="1.6" height="7.6" rx="0.4" stroke-width="1"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+<path fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round" d="M1.312 2.45L12.688 2.45"/>
+<path fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round" d="M1.312 11.55L12.688 11.55"/>
+<path fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M4.725 3.675L5.425 3.675A.35 .35 0 0 1 5.775 4.025L5.775 9.975A.35 .35 0 0 1 5.425 10.325L4.725 10.325A.35 .35 0 0 1 4.375 9.975L4.375 4.025A.35 .35 0 0 1 4.725 3.675Z"/>
+<path fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M8.575 3.675L9.275 3.675A.35 .35 0 0 1 9.625 4.025L9.625 9.975A.35 .35 0 0 1 9.275 10.325L8.575 10.325A.35 .35 0 0 1 8.225 9.975L8.225 4.025A.35 .35 0 0 1 8.575 3.675Z"/>
 </svg>
