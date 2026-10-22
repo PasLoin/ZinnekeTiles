@@ -27,6 +27,8 @@ import urllib.error
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import yaml
+
 from normalize_multi_values import first_value
 
 # ═══════════════════════════════════════════════════════════
@@ -69,30 +71,49 @@ OSM_TYPE_KEYS = {
 # ═══════════════════════════════════════════════════════════
 SUB_TYPE_KEYS = {'cuisine', 'religion', 'vending', 'door'}
 
-COMPOSITE_CASES = [
-    {'icon_key': 'toilets-urinal',
-     'conditions': [['amenity', 'toilets'], ['toilets:position', 'urinal']]},
-    {'icon_key': 'toilets-female',
-     'conditions': [['amenity', 'toilets'], ['female', 'yes'], ['male', 'no']]},
-    {'icon_key': 'toilets-male',
-     'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'no']]},
-    {'icon_key': 'toilets-unisex',
-     'conditions': [['amenity', 'toilets'], ['male', 'yes'], ['female', 'yes']]},
-] + [
-    {'icon_key': f'artwork-{icon}',
-     'conditions': [['tourism', 'artwork'], ['artwork_type', artwork_type]]}
-    for artwork_type, icon in (
-        ('sculpture', 'sculpture'),
-        ('statue', 'statue'),
-        ('bust', 'bust'),
-        ('mural', 'mural'),
-        ('sgraffito', 'mural'),
-        ('graffiti', 'mural'),
-        ('mosaic', 'mosaic'),
-        ('tilework', 'mosaic'),
-        ('pinwheel', 'pinwheel'),
-    )
-]
+ICONS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poi-icons.config.yaml')
+
+
+def _as_str(value, where):
+    if isinstance(value, bool):
+        raise ValueError(f'{where} : booléen YAML détecté, mettez la valeur entre guillemets ("yes"/"no")')
+    if not isinstance(value, (str, int, float)):
+        raise ValueError(f'{where} : valeur scalaire attendue, reçu {value!r}')
+    return str(value)
+
+
+def _conditions(when, where):
+    if not isinstance(when, dict) or not when:
+        raise ValueError(f'{where} : "when" doit être un dictionnaire non vide')
+    return [[str(k), _as_str(v, f'{where}.when.{k}')] for k, v in when.items()]
+
+
+def load_composite_cases(path=ICONS_CONFIG):
+    with open(path, encoding='utf-8') as f:
+        config = yaml.safe_load(f) or {}
+    cases = []
+    for i, entry in enumerate(config.get('composite_cases') or []):
+        where = f'{os.path.basename(path)} composite_cases[{i}]'
+        if not isinstance(entry, dict):
+            raise ValueError(f'{where} : entrée invalide')
+        unknown = set(entry) - {'icon', 'when', 'by', 'icons'}
+        if unknown:
+            raise ValueError(f'{where} : champ(s) inconnu(s) {sorted(unknown)}')
+        base = _conditions(entry.get('when'), where)
+        if 'by' in entry:
+            if 'icon' in entry or not isinstance(entry.get('icons'), dict) or not entry['icons']:
+                raise ValueError(f'{where} : "by" exige "icons" (valeur → icône) et exclut "icon"')
+            for value, icon in entry['icons'].items():
+                cases.append({'icon_key': _as_str(icon, f'{where}.icons'),
+                              'conditions': base + [[str(entry['by']), _as_str(value, f'{where}.icons')]]})
+        elif isinstance(entry.get('icon'), str) and entry['icon']:
+            cases.append({'icon_key': entry['icon'], 'conditions': base})
+        else:
+            raise ValueError(f'{where} : "icon" manquant')
+    return cases
+
+
+COMPOSITE_CASES = load_composite_cases()
 
 # ═══════════════════════════════════════════════════════════
 # Mapping OSM tag value → CDN icon name quand ils diffèrent
