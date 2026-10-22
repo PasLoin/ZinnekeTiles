@@ -70,3 +70,29 @@ def test_artwork_type_selected(tmp_path, artwork_type, expected):
 ])
 def test_artwork_type_not_selected(tmp_path, props):
     assert gpi.extract_composite_cases(write(tmp_path, [props])) == {}
+
+
+def load(tmp_path, text):
+    path = tmp_path / "poi-icons.config.yaml"
+    path.write_text(text)
+    return gpi.load_composite_cases(path)
+
+
+def test_config_by_expands_in_order(tmp_path):
+    cases = load(tmp_path, "composite_cases:\n  - when: {tourism: artwork}\n    by: artwork_type\n    icons: {statue: artwork-statue, bust: artwork-bust}\n")
+    assert cases == [
+        {"icon_key": "artwork-statue", "conditions": [["tourism", "artwork"], ["artwork_type", "statue"]]},
+        {"icon_key": "artwork-bust", "conditions": [["tourism", "artwork"], ["artwork_type", "bust"]]},
+    ]
+
+
+@pytest.mark.parametrize("text", [
+    "composite_cases:\n  - icon: x\n    when: {male: yes}\n",
+    "composite_cases:\n  - icon: x\n    when: {amenity: toilets}\n    typo: 1\n",
+    "composite_cases:\n  - when: {amenity: toilets}\n",
+    "composite_cases:\n  - icon: x\n    when: {}\n",
+    "composite_cases:\n  - icon: x\n    when: {tourism: artwork}\n    by: artwork_type\n    icons: {statue: y}\n",
+])
+def test_config_rejects_invalid(tmp_path, text):
+    with pytest.raises(ValueError):
+        load(tmp_path, text)
