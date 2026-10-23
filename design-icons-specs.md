@@ -19,7 +19,7 @@ Une icône locale est donc toujours rastérisée à 20 px, quelle que soit sa ta
 | Tag principal : `shop`, `amenity`, `tourism`, `craft`, `leisure`, `emergency`, `barrier`… | la **valeur** du tag, ex. `shop=cheese` → `cheese` | `cheese.svg` |
 | Sous-type : `cuisine`, `religion`, `vending`, `door` | `<clé>-<valeur>`, ex. `cuisine=pizza` → `cuisine-pizza` | `cuisine-pizza.svg` ou `cuisine_pizza.svg` |
 | Clé de présence : `entrance` | la **clé**, quelle que soit la valeur | `entrance.svg` |
-| Cas combiné : plusieurs tags à la fois, déclaré dans `COMPOSITE_CASES` de `generate_poi_icons.py` | l'`icon_key` du cas, ex. `amenity=toilets` + `male=yes` + `female=no` → `toilets-male` | `toilets-male.svg` |
+| Cas combiné : plusieurs tags à la fois, déclaré dans `composite_cases` de `poi-icons.config.yaml` | l'`icon_key` du cas, ex. `amenity=toilets` + `male=yes` + `female=no` → `toilets-male` | `toilets-male.svg` |
 
 Points à connaître :
 
@@ -32,7 +32,7 @@ Points à connaître :
 
 Quand un objet porte plusieurs tags, la première icône disponible l'emporte, dans cet ordre :
 
-1. les cas combinés (`COMPOSITE_CASES`), dans l'ordre de leur déclaration : le premier cas dont toutes les conditions sont remplies l'emporte ;
+1. les cas combinés (`composite_cases` de `poi-icons.config.yaml`), dans l'ordre de leur déclaration : le premier cas dont toutes les conditions sont remplies l'emporte ;
 2. les sous-types (`cuisine`, `religion`, `vending`, `door`) ;
 3. les tags principaux, par **ordre alphabétique** de clé (`amenity` avant `emergency` avant `leisure` avant `shop`…) ;
 4. les clés de présence (`entrance`) ;
@@ -127,15 +127,15 @@ Les icônes locales doivent être sous licence **CC0** (voir la section Licences
 1. Aperçu du SVG en grand et à **20 × 20 px**, sur le fond `#f2efe9` et dans la couleur `#734a08`.
 2. Résolution par le script :
 
-   ```bash
+```bash
    python3 -c "import generate_poi_icons as g; print(g.check_local('cuisine-pizza'))"
-   ```
+```
 
 3. Tests :
 
-   ```bash
+```bash
    npm test -- tests/unit/poi_icons.test.js
    python3 -m pytest -q
-   ```
+```
 
 4. Après le build en CI : le type ne doit plus figurer dans `missing-icons.txt`.
