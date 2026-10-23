@@ -2031,7 +2031,7 @@
     "doctors"
   ],
   "dog_park": [
-    null,
+    "dog_park",
     null,
     null,
     "dog_park"
@@ -2247,7 +2247,7 @@
     null
   ],
   "dry_cleaning": [
-    null,
+    "dry_cleaning",
     null,
     null,
     "laundry"
@@ -2613,7 +2613,7 @@
     "garden"
   ],
   "garden_centre": [
-    null,
+    "garden_centre",
     null,
     null,
     "garden_centre"
@@ -3117,7 +3117,7 @@
     null
   ],
   "memorial": [
-    null,
+    "memorial",
     null,
     null,
     null
