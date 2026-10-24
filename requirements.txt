@@ -9,6 +9,7 @@
 # Scripts de pipeline
 pyyaml>=6.0       # build_map.py, retro_style.py, retro.yml
 shapely>=2.1      # merge_buildings.py, generate_roofs.py
+pmtiles>=3.4      # build_transit_plan.py
 
 # Tests Python
 pytest>=7.0       # tests/test_roundtrip.py
