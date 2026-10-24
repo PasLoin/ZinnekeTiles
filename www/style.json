@@ -14,7 +14,7 @@
       "font": "#734a08",
       "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
     },
-    "brussels:config_hash": "ef0cd75dc04e",
+    "brussels:config_hash": "918ee04f78a2",
     "brussels:patterns": {
       "grave_yard_christian": {
         "file": "assets/patterns/grave_yard_christian.svg",
@@ -1914,6 +1914,91 @@
         "items": []
       }
     ],
+    "brussels:poi_density": {
+      "grid": 128,
+      "tiers": [
+        {
+          "amenity": [
+            "hospital",
+            "townhall",
+            "university",
+            "college",
+            "theatre",
+            "cinema",
+            "library",
+            "arts_centre",
+            "place_of_worship",
+            "courthouse"
+          ],
+          "shop": [
+            "mall",
+            "department_store"
+          ],
+          "tourism": [
+            "museum",
+            "attraction",
+            "zoo",
+            "theme_park"
+          ]
+        },
+        {
+          "amenity": [
+            "pharmacy",
+            "police",
+            "post_office",
+            "school",
+            "bank",
+            "fire_station",
+            "clinic",
+            "marketplace",
+            "community_centre"
+          ],
+          "leisure": [
+            "sports_centre",
+            "swimming_pool"
+          ],
+          "office": [
+            "diplomatic",
+            "government"
+          ],
+          "shop": [
+            "supermarket"
+          ],
+          "tourism": [
+            "hotel",
+            "gallery",
+            "hostel"
+          ]
+        },
+        {
+          "amenity": [
+            "restaurant",
+            "cafe",
+            "bar",
+            "pub",
+            "fast_food",
+            "ice_cream",
+            "doctors",
+            "dentist",
+            "kindergarten"
+          ],
+          "shop": [
+            "bakery",
+            "convenience",
+            "butcher",
+            "chocolate",
+            "books",
+            "greengrocer"
+          ]
+        }
+      ],
+      "dots_at": 17,
+      "overlap_at": 18,
+      "show": {
+        "15": 1,
+        "16": 3
+      }
+    },
     "brussels:lazy": {
       "before": "public_transport-label",
       "level_height": 3.0,
@@ -14756,7 +14841,7 @@
       "type": "line",
       "source": "street_furniture",
       "source-layer": "street_furniture",
-      "minzoom": 17,
+      "minzoom": 18,
       "filter": [
         "all",
         [
@@ -14777,19 +14862,7 @@
       ],
       "paint": {
         "line-color": "#9c9c9c",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          17,
-          0.5,
-          18,
-          1.5
-        ],
+        "line-width": 1.5,
         "line-opacity": 0.8
       }
     },
@@ -15464,7 +15537,7 @@
       "type": "circle",
       "source": "poi",
       "source-layer": "poi",
-      "minzoom": 14,
+      "minzoom": 17,
       "paint": {
         "circle-radius": [
           "interpolate",
@@ -15474,7 +15547,7 @@
           [
             "zoom"
           ],
-          14,
+          17,
           2,
           18,
           4
@@ -15490,7 +15563,37 @@
       "type": "symbol",
       "source": "poi",
       "source-layer": "poi",
-      "minzoom": 14,
+      "minzoom": 15,
+      "filter": [
+        "any",
+        [
+          ">=",
+          [
+            "zoom"
+          ],
+          17
+        ],
+        [
+          "<=",
+          [
+            "coalesce",
+            [
+              "get",
+              "poi_rank"
+            ],
+            0
+          ],
+          [
+            "step",
+            [
+              "zoom"
+            ],
+            1,
+            16,
+            3
+          ]
+        ]
+      ],
       "layout": {
         "icon-image": [
           "coalesce",
@@ -15625,12 +15728,20 @@
           [
             "zoom"
           ],
-          14,
+          15,
           0.7,
           18,
           1.0
         ],
-        "icon-allow-overlap": true,
+        "icon-allow-overlap": [
+          "step",
+          [
+            "zoom"
+          ],
+          false,
+          18,
+          true
+        ],
         "icon-padding": 2,
         "icon-anchor": "center",
         "text-field": [
@@ -15639,7 +15750,7 @@
             "zoom"
           ],
           "",
-          15,
+          16,
           [
             "get",
             "name"
@@ -15654,7 +15765,30 @@
           1.2
         ],
         "text-anchor": "top",
-        "text-optional": true
+        "text-optional": true,
+        "symbol-sort-key": [
+          "+",
+          [
+            "*",
+            [
+              "coalesce",
+              [
+                "get",
+                "poi_tier"
+              ],
+              4
+            ],
+            1000
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "poi_rank"
+            ],
+            0
+          ]
+        ]
       },
       "paint": {
         "icon-opacity": 0.9,
@@ -15668,7 +15802,7 @@
       "type": "symbol",
       "source": "leisure",
       "source-layer": "leisure",
-      "minzoom": 14,
+      "minzoom": 15,
       "filter": [
         "!=",
         [
@@ -15759,7 +15893,7 @@
           [
             "zoom"
           ],
-          14,
+          15,
           0.7,
           18,
           1.0
@@ -15772,7 +15906,7 @@
             "zoom"
           ],
           "",
-          15,
+          16,
           [
             "get",
             "name"
@@ -15801,7 +15935,7 @@
       "type": "symbol",
       "source": "street_furniture",
       "source-layer": "street_furniture",
-      "minzoom": 17,
+      "minzoom": 18,
       "filter": [
         "all",
         [
@@ -16042,19 +16176,7 @@
             ]
           ]
         ],
-        "icon-size": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          17,
-          0.7,
-          18,
-          1.0
-        ],
+        "icon-size": 1.0,
         "icon-allow-overlap": false,
         "icon-padding": 2,
         "icon-anchor": "center"
