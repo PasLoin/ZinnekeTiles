@@ -344,9 +344,34 @@ extract railway \
 echo "→ public_transport (relations STIB/MIVB)"
 osmium tags-filter "$SRC" r/route=bus,tram,subway,trolleybus -o "_tmp_pt.osm.pbf" --overwrite
 osmium cat "_tmp_pt.osm.pbf" -o "_tmp_pt.osm" --overwrite
+
 python3 extract_stib_routes.py
+python3 build_loom_input.py --input _tmp_pt.osm --output _tmp_stib_loom.json
 rm -f _tmp_pt.osm.pbf _tmp_pt.osm
 echo "  $(wc -l < "public_transport.json") lignes"
+
+echo "→ public_transport_octi (plan octilinéaire, loom)"
+LOOM_BIN="${LOOM_BIN:-}"
+loom_tool() {
+  if [ -n "$LOOM_BIN" ] && [ -x "$LOOM_BIN/$1" ]; then echo "$LOOM_BIN/$1"; else command -v "$1" || true; fi
+}
+TOPO=$(loom_tool topo); LOOM=$(loom_tool loom); OCTI=$(loom_tool octi)
+if [ -n "$TOPO" ] && [ -n "$LOOM" ] && [ -n "$OCTI" ]; then
+  if "$TOPO" < _tmp_stib_loom.json 2> _tmp_topo.log \
+      | "$LOOM" 2> _tmp_loom.log \
+      | "$OCTI" --retry-on-error 2> _tmp_octi.log > _tmp_stib_octi.json \
+      && python3 build_octi_layer.py --input _tmp_stib_octi.json --output public_transport_octi.json; then
+    echo "  $(wc -l < "public_transport_octi.json") features"
+  else
+    echo "  ⚠  échec de loom, plan octilinéaire non régénéré" >&2
+    tail -n 5 _tmp_topo.log _tmp_loom.log _tmp_octi.log >&2 || true
+    rm -f public_transport_octi.json
+  fi
+  rm -f _tmp_topo.log _tmp_loom.log _tmp_octi.log _tmp_stib_octi.json
+else
+  echo "  ⚠  topo/loom/octi introuvables (LOOM_BIN ou PATH), plan octilinéaire ignoré" >&2
+fi
+rm -f _tmp_stib_loom.json
 
 echo "→ indoor (intérieur + souterrain)"
 osmium tags-filter "$SRC" \
