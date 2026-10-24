@@ -20,9 +20,12 @@ describe('style : plan octilinéaire', () => {
     const ids = planLayerIds(lazy);
     expect(ids).toEqual([
       'public_transport_octi-veil',
-      'public_transport_octi-casing',
+      'public_transport_octi-outline',
+      'public_transport_octi-inner-outline',
       'public_transport_octi-line',
+      'public_transport_octi-inner',
       'public_transport_octi-station',
+      'public_transport_octi-station-outline',
       'public_transport_octi-ref',
       'public_transport_octi-label',
     ]);
@@ -31,9 +34,19 @@ describe('style : plan octilinéaire', () => {
     }
   });
 
-  it('décale chaque ligne selon son rang dans le faisceau', () => {
+  it('lit les couches produites par transitmap', () => {
+    const sourceLayers = new Set(lazy.layers.filter(isPlanLayer).map((l) => l['source-layer']).filter(Boolean));
+    expect([...sourceLayers].sort()).toEqual(['inner-connections', 'lines', 'stations']);
+  });
+
+  it('double la largeur à chaque niveau de zoom entier pour suivre la géométrie', () => {
     const line = lazy.layers.find((l) => l.id === 'public_transport_octi-line');
-    expect(JSON.stringify(line.paint['line-offset'])).toContain('"slot"');
+    const width = line.paint['line-width'];
+    expect(width[0]).toBe('interpolate');
+    expect(width[1]).toEqual(['exponential', 2]);
+    const stops = width.slice(3);
+    expect(stops[0]).toBe(10);
+    expect(stops[2]).toBeCloseTo(10.999);
   });
 
   it('laisse la légende et la vue géographique inchangées', () => {
