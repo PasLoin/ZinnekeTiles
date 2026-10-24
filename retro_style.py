@@ -501,6 +501,8 @@ FIELD_ORDER = [
 def flow_value(v):
     if isinstance(v, dict):
         return "{ " + ", ".join(f"{flow_key(k)}: {flow_value(x)}" for k, x in sorted(v.items())) + " }"
+    if isinstance(v, list):
+        return "[" + ", ".join(flow_value(x) for x in v) + "]"
     if isinstance(v, str):
         if v.startswith("#") or not re.fullmatch(r"[A-Za-z0-9_./-]+", v):
             return json.dumps(v, ensure_ascii=False)
@@ -618,6 +620,21 @@ def ordered_subtypes(info):
     return [(k, info["subtypes"][k]) for k in order]
 
 
+DENSITY_ORDER = ["grid", "show", "dots_at", "overlap_at"]
+
+
+def dump_density(density):
+    lines = ["    density:"]
+    for key in DENSITY_ORDER:
+        if key in density:
+            lines.append(f"      {key}: {flow_value(density[key])}")
+    if density.get("tiers"):
+        lines.append("      tiers:")
+        for tier in density["tiers"]:
+            lines.append(f"        - {flow_value(tier)}")
+    return lines
+
+
 def dump_layer(name, info):
     lines = []
     label  = info.get("label") or LABELS.get(name, name.capitalize())
@@ -647,6 +664,8 @@ def dump_layer(name, info):
         lines.append(f"    labels_at: {la}")
     if info.get("tiles"):
         lines.append(f"    tiles: {flow_value(info['tiles'])}")
+    if info.get("density"):
+        lines += dump_density(info["density"])
     if info["subtypes"]:
         lines.append(f"    subtypes:")
         for val, scfg in ordered_subtypes(info):
@@ -693,6 +712,7 @@ def main():
 
     metadata = style.get("metadata") or {}
     meta_tiles = metadata.get("brussels:tiles") or {}
+    meta_density = metadata.get("brussels:poi_density") or {}
     meta_patterns = metadata.get("brussels:patterns") or {}
     legend = {g.get("id"): g for g in metadata.get("brussels:legend") or [] if isinstance(g, dict)}
     groups = {}
@@ -703,6 +723,8 @@ def main():
         apply_legend(name, info, legend.get(name), style_layers)
         if name in meta_tiles:
             info["tiles"] = meta_tiles[name]
+        if name == "poi" and meta_density:
+            info["density"] = meta_density
         if name == "leisure":
             info["sports"] = parse_sports(style_layers)
         groups[name] = info
@@ -738,6 +760,11 @@ def main():
         "#                  detail_from pour buildings)",
         "#   sports         leisure uniquement : rendu des terrains par sport_render",
         "#                  (markings_at, default, values: couleur, contour, longueur)",
+        "#   density        poi uniquement : désencombrement (grid: taille de cellule en px",
+        "#                  au premier zoom de show, show: nb max de POI par cellule et par",
+        "#                  zoom, dots_at: zoom des points sans icône, overlap_at: zoom à",
+        "#                  partir duquel les icônes peuvent se chevaucher, tiers: paliers",
+        "#                  d'importance par tag, du plus important au moins important)",
         "#",
         "# Champs disponibles par sous-type :",
         "#   tag            tag OSM du filtre (landuse, leisure, natural, highway...)",
