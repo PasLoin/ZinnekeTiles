@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, json, sys
+import argparse, json, math, sys
 from pathlib import Path
 
 ZOOM_BLOCKS = [(z, z) for z in range(10, 19)]
@@ -109,18 +109,85 @@ def load_geojson(path):
     return {"type": "FeatureCollection", "features": feats}, True
 
 
-def process_layer(name, rules, dry_run):
-    return process_file(Path(f"{name}.json"), rules, dry_run)
+def tier_of(props, tiers):
+    for i, tier in enumerate(tiers, 1):
+        for tag, values in tier.items():
+            v = props.get(tag)
+            if v is None:
+                continue
+            if "*" in values or str(v) in values:
+                return i
+    return len(tiers) + 1
+
+
+def point_of(geom):
+    if not geom:
+        return None
+    coords = geom.get("coordinates")
+    while isinstance(coords, list) and coords and isinstance(coords[0], list):
+        coords = coords[0]
+    if isinstance(coords, list) and len(coords) >= 2:
+        return float(coords[0]), float(coords[1])
+    return None
+
+
+def grid_cell(lon, lat, zoom, size):
+    world = 512 * 2 ** zoom
+    lat = max(min(lat, 85.0511), -85.0511)
+    s = math.sin(math.radians(lat))
+    x = (lon + 180.0) / 360.0 * world
+    y = (0.5 - math.log((1 + s) / (1 - s)) / (4 * math.pi)) * world
+    return int(x // size), int(y // size)
+
+
+def assign_ranks(features, cfg):
+    tiers = cfg.get("tiers") or []
+    zoom = cfg.get("zoom", 15)
+    size = cfg.get("grid", 128)
+    rank_field = cfg.get("rank_field", "poi_rank")
+    tier_field = cfg.get("tier_field", "poi_tier")
+    cells = {}
+    keys = {}
+    for idx, f in enumerate(features):
+        props = f.get("properties")
+        if props is None:
+            props = f["properties"] = {}
+        tier = tier_of(props, tiers)
+        props[tier_field] = tier
+        pt = point_of(f.get("geometry"))
+        if pt is None:
+            continue
+        fid = f.get("id", ("idx", idx))
+        late = 1 if (f.get("tippecanoe") or {}).get("minzoom", zoom) > zoom else 0
+        key = (late, 0 if props.get("name") else 1, tier, str(fid))
+        known = keys.get(fid)
+        if known is None or key < known[0]:
+            keys[fid] = (key, grid_cell(pt[0], pt[1], zoom, size))
+    for fid, (key, cell) in keys.items():
+        cells.setdefault(cell, []).append((key, fid))
+    ranks = {}
+    for members in cells.values():
+        for pos, (_, fid) in enumerate(sorted(members), 1):
+            ranks[fid] = pos
+    for idx, f in enumerate(features):
+        fid = f.get("id", ("idx", idx))
+        if fid in ranks:
+            f["properties"][rank_field] = ranks[fid]
+    return len(cells)
+
+
+def process_layer(name, rules, dry_run, rank=None):
+    return process_file(Path(f"{name}.json"), rules, dry_run, rank)
 
 
 def layer_jobs(name, cfg):
     files = cfg.get("files")
     if files:
-        return [(f"{name} ({fname})", Path(fname), rules) for fname, rules in files.items()]
-    return [(name, Path(f"{name}.json"), cfg.get("rules", []))]
+        return [(f"{name} ({fname})", Path(fname), rules, None) for fname, rules in files.items()]
+    return [(name, Path(f"{name}.json"), cfg.get("rules", []), cfg.get("rank"))]
 
 
-def process_file(path, rules, dry_run):
+def process_file(path, rules, dry_run, rank=None):
     if not path.exists():
         return {"error": f"{path} introuvable"}
 
@@ -136,6 +203,8 @@ def process_file(path, rules, dry_run):
             expanded += max(0, len(r) - 1)
             out.extend(r)
 
+    cells = assign_ranks(out, rank) if rank else 0
+
     if not dry_run:
         data["features"] = out
         if was_ndjson:
@@ -144,7 +213,7 @@ def process_file(path, rules, dry_run):
             path.write_text(json.dumps(data, ensure_ascii=False))
 
     return {"in": len(feats), "out": len(out),
-            "dropped": dropped, "expanded": expanded}
+            "dropped": dropped, "expanded": expanded, "cells": cells}
 
 
 def main():
@@ -178,9 +247,9 @@ def main():
             print(f"  ⚠  {name} absent de {gran_path}")
             continue
 
-        for label, path, rules in layer_jobs(name, cfg):
+        for label, path, rules, rank in layer_jobs(name, cfg):
             print(f"→ {label}  ({len(rules)} règles)", end="  ")
-            stats = process_file(path, rules, args.dry_run)
+            stats = process_file(path, rules, args.dry_run, rank)
 
             if "error" in stats:
                 print(f"✗  {stats['error']}")
@@ -190,8 +259,9 @@ def main():
             pct = round(100 * stats["out"] / stats["in"]) if stats["in"] else 0
             exp = f" +{stats['expanded']} splits" if stats["expanded"] else ""
             mark = "○" if args.dry_run else "✓"
+            rk = f", rang sur {stats['cells']} cellules" if stats.get("cells") else ""
             print(f"{mark}  {stats['in']} → {stats['out']}  "
-                  f"({stats['dropped']} drop{exp})")
+                  f"({stats['dropped']} drop{exp}{rk})")
 
             total_in   += stats["in"]
             total_out  += stats["out"]
