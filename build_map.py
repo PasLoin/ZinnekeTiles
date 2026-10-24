@@ -1069,6 +1069,91 @@ def public_transport(cfg):
                   "text-halo-color":"rgba(255,255,255,0.85)","text-halo-width":1.5}},
     ]
 
+OCTI_SOURCE = "public_transport_octi"
+OCTI_DEFAULTS = {"routes": ["subway", "tram"], "appear_at": 10,
+                 "labels_at": 12, "refs_at": 13, "veil_opacity": 0.85,
+                 "veil_color": None, "station_color": "#ffffff",
+                 "station_outline": "#222222"}
+
+
+def octi_settings(config):
+    raw = (((config.get("layers") or {}).get("public_transport") or {}).get("octilinear"))
+    if raw is False or (isinstance(raw, dict) and raw.get("enabled") is False):
+        return None
+    s = {**OCTI_DEFAULTS, **(raw if isinstance(raw, dict) else {})}
+    s["veil_color"] = c(s["veil_color"])
+    s["station_color"] = c(s["station_color"])
+    s["station_outline"] = c(s["station_outline"])
+    return s
+
+
+def octi_width(scale=1.0, extra=0.0):
+    return ["interpolate", ["linear"], ["zoom"],
+            10, 2 * scale + extra, 13, 4 * scale + extra, 16, 8 * scale + extra]
+
+
+def octi_offset():
+    return ["interpolate", ["linear"], ["zoom"],
+            10, ["*", ["get", "slot"], 2], 13, ["*", ["get", "slot"], 4],
+            16, ["*", ["get", "slot"], 8]]
+
+
+def public_transport_octi(s, bgc):
+    if not s:
+        return []
+    ap = s["appear_at"]
+    meta = {"brussels:group": OCTI_SOURCE}
+    src = {"source": OCTI_SOURCE, "source-layer": OCTI_SOURCE}
+    is_line = ["==", ["get", "kind"], "line"]
+    is_station = ["==", ["get", "kind"], "station"]
+    hidden = {"visibility": "none"}
+    return [
+        {"id": "public_transport_octi-veil", "type": "background", "metadata": meta,
+         "layout": dict(hidden),
+         "paint": {"background-color": s["veil_color"] or bgc,
+                   "background-opacity": s["veil_opacity"]}},
+        {"id": "public_transport_octi-casing", "type": "line", **src, "minzoom": ap,
+         "metadata": meta, "filter": is_line,
+         "layout": {**hidden, "line-join": "round", "line-cap": "round"},
+         "paint": {"line-color": "#ffffff", "line-width": octi_width(1.0, 2.0),
+                   "line-offset": octi_offset()}},
+        {"id": "public_transport_octi-line", "type": "line", **src, "minzoom": ap,
+         "metadata": meta, "filter": is_line,
+         "layout": {**hidden, "line-join": "round", "line-cap": "round"},
+         "paint": {"line-color": ["coalesce", ["get", "colour"], "#777777"],
+                   "line-width": octi_width(), "line-offset": octi_offset()}},
+        {"id": "public_transport_octi-station", "type": "circle", **src, "minzoom": ap,
+         "metadata": meta, "filter": is_station,
+         "layout": dict(hidden),
+         "paint": {"circle-color": s["station_color"],
+                   "circle-stroke-color": s["station_outline"],
+                   "circle-radius": ["interpolate", ["linear"], ["zoom"],
+                                     10, ["case", [">=", ["get", "lines"], 2], 3, 2],
+                                     16, ["case", [">=", ["get", "lines"], 2], 9, 6]],
+                   "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 16, 2.5]}},
+        {"id": "public_transport_octi-ref", "type": "symbol", **src, "minzoom": s["refs_at"],
+         "metadata": meta, "filter": is_line,
+         "layout": {**hidden, "symbol-placement": "line", "symbol-spacing": 350,
+                    "text-field": ["get", "ref"], "text-font": ["Noto Sans Regular"],
+                    "text-size": 10, "text-rotation-alignment": "viewport"},
+         "paint": {"text-color": ["coalesce", ["get", "text_colour"], "#ffffff"],
+                   "text-halo-color": ["coalesce", ["get", "colour"], "#777777"],
+                   "text-halo-width": 3}},
+        {"id": "public_transport_octi-label", "type": "symbol", **src, "minzoom": s["labels_at"],
+         "metadata": meta, "filter": ["all", is_station, ["==", ["get", "primary"], 1]],
+         "layout": {**hidden, "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
+                    "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 16, 13],
+                    "text-max-width": 8,
+                    "text-variable-anchor": ["left", "right", "top", "bottom"],
+                    "text-radial-offset": 0.8, "text-justify": "auto",
+                    "symbol-sort-key": ["-", 0, ["get", "lines"]]},
+         "paint": {"text-color": "#222222", "text-halo-color": "rgba(255,255,255,0.9)",
+                   "text-halo-width": 1.5}},
+    ]
+
+
+
+
 
 def boundaries(cfg):
     return [{"id":"boundaries","type":"line",
@@ -1341,7 +1426,14 @@ def build_style(config):
     density = poi_density(L.get("poi"))
     if density:
         metadata["brussels:poi_density"] = density_meta(density)
-    metadata["brussels:lazy"] = lazy_layers(config, lc(L, "buildings"), first_label)
+    
+    lazy = lazy_layers(config, lc(L, "buildings"), first_label)
+    octi = public_transport_octi(octi_settings(config), bgc)
+    if octi:
+        lazy["sources"][OCTI_SOURCE] = {"type": "vector", "url": f"./{OCTI_SOURCE}.pmtiles.gz",
+                                        "attribution": "© OpenStreetMap contributors"}
+        lazy["layers"] += octi
+    metadata["brussels:lazy"] = lazy    
     return {"version":8,"name":M.get("name","Map"),
             "metadata":metadata,
             "sources":sources,"glyphs":gl,"layers":layers}
@@ -1644,6 +1736,7 @@ PMTILES_DEFAULTS = {
     "cycleway":         {"max_zoom": 18, "simplification": 10},
     "railway":          {"max_zoom": 18, "simplification": 10},
     "public_transport": {"max_zoom": 16, "simplification": 10},
+    "public_transport_octi": {"max_zoom": 16, "simplification": 2},
     "street_furniture": {"max_zoom": 18, "simplification": 10},
     "buildings":        {"max_zoom": 18, "simplification": 2, "detail_from": 13},
     "building_parts":   {"min_zoom": 13, "max_zoom": 18, "simplification": 2},
