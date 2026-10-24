@@ -223,10 +223,15 @@ layers:
       bus: { tag: route, color: "#f39200" }
     octilinear:
       routes: [subway, tram]
+      layout: octilinear
+      geo_pen: 0
+      aggregation_distance: 50
+      min_zoom: 10
+      max_zoom: 17
       appear_at: 10
-      labels_at: 12
-      refs_at: 13
-      veil_opacity: 0.85 
+      labels_at: 13
+      refs_at: 14
+      veil_opacity: 0.85
 
   poi:
     label: POI
