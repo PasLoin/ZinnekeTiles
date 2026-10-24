@@ -18,6 +18,11 @@
 #                  detail_from pour buildings)
 #   sports         leisure uniquement : rendu des terrains par sport_render
 #                  (markings_at, default, values: couleur, contour, longueur)
+#   density        poi uniquement : désencombrement (grid: taille de cellule en px
+#                  au premier zoom de show, show: nb max de POI par cellule et par
+#                  zoom, dots_at: zoom des points sans icône, overlap_at: zoom à
+#                  partir duquel les icônes peuvent se chevaucher, tiers: paliers
+#                  d'importance par tag, du plus important au moins important)
 #
 # Champs disponibles par sous-type :
 #   tag            tag OSM du filtre (landuse, leisure, natural, highway...)
@@ -220,8 +225,17 @@ layers:
   poi:
     label: POI
     color: "#734a08"
-    appear_at: 14
-    labels_at: 15
+    appear_at: 15
+    labels_at: 16
+    density:
+      grid: 128
+      show: { 15: 1, 16: 3 }
+      dots_at: 17
+      overlap_at: 18
+      tiers:
+        - { amenity: [hospital, townhall, university, college, theatre, cinema, library, arts_centre, place_of_worship, courthouse], shop: [mall, department_store], tourism: [museum, attraction, zoo, theme_park] }
+        - { amenity: [pharmacy, police, post_office, school, bank, fire_station, clinic, marketplace, community_centre], leisure: [sports_centre, swimming_pool], office: [diplomatic, government], shop: [supermarket], tourism: [hotel, gallery, hostel] }
+        - { amenity: [restaurant, cafe, bar, pub, fast_food, ice_cream, doctors, dentist, kindergarten], shop: [bakery, convenience, butcher, chocolate, books, greengrocer] }
     subtypes:
       company: { tag: office, label: Entreprises, appear_at: 16 }
       memorial: { tag: historic, label: Mémoriaux, appear_at: 16 }
@@ -230,7 +244,7 @@ layers:
     label: Mobilier
     color: "#555555"
     swatch: dot
-    appear_at: 17
+    appear_at: 18
     subtypes:
       # amenity
       bench: { tag: amenity }

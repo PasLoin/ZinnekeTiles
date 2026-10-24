@@ -30,7 +30,51 @@ def lc(layers, name):
         "extrusion_3d": r.get("extrusion_3d", False),
         "sports":       r.get("sports"),
         "materials":    {str(k): c(v) for k, v in (r.get("materials") or {}).items()},
+        "density":      poi_density(r),
     }
+
+
+POI_RANK_FIELD = "poi_rank"
+POI_TIER_FIELD = "poi_tier"
+
+
+def poi_density(raw):
+    d = (raw or {}).get("density")
+    if not d:
+        return None
+    tiers = []
+    for t in d.get("tiers") or []:
+        tiers.append({str(k): [str(x) for x in (v if isinstance(v, list) else [v])]
+                      for k, v in (t or {}).items()})
+    out = {"grid": int(d.get("grid", 128)),
+           "show": {int(k): int(v) for k, v in (d.get("show") or {}).items()},
+           "tiers": tiers}
+    for k in ("dots_at", "overlap_at"):
+        if d.get(k) is not None:
+            out[k] = int(d[k])
+    return out
+
+
+def density_meta(d):
+    out = {k: v for k, v in d.items() if k != "show"}
+    out["show"] = {str(z): n for z, n in sorted(d["show"].items())}
+    return out
+
+
+def poi_rank_filter(d):
+    show = sorted(d["show"].items())
+    if not show:
+        return None
+    step = ["step", ["zoom"], show[0][1]]
+    for z, n in show[1:]:
+        step += [z, n]
+    return ["any", [">=", ["zoom"], show[-1][0] + 1],
+            ["<=", ["coalesce", ["get", POI_RANK_FIELD], 0], step]]
+
+
+def poi_sort_key(d):
+    return ["+", ["*", ["coalesce", ["get", POI_TIER_FIELD], len(d["tiers"]) + 1], 1000],
+            ["coalesce", ["get", POI_RANK_FIELD], 0]]
 
 def sc(cfg, key):
     s = cfg["subtypes"].get(key) or {}
@@ -62,9 +106,15 @@ def by_expr(s, field, default):
     return expr
 
 def zoom(pairs):
-    if len(pairs) == 1: return pairs[0][1]
+    stops = []
+    for z, v in pairs:
+        if stops and z <= stops[-1][0]:
+            stops[-1] = (stops[-1][0], v)
+        else:
+            stops.append((z, v))
+    if len(stops) == 1: return stops[0][1]
     e = ["interpolate",["linear"],["zoom"]]
-    for z,v in pairs: e += [z,v]
+    for z,v in stops: e += [z,v]
     return e
 
 def color_or_case(col, col_private):
@@ -1031,15 +1081,19 @@ def poi(cfg):
     fc = cfg["color"] or "#734a08"
     ap = cfg["appear_at"]
     la = cfg["labels_at"]
-    return [
-        {"id":"poi-circle","type":"circle",
-         "source":"poi","source-layer":"poi","minzoom":ap,
-         "paint":{"circle-radius":zoom([(ap,2),(18,4)]),"circle-color":fc,
+    d  = cfg.get("density")
+    dots = max(ap, d.get("dots_at", ap)) if d else ap
+    circle = {"id":"poi-circle","type":"circle",
+         "source":"poi","source-layer":"poi","minzoom":dots,
+         "paint":{"circle-radius":zoom([(dots,2),(18,4)]),
+                  "circle-color":fc,
                   "circle-stroke-color":"#fff","circle-stroke-width":.8,
-                  "circle-opacity":.85}},
-        {"id":"poi-icon","type":"symbol",
-         "source":"poi","source-layer":"poi","minzoom":ap,
-         "layout":{
+                  "circle-opacity":.85}}
+    if d and d.get("overlap_at") is not None:
+        overlap = ["step",["zoom"],False,d["overlap_at"],True]
+    else:
+        overlap = not d
+    layout = {
              "icon-image":["coalesce",
                  ["case",["==",["get","cuisine"],"friture"],
                          ["image","poi-cuisine-friture"],["image",""]],
@@ -1053,12 +1107,23 @@ def poi(cfg):
                  ["image",["concat","poi-",["get","historic"]]],
                  ["case",["has","shop"],["image","poi-shop"],["image",""]]],
              "icon-size":zoom([(ap,.7),(18,1.0)]),
-             "icon-allow-overlap":True,"icon-padding":2,"icon-anchor":"center",
+             "icon-allow-overlap":overlap,"icon-padding":2,"icon-anchor":"center",
              "text-field":["step",["zoom"],"",la,["get","name"]],
              "text-font":["Noto Sans Regular"],"text-size":10,
-             "text-offset":[0,1.2],"text-anchor":"top","text-optional":True},
-         "paint":{"icon-opacity":.9,"text-color":fc,
-                  "text-halo-color":"rgba(255,255,255,0.8)","text-halo-width":1.2}},
+             "text-offset":[0,1.2],"text-anchor":"top","text-optional":True}
+    if d:
+        layout["symbol-sort-key"] = poi_sort_key(d)
+    icon = {"id":"poi-icon","type":"symbol",
+         "source":"poi","source-layer":"poi","minzoom":ap}
+    rank_filter = poi_rank_filter(d) if d else None
+    if rank_filter:
+        icon["filter"] = rank_filter
+    icon["layout"] = layout
+    icon["paint"] = {"icon-opacity":.9,"text-color":fc,
+                     "text-halo-color":"rgba(255,255,255,0.8)","text-halo-width":1.2}
+    return [
+        circle,
+        icon,
         {"id":"leisure-icon","type":"symbol",
          "source":"leisure","source-layer":"leisure","minzoom":ap,
          "filter":["!=",["get","leisure"],"playground"],
@@ -1273,6 +1338,9 @@ def build_style(config):
                 "brussels:legend": build_legend(config, layers)}
     if meta_tiles:
         metadata["brussels:tiles"] = meta_tiles
+    density = poi_density(L.get("poi"))
+    if density:
+        metadata["brussels:poi_density"] = density_meta(density)
     metadata["brussels:lazy"] = lazy_layers(config, lc(L, "buildings"), first_label)
     return {"version":8,"name":M.get("name","Map"),
             "metadata":metadata,
@@ -1551,6 +1619,15 @@ def build_granulometry(config):
                 for i in tile_inputs(config, "buildings")}}
             continue
         out["layers"][name] = {"rules":rules}
+        density = poi_density(raw) if name == "poi" else None
+        if density:
+            out["layers"][name]["rank"] = {
+                "grid": density["grid"],
+                "zoom": min(density["show"]) if density["show"] else ap,
+                "tiers": density["tiers"],
+                "rank_field": POI_RANK_FIELD,
+                "tier_field": POI_TIER_FIELD,
+            }
     return out
 
 
