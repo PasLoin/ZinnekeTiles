@@ -177,7 +177,7 @@
   </div>
 
   <div class="view-toggle">
-    <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-data">DATA</button>
+    <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-plan" hidden aria-pressed="false" title="Plan schématique du métro et du tram">PLAN</button> <button id="toggle-data">DATA</button>
   </div>
 </div>
 
@@ -203,6 +203,10 @@ import {
   isIsolated, keepsInIsolation, BUILDING_LAYERS,
 } from './indoor.js';
 import { createRoofsLayer, eavesHeight, ROOFS_URL } from './roofs.js';
+import {
+  PLAN_GROUP, hiddenByPlan, planAvailable, planLayerIds,
+  geoTransitLayerIds, touchesTransit, isPlanSourceError,
+} from './transit_plan.js';
 
 window._togglePanel = togglePanel;
 initPanels();
@@ -286,15 +290,22 @@ function initMap(style, dataInfo) {
     levels: [],
     isolated: false,
     roofsOn: false,
+    planOn: false,
   };
   const requestedVisibility = {};
   const buildingLayerIds = new Set([...BUILDING_LAYERS.flat, ...BUILDING_LAYERS.extruded]);
   let legend = null;
   const legendVisibility = (id) => (!legend || legend.isOn(id) ? 'visible' : 'none');
 
+  const planIds = planLayerIds(lazy);
+  const geoTransitIds = geoTransitLayerIds(style.layers);
+
   function applyLegend(ids, on) {
     const plain = ids.filter((id) => !buildingLayerIds.has(id));
     for (const id of plain) setVisibility(id, on ? 'visible' : 'none');
+    if (touchesTransit(plain, geoTransitIds)) {
+      for (const id of planIds) setVisibility(id, on ? 'visible' : 'none');
+    }
     if (plain.length !== ids.length) {
       state.buildingsOn = on;
       applyBuildings();
@@ -303,17 +314,20 @@ function initMap(style, dataInfo) {
 
   const toggleBtn = document.getElementById('toggle-3d');
   const roofsBtn = document.getElementById('toggle-roofs');
+  const planBtn = document.getElementById('toggle-plan');
+  planBtn.hidden = !planAvailable(lazy);
   const originalHeights = {};
   let roofsLayer = null;
   const levelsList = document.getElementById('levels-list');
   const levelsNote = document.getElementById('levels-note');
 
   const hiddenByIsolation = (id) => state.isolated && !keepsInIsolation(map.getLayer(id));
+  const hiddenByMode = (id) => hiddenByIsolation(id) || hiddenByPlan(map.getLayer(id), state.planOn);
 
   function setVisibility(id, v) {
     requestedVisibility[id] = v;
     if (!map.getLayer(id)) return;
-    map.setLayoutProperty(id, 'visibility', hiddenByIsolation(id) ? 'none' : v);
+    map.setLayoutProperty(id, 'visibility', hiddenByMode(id) ? 'none' : v);
   }
 
   function applyIsolation(isolated) {
@@ -324,7 +338,8 @@ function initMap(style, dataInfo) {
       if (!(layer.id in requestedVisibility)) {
         requestedVisibility[layer.id] = (layer.layout || {}).visibility || 'visible';
       }
-      map.setLayoutProperty(layer.id, 'visibility', isolated ? 'none' : requestedVisibility[layer.id]);
+      const hidden = isolated || hiddenByPlan(layer, state.planOn);
+      map.setLayoutProperty(layer.id, 'visibility', hidden ? 'none' : requestedVisibility[layer.id]);
     }
   }
 
@@ -530,6 +545,43 @@ function initMap(style, dataInfo) {
     roofsBtn.setAttribute('aria-pressed', String(enabled));
     applyBuildings();
   }
+
+  function transitRequested() {
+    const ref = geoTransitIds.find((id) => id in requestedVisibility);
+    return ref ? requestedVisibility[ref] : legendVisibility(geoTransitIds[0]);
+  }
+
+  function setPlan(enabled) {
+    if (enabled && ensureLazyGroup(map, lazy, PLAN_GROUP, location.href)) {
+      for (const id of planIds) {
+        if (map.getLayer(id)) map.moveLayer(id);
+      }
+    }
+    state.planOn = enabled;
+    planBtn.classList.toggle('active', enabled);
+    planBtn.setAttribute('aria-pressed', String(enabled));
+    const transit = transitRequested();
+    for (const id of planIds) setVisibility(id, requestedVisibility[id] ?? transit);
+    for (const id of geoTransitIds) setVisibility(id, requestedVisibility[id] ?? transit);
+  }
+
+  function disablePlan() {
+    if (state.planOn) setPlan(false);
+    planBtn.disabled = true;
+    planBtn.title = 'Plan indisponible : public_transport_octi.pmtiles.gz n\u2019a pas pu être chargé';
+  }
+
+  map.on('error', (e) => {
+    if (isPlanSourceError(e)) disablePlan();
+  });
+
+  planBtn.onclick = () => {
+    if (!state.loaded) {
+      map.once('load', () => setPlan(!state.planOn));
+      return;
+    }
+    setPlan(!state.planOn);
+  };
 
   roofsBtn.onclick = () => {
     if (!state.loaded) {
