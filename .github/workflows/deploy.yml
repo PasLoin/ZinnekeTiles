@@ -46,6 +46,33 @@ jobs:
           git clone --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe
           cd /tmp/tippecanoe && make -j$(nproc) && sudo make install
 
+      - name: Resolve loom revision
+        id: loom-rev
+        run: echo "sha=$(git ls-remote https://github.com/ad-freiburg/loom.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache loom binaries
+        id: loom-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.loom/bin
+          key: loom-${{ runner.os }}-${{ steps.loom-rev.outputs.sha }}
+
+      - name: Build loom (topo, loom, octi)
+        if: steps.loom-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y -qq cmake libbz2-dev zlib1g-dev
+          git clone --recurse-submodules https://github.com/ad-freiburg/loom.git /tmp/loom
+          git -C /tmp/loom checkout ${{ steps.loom-rev.outputs.sha }}
+          git -C /tmp/loom submodule update --init --recursive
+          cmake -S /tmp/loom -B /tmp/loom/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/loom/build --target topo loom octi -j"$(nproc)"
+          mkdir -p ~/.loom/bin
+          cp /tmp/loom/build/topo /tmp/loom/build/loom /tmp/loom/build/octi ~/.loom/bin/
+
+      - name: Check loom binaries
+        run: |
+          for t in topo loom octi; do ~/.loom/bin/$t --version | head -n 1; done
+
       # ── Étape 1 : Compiler map.config.yaml → style.json + granulometry + pmtiles_params ──
       - name: Build style and granulometry from config
         run: |
@@ -101,7 +128,7 @@ jobs:
 
       # ── Étape 3 : Extraction GeoJSON (inclut street_furniture.json, issue #51) ─────────
       - name: Extract GeoJSON layers
-        run: bash generate_json.bash
+        run: LOOM_BIN="$HOME/.loom/bin" bash generate_json.bash
 
       - name: Generate 3D roofs
         run: python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
