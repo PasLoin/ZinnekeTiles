@@ -55,9 +55,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.loom/bin
-          key: loom-${{ runner.os }}-${{ steps.loom-rev.outputs.sha }}
+          key: loom-transitmap-${{ runner.os }}-${{ steps.loom-rev.outputs.sha }}
 
-      - name: Build loom (topo, loom, octi)
+      - name: Build loom (topo, loom, octi, transitmap)
         if: steps.loom-cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get install -y -qq cmake libbz2-dev zlib1g-dev
@@ -65,13 +65,13 @@ jobs:
           git -C /tmp/loom checkout ${{ steps.loom-rev.outputs.sha }}
           git -C /tmp/loom submodule update --init --recursive
           cmake -S /tmp/loom -B /tmp/loom/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build /tmp/loom/build --target topo loom octi -j"$(nproc)"
+          cmake --build /tmp/loom/build --target topo loom octi transitmap -j"$(nproc)"
           mkdir -p ~/.loom/bin
-          cp /tmp/loom/build/topo /tmp/loom/build/loom /tmp/loom/build/octi ~/.loom/bin/
+          cp /tmp/loom/build/topo /tmp/loom/build/loom /tmp/loom/build/octi /tmp/loom/build/transitmap ~/.loom/bin/
 
       - name: Check loom binaries
         run: |
-          for t in topo loom octi; do ~/.loom/bin/$t --version | head -n 1; done
+          for t in topo loom octi transitmap; do ~/.loom/bin/$t --version | head -n 1; done
 
       # ── Étape 1 : Compiler map.config.yaml → style.json + granulometry + pmtiles_params ──
       - name: Build style and granulometry from config
