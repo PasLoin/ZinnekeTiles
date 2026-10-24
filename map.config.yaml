@@ -221,6 +221,12 @@ layers:
       tram: { tag: route, color: "#c8102e" }
       subway: { tag: route, color: "#1f4e9d" }
       bus: { tag: route, color: "#f39200" }
+    octilinear:
+      routes: [subway, tram]
+      appear_at: 10
+      labels_at: 12
+      refs_at: 13
+      veil_opacity: 0.85 
 
   poi:
     label: POI
