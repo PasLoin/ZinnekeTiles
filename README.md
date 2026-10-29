@@ -39,6 +39,7 @@ npx playwright install chromium
 - `requirements.txt` : dépendances Python versionnées (`pyyaml`, `shapely`, `pytest`).
 - `map.config.yaml` : **source de vérité du style**. Modifier ce fichier, pas `www/style.json` directement.
 - `build_map.py` : compile `map.config.yaml` → `www/style.json` + `granulometry.json` + `pmtiles_params.json`.
+- `styles/*.yaml` : variantes de style (surcharges de `map.config.yaml`), compilées en `www/style.<id>.json` — voir [Variantes de style](#variantes-de-style).
 - `retro_style.py` : ingénierie inverse d'un `style.json` existant → `map.config.yaml` (bootstrap ou import).
 - `generate_json.bash` : extrait les couches thématiques depuis le PBF et produit les GeoJSON intermédiaires (`roads.json`, `poi.json`, etc.).
 - `apply_granulometry.py` : filtre les GeoJSON selon les règles LOD générées par `build_map.py`.
@@ -112,6 +113,30 @@ La légende n'est plus écrite à la main dans `index.html` : `build_map.py` la 
 - Couleur : `color` de la config, sinon couleur lue dans la peinture des layers (hors casing, tunnel et pont), sinon `#cccccc`.
 - Boutons « Tout afficher » / « Tout masquer », groupes repliables, état mixte quand seule une partie des sous-entrées est cochée.
 
+### Couleurs annexes (`palette`)
+
+Les couleurs secondaires qui ne dépendent pas d'un sous-type sont regroupées dans une section `palette` facultative. Sans cette section, les valeurs par défaut de `build_map.py` s'appliquent.
+
+| Groupe | Clés |
+| :--- | :--- |
+| `water` | `tunnel_core` |
+| `buildings` | `roof` |
+| `leisure` | `outline` |
+| `roads` | `bridge_casing`, `busway_center`, `tunnel_area`, `tunnel_area_outline`, `bridge_area`, `bridge_area_outline`, `label`, `label_halo`, `oneway`, `oneway_halo` |
+| `pedestrian` | `no_access` |
+| `cycleway` | `oneway` |
+| `railway` | `bridge_casing` |
+| `public_transport` | `casing`, `label`, `label_halo` |
+| `addresses` | `halo` |
+| `poi` | `stroke`, `label_halo` |
+
+```yaml
+palette:
+  roads: { label: "#222222", bridge_casing: "#000000" }
+```
+
+Sur `buildings`, `osm_colour: false` ignore le tag `building:colour` en 3D (utile pour un rendu monochrome). Combinez-le avec `materials: null` dans une variante pour retirer aussi les couleurs par matériau.
+
 ### Importer un style externe (bootstrap `retro_style.py`)
 
 Si vous disposez d'un `style.json` MapLibre existant (Maputnik, import externe…) et souhaitez en faire la source de vérité, utilisez `retro_style.py` pour en extraire automatiquement un `map.config.yaml` :
@@ -140,6 +165,75 @@ www/style.json   →  retro_style.py →  map.config.yaml  →  build_map.py  �
 ```
 
 Les tests de non-régression Python (`tests/test_roundtrip.py`) vérifient automatiquement cette propriété à chaque PR.
+
+---
+
+## Variantes de style
+
+Plusieurs styles peuvent coexister sur les **mêmes PMTiles**. `map.config.yaml` reste la base et produit `www/style.json`. Chaque fichier `styles/<id>.yaml` est une surcharge partielle de la base, compilée en `www/style.<id>.json`. Le manifeste `www/styles.json` liste tous les styles.
+
+```bash
+python3 build_map.py --only style --variants styles
+```
+
+```
+map.config.yaml                    →  www/style.json
+map.config.yaml + styles/nb.yaml   →  www/style.nb.json
+                                   →  www/styles.json
+```
+
+### Format d'une variante
+
+```yaml
+variant:
+  label: Noir et blanc
+exclude: [poi, trees]
+map:
+  background: "#ffffff"
+palette:
+  roads: { label: "#000000" }
+patterns:
+  green-hatch: { replace: { "#bd4a72": "#9a9a9a" } }
+layers:
+  water: { color: "#c4c4c4" }
+  roads:
+    subtypes:
+      primary: { color: "#ffffff", outline_color: "#2b2b2b" }
+```
+
+| Clé | Rôle |
+| :--- | :--- |
+| `variant.label` | Nom affiché dans le sélecteur (défaut : l'identifiant) |
+| `exclude` | Couches retirées du style, de ses sources et de la légende (rien n'est téléchargé). Accepte aussi `indoor` et `building_parts` |
+| `map`, `palette`, `patterns`, `layers` | Fusionnés récursivement sur la base. `null` supprime une clé (ex : `materials: null`) |
+
+- **Identifiant** : nom du fichier, en minuscules, chiffres et tirets (`nb`, `noir-et-blanc`). `default` est réservé.
+- **Masquer sans retirer** : `visible: false` garde la couche dans le style, décochée dans la légende ; `exclude` la supprime.
+- **Hachage** : `metadata["brussels:config_hash"]` reste celui de la base (il identifie les tuiles) ; `metadata["brussels:variant"]` porte l'identifiant, le libellé et le hash de la variante.
+- **Fichiers obsolètes** : supprimer `styles/x.yaml` supprime `www/style.x.json` au build suivant.
+
+### Ce qu'une variante ne peut pas faire
+
+Les tuiles sont communes à tous les styles : une variante ne modifie que la présentation. `build_map.py` refuse donc une variante qui :
+
+- contient `tiles`, `density` ou `tag` ;
+- abaisse un `appear_at` sous celui de la base (les objets n'existent pas dans les tuiles à ce zoom) — le relever est permis ;
+- déclare une couche, un sous-type, une clé de palette ou une clé de premier niveau inconnus ;
+- ajoute un motif sans `file`.
+
+Le build échoue avec la liste complète des erreurs.
+
+### Dans la carte
+
+`www/index.html` lit `www/styles.json` et affiche un sélecteur dans le panneau titre dès qu'il y a au moins deux styles. Le style choisi passe par le paramètre `?style=<id>`, qui conserve la position (`#zoom/lat/lon`) :
+
+```
+https://pasloin.github.io/ZinnekeTiles/?style=nb#16/50.8466/4.3528
+```
+
+Un identifiant inconnu ou un manifeste absent ramène au style par défaut.
+
+Une autre page peut aussi charger directement `https://pasloin.github.io/ZinnekeTiles/style.nb.json`. Les URL des sources (`./roads.pmtiles`) et des motifs (`assets/…`) y sont relatives : résolvez-les par rapport à l'URL du style avant de créer la carte, et préfixez les sources par `pmtiles://`.
 
 ---
 
