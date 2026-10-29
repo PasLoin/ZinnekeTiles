@@ -1,0 +1,4686 @@
+{
+  "_meta": {
+    "type_keys": [
+      "advertising",
+      "amenity",
+      "barrier",
+      "club",
+      "craft",
+      "emergency",
+      "healthcare",
+      "highway",
+      "historic",
+      "industrial",
+      "leisure",
+      "man_made",
+      "military",
+      "natural",
+      "office",
+      "shop",
+      "tourism"
+    ],
+    "presence_keys": [
+      "entrance"
+    ],
+    "special_cases": [
+      {
+        "conditions": [
+          [
+            "amenity",
+            "toilets"
+          ],
+          [
+            "toilets:position",
+            "urinal"
+          ]
+        ],
+        "icon_key": "toilets-urinal"
+      },
+      {
+        "conditions": [
+          [
+            "amenity",
+            "toilets"
+          ],
+          [
+            "male",
+            "yes"
+          ],
+          [
+            "female",
+            "yes"
+          ]
+        ],
+        "icon_key": "toilets-unisex"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "sculpture"
+          ]
+        ],
+        "icon_key": "artwork-sculpture"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "statue"
+          ]
+        ],
+        "icon_key": "artwork-statue"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "bust"
+          ]
+        ],
+        "icon_key": "artwork-bust"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "mural"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "sgraffito"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "graffiti"
+          ]
+        ],
+        "icon_key": "artwork-mural"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "mosaic"
+          ]
+        ],
+        "icon_key": "artwork-mosaic"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "tilework"
+          ]
+        ],
+        "icon_key": "artwork-mosaic"
+      },
+      {
+        "conditions": [
+          [
+            "tourism",
+            "artwork"
+          ],
+          [
+            "artwork_type",
+            "pinwheel"
+          ]
+        ],
+        "icon_key": "artwork-pinwheel"
+      },
+      {
+        "key": "cuisine",
+        "value": "friture",
+        "icon_key": "cuisine-friture"
+      },
+      {
+        "key": "cuisine",
+        "value": "pizza",
+        "icon_key": "cuisine-pizza"
+      },
+      {
+        "key": "cuisine",
+        "value": "sandwich",
+        "icon_key": "cuisine-sandwich"
+      },
+      {
+        "key": "door",
+        "value": "overhead",
+        "icon_key": "door-overhead"
+      },
+      {
+        "key": "door",
+        "value": "revolving",
+        "icon_key": "door-revolving"
+      },
+      {
+        "key": "door",
+        "value": "sliding",
+        "icon_key": "door-sliding"
+      },
+      {
+        "key": "religion",
+        "value": "buddhist",
+        "icon_key": "religion-buddhist"
+      },
+      {
+        "key": "religion",
+        "value": "muslim",
+        "icon_key": "religion-muslim"
+      },
+      {
+        "key": "vending",
+        "value": "condoms",
+        "icon_key": "vending-condoms"
+      },
+      {
+        "key": "vending",
+        "value": "excrement_bags",
+        "icon_key": "vending-excrement_bags"
+      },
+      {
+        "key": "vending",
+        "value": "newspapers",
+        "icon_key": "vending-newspapers"
+      },
+      {
+        "key": "vending",
+        "value": "parking_tickets",
+        "icon_key": "vending-parking_tickets"
+      },
+      {
+        "key": "vending",
+        "value": "public_transport_tickets",
+        "icon_key": "vending-public_transport_tickets"
+      }
+    ]
+  },
+  "accountant": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "advertising": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "advertising_agency": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "alcohol": [
+    "alcohol",
+    null,
+    "alcohol-shop",
+    null
+  ],
+  "alternative": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "alternative;counselling;laboratory;psychotherapist;speech_therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "alumni": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ambulance_station": [
+    "ambulance_station",
+    null,
+    null,
+    null
+  ],
+  "amusement_arcade": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "anime": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "antiques": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "apartment": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "appliance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "archaeological_site": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "architect": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "archive": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "art": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "art_supplies": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "artist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "arts_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "artwork": [
+    "artwork",
+    null,
+    null,
+    null
+  ],
+  "artwork-bust": [
+    "artwork-bust",
+    null,
+    null,
+    null
+  ],
+  "artwork-mosaic": [
+    "artwork-mosaic",
+    null,
+    null,
+    null
+  ],
+  "artwork-mural": [
+    "artwork-mural",
+    null,
+    null,
+    null
+  ],
+  "artwork-pinwheel": [
+    "artwork-pinwheel",
+    null,
+    null,
+    null
+  ],
+  "artwork-sculpture": [
+    "artwork-sculpture",
+    null,
+    null,
+    null
+  ],
+  "artwork-statue": [
+    "artwork-statue",
+    null,
+    null,
+    null
+  ],
+  "assembly_point": [
+    "assembly_point",
+    null,
+    null,
+    null
+  ],
+  "association": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "atelier": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "atm": [
+    null,
+    "atm",
+    null,
+    null
+  ],
+  "attraction": [
+    null,
+    null,
+    "attraction",
+    "attraction"
+  ],
+  "auction_house": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "auctioneer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "audio_video_professional_supplies": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "audiologist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "baby_goods": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bag": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bakery": [
+    "bakery",
+    null,
+    "bakery",
+    "bakery"
+  ],
+  "bank": [
+    null,
+    null,
+    "bank",
+    "bank"
+  ],
+  "bar": [
+    null,
+    null,
+    "bar",
+    "bar"
+  ],
+  "barracks": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bathroom_furnishing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "beauty": [
+    "beauty",
+    null,
+    null,
+    null
+  ],
+  "bed": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "beekeeper": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bell": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bench": [
+    null,
+    "bench",
+    null,
+    null
+  ],
+  "beverages": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bicycle": [
+    null,
+    null,
+    "bicycle",
+    "bicycle"
+  ],
+  "bicycle_parking": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bicycle_rental": [
+    null,
+    "bicycle_rental",
+    null,
+    "bicycle_rental"
+  ],
+  "bicycle_repair": [
+    null,
+    "bicycle_repair",
+    null,
+    null
+  ],
+  "bicycle_repair_station": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bicycle_wash": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "biergarten": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "billboard": [
+    null,
+    "billboard",
+    null,
+    null
+  ],
+  "binoculars": [
+    null,
+    "binoculars",
+    null,
+    null
+  ],
+  "blood_donation": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "board_games": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bollard": [
+    null,
+    "bollard",
+    null,
+    null
+  ],
+  "bonsai": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bookmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "books": [
+    "books",
+    null,
+    null,
+    "library"
+  ],
+  "boutique": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bowling_alley": [
+    null,
+    null,
+    null,
+    "bowling_alley"
+  ],
+  "brewery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "broadcaster": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "brothel": [
+    "brothel",
+    null,
+    null,
+    null
+  ],
+  "building": [
+    null,
+    null,
+    "building",
+    "building"
+  ],
+  "building_materials": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bureau_de_change": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "bus_trap": [
+    "bus_trap",
+    null,
+    "barrier",
+    null
+  ],
+  "business": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "butcher": [
+    "butcher",
+    null,
+    null,
+    "butcher"
+  ],
+  "cabinet_maker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cafe": [
+    null,
+    null,
+    "cafe",
+    "cafe"
+  ],
+  "camera": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cannabis": [
+    "cannabis",
+    null,
+    null,
+    null
+  ],
+  "car": [
+    null,
+    null,
+    "car",
+    "car"
+  ],
+  "car_parts": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "car_pound": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "car_rental": [
+    null,
+    null,
+    null,
+    "car_rental"
+  ],
+  "car_repair": [
+    null,
+    null,
+    "car",
+    null
+  ],
+  "car_sharing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "car_wash": [
+    null,
+    "car_wash",
+    null,
+    null
+  ],
+  "carpenter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "carpet": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "casino": [
+    null,
+    "casino",
+    "casino",
+    "casino"
+  ],
+  "castle": [
+    null,
+    null,
+    "castle",
+    "castle"
+  ],
+  "caterer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "chamber": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "chapel": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "charge_point": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "charging_station": [
+    "charging_station",
+    null,
+    null,
+    "charging_station"
+  ],
+  "charity": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cheese": [
+    "cheese",
+    null,
+    null,
+    null
+  ],
+  "chemist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "childcare": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "chocolate": [
+    "chocolate",
+    "chocolate",
+    null,
+    null
+  ],
+  "cinema": [
+    null,
+    null,
+    "cinema",
+    "cinema"
+  ],
+  "city_gate": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "city_wall": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cleaning": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "clinic": [
+    null,
+    null,
+    "doctor",
+    "hospital"
+  ],
+  "clock": [
+    null,
+    "clock",
+    null,
+    null
+  ],
+  "clockmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "clothes": [
+    null,
+    null,
+    "clothing-store",
+    null
+  ],
+  "coaching": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "coffee": [
+    null,
+    "coffee",
+    null,
+    null
+  ],
+  "coffee_roaster": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "collector": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "college": [
+    null,
+    null,
+    "college",
+    "college"
+  ],
+  "column": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "community_centre": [
+    "community_centre",
+    null,
+    null,
+    null
+  ],
+  "company": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "computer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "confectionery": [
+    null,
+    null,
+    "confectionery",
+    "confectionery"
+  ],
+  "conference_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "construction": [
+    null,
+    null,
+    "construction",
+    "construction"
+  ],
+  "construction_company": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "consulting": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "convenience": [
+    null,
+    null,
+    "grocery",
+    "convenience"
+  ],
+  "cooperative": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "copyright_collective": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "copyshop": [
+    "copyshop",
+    null,
+    null,
+    null
+  ],
+  "cosmetics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "counselling": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "courier": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "courthouse": [
+    "courthouse",
+    null,
+    null,
+    null
+  ],
+  "coworking": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "craft": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "crematorium": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "crypt": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-afghan": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-african": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-algerian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-american": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-arab": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-arabic": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-argentinian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-armenian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-asian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-azerbaijani": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-bagel": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-baklawa": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-balkan": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-barbecue": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-beer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-belgian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-bistro": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-brasserie": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-brazilian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-bread": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-breakfast": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-british": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-brunch": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-bubble_tea": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-bulgarian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-burger": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-cake": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-cambodian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-cameroonian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-canteen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-chicken": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-chinese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-chips": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-chocolate": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-coffee": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-coffee_shop": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-colombian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-couscous": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-creole": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-crepe": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-deli": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-dessert": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-donut": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-egyptian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-empanada": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-ethiopian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-falafel": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fast_food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fine_dining": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-finger_food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fish_and_chips": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fondue": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-french": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-french_tacos": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fried_chicken": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fried_food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-fries": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-friture": [
+    "cuisine_friture",
+    null,
+    null,
+    null
+  ],
+  "cuisine-fusion": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-generic": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-georgian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-greek": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-grill": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-gyros": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-hawaiian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-healthy": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-hot_dog": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-hot_pot": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-ice_cream": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-indian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-indonesian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-international": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-italian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-italian_pizza": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-japanese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-juice": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-kebab": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-korean": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-kosovar": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-latin_american": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-lebanese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-local": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-malagasy": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-mauritian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-meat": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-meatballs": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-mediterranean": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-mexican": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-middle_eastern": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-moroccan": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-nepalese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-new_zealand": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-nigerian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-noodle": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-organic": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-oriental": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-painza": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-pakistani": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-palestinian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-pancake": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-pasta": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-persian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-peruvian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-piadina": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-pita": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-pizza": [
+    "cuisine-pizza",
+    null,
+    null,
+    null
+  ],
+  "cuisine-poke": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-polish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-portuguese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-ramen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-regional": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-romanian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-salad": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-sandwich": [
+    "cuisine-sandwich",
+    null,
+    null,
+    null
+  ],
+  "cuisine-sardinian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-seafood": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-seasonal": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-senegalese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-smoothie": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-snack": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-soup": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-spaghetti_bolognese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-spanish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-steak_house": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-sushi": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-swedish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-swiss": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-syrian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tacos": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-taiwanese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tapas": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tea": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tea_shop": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-teahouse": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-thai": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tibetan": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-tunisian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-turc": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-turkish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-venezuelan": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-vietnamese": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-waffle": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-warm_dishes": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-west_african": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-world": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cuisine-yes": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "culture": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "curtain": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "cycle_barrier": [
+    null,
+    "cycle_barrier",
+    null,
+    null
+  ],
+  "dance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "dancing_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "defibrillator": [
+    null,
+    null,
+    "defibrillator",
+    "defibrillator"
+  ],
+  "deli": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "demolition_company": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "dentist": [
+    "dentist",
+    null,
+    null,
+    "dentist"
+  ],
+  "department_store": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "diplomatic": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "distillery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "distillery;brewery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "doctor": [
+    null,
+    null,
+    "doctor",
+    null
+  ],
+  "doctor;laboratory": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "doctors": [
+    "doctors",
+    null,
+    null,
+    "doctors"
+  ],
+  "dog_park": [
+    null,
+    null,
+    null,
+    "dog_park"
+  ],
+  "dog_toilet": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "doityourself": [
+    "doityourself",
+    null,
+    null,
+    "hardware"
+  ],
+  "door-1": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-2": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-3": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-A": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-B": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-B.2.252": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-C": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-D": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-X": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-Y": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-Z": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-automatic": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-bibliothèque des sciences et techniques": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-double": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-garage": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-hig": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-hinged": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-motorised": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-no": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-noname": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-overhead": [
+    "door_overhead",
+    null,
+    null,
+    null
+  ],
+  "door-revolving": [
+    "door_revolving",
+    null,
+    null,
+    null
+  ],
+  "door-sealed": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-sliding": [
+    "door_sliding",
+    null,
+    null,
+    null
+  ],
+  "door-yes": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door-yes/manual": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "door_construction": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "doors": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "dressmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "drinking_fountain": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "drinking_water": [
+    "drinking_water",
+    null,
+    null,
+    "drinking_water"
+  ],
+  "driver_training": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "driving_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "dry_cleaning": [
+    null,
+    null,
+    null,
+    "laundry"
+  ],
+  "duty_free": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "e-cigarette": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ebikes;micro_mobility;scooters": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "education": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "educational_institution": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electrical": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electrician": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electro": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electronics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electronics_repair": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "electronics_repair;data_recovery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "embankment": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "emergency_ward_entrance": [
+    "emergency_ward_entrance",
+    null,
+    null,
+    null
+  ],
+  "employment_agency": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "energy_supplier": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "engineer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "entrance": [
+    "entrance",
+    null,
+    "entrance",
+    "entrance"
+  ],
+  "erotic": [
+    "erotic",
+    null,
+    null,
+    null
+  ],
+  "escape_game": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "estate_agent": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "events_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "events_venue": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "exhibition_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "exit": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fabric": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "farm": [
+    null,
+    null,
+    "farm",
+    "farm"
+  ],
+  "fashion_accessories": [
+    null,
+    "fashion_accessories",
+    null,
+    null
+  ],
+  "fast_food": [
+    null,
+    null,
+    "fast-food",
+    null
+  ],
+  "fence": [
+    null,
+    null,
+    "fence",
+    "fence"
+  ],
+  "ferry_terminal": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial_advice": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "financial_advisor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fire_extinguisher": [
+    "fire_extinguisher",
+    null,
+    null,
+    null
+  ],
+  "fire_hose": [
+    "fire_hose",
+    null,
+    null,
+    null
+  ],
+  "fire_hydrant": [
+    null,
+    "fire_hydrant",
+    null,
+    null
+  ],
+  "fire_station": [
+    null,
+    null,
+    "fire-station",
+    null
+  ],
+  "fireplace": [
+    null,
+    "fireplace",
+    null,
+    null
+  ],
+  "fishing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fitness_centre": [
+    null,
+    null,
+    null,
+    "fitness_centre"
+  ],
+  "fitness_station": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "flagpole": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "flooring": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "florist": [
+    null,
+    "florist",
+    "florist",
+    "florist"
+  ],
+  "folly": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "food": [
+    null,
+    "food",
+    null,
+    null
+  ],
+  "food_court": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fort": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "foundation": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fountain": [
+    null,
+    "fountain",
+    null,
+    null
+  ],
+  "frame": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "freemasonry": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "frozen_food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "fuel": [
+    null,
+    null,
+    "fuel",
+    "fuel"
+  ],
+  "funeral_directors": [
+    "funeral_directors",
+    null,
+    null,
+    null
+  ],
+  "furniture": [
+    null,
+    "furniture",
+    "furniture",
+    "furniture"
+  ],
+  "gallery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gambling": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "games": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "garden": [
+    null,
+    null,
+    "garden",
+    "garden"
+  ],
+  "garden_centre": [
+    null,
+    null,
+    null,
+    "garden_centre"
+  ],
+  "garden_furniture": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gardener": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gate": [
+    null,
+    "gate",
+    "gate",
+    "gate"
+  ],
+  "general": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gift": [
+    null,
+    null,
+    "gift",
+    "gift"
+  ],
+  "give_box": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "give_way": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "glassblower": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "glaziery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "gold_buyer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "government": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "graphic_design": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "grassland": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "greengrocer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "grocery": [
+    null,
+    null,
+    "grocery",
+    "grocery"
+  ],
+  "guest_house": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "guide": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hackerspace": [
+    "hackerspace",
+    null,
+    null,
+    null
+  ],
+  "hairdresser": [
+    null,
+    null,
+    "hairdresser",
+    "hairdresser"
+  ],
+  "hairdresser_supply": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "handicraft": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hardware": [
+    null,
+    null,
+    "hardware",
+    "hardware"
+  ],
+  "health_food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hearing_aids": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "heath": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hedge": [
+    null,
+    "hedge",
+    null,
+    null
+  ],
+  "herbalist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hifi": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "history": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "honey": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hookah": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hookah_lounge": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "horse_riding": [
+    null,
+    null,
+    null,
+    "horse_riding"
+  ],
+  "hospital": [
+    null,
+    null,
+    "hospital",
+    "hospital"
+  ],
+  "hostel": [
+    null,
+    null,
+    "lodging",
+    null
+  ],
+  "hotel": [
+    null,
+    null,
+    "lodging",
+    null
+  ],
+  "house": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "household_linen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "houseware": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "hvac": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ice_cream": [
+    null,
+    null,
+    null,
+    "ice_cream"
+  ],
+  "incubator": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "indoor_play": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "information": [
+    null,
+    null,
+    "information",
+    "information"
+  ],
+  "insect_hotel": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "insurance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "interior_decoration": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "internet_cafe": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ironingshop": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "it": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "jeweller": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "jewelry": [
+    null,
+    null,
+    "jewelry-store",
+    null
+  ],
+  "joiner": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "kerb": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "key_cutter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "kindergarten": [
+    "kindergarten",
+    null,
+    null,
+    null
+  ],
+  "kiosk": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "kitchen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "label": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "laboratory": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "lace": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "language_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "laundry": [
+    null,
+    "laundry",
+    "laundry",
+    "laundry"
+  ],
+  "lawyer": [
+    null,
+    "lawyer",
+    null,
+    null
+  ],
+  "leather": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "library": [
+    null,
+    "library",
+    "library",
+    "library"
+  ],
+  "life_ring": [
+    "life_ring",
+    null,
+    null,
+    null
+  ],
+  "lift_gate": [
+    null,
+    "lift_gate",
+    "lift-gate",
+    "lift_gate"
+  ],
+  "lighting": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "locksmith": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "locomotive": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "logistics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "lottery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "lounger": [
+    null,
+    "lounger",
+    null,
+    null
+  ],
+  "love_hotel": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "luthier": [
+    "luthier",
+    null,
+    null,
+    null
+  ],
+  "machine_parts": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "mall": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "manor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "marketplace": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "massage": [
+    "massage",
+    null,
+    null,
+    null
+  ],
+  "medical_imaging": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "medical_supply": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "memorial": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "metal_construction": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "metal_painter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "metal_works": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "midwife": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "milestone": [
+    null,
+    "milestone",
+    null,
+    null
+  ],
+  "military": [
+    null,
+    "military",
+    null,
+    null
+  ],
+  "minerals": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "miniature_golf": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "mobile_phone": [
+    "mobile_phone",
+    null,
+    null,
+    null
+  ],
+  "mobile_phone_accessories": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "model": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "money_lender": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "money_transfer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "monitoring_station": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "monument": [
+    null,
+    null,
+    "monument",
+    "monument"
+  ],
+  "mortgage": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "motorcycle": [
+    null,
+    "motorcycle",
+    null,
+    null
+  ],
+  "motorcycle_repair": [
+    null,
+    "motorcycle_repair",
+    null,
+    null
+  ],
+  "moving_company": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "museum": [
+    null,
+    "museum",
+    "museum",
+    "museum"
+  ],
+  "music": [
+    null,
+    null,
+    "music",
+    "music"
+  ],
+  "music_school": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "music_venue": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "musical_instrument": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "nature_reserve": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "newsagent": [
+    "newsagent",
+    null,
+    null,
+    null
+  ],
+  "newspaper": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ngo": [
+    "ngo",
+    null,
+    null,
+    null
+  ],
+  "nightclub": [
+    null,
+    null,
+    "nightclub",
+    null
+  ],
+  "no": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "notary": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "nurse": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "nutrition_supplements": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "obelisk": [
+    null,
+    "obelisk",
+    null,
+    null
+  ],
+  "occupational_therapist;speech_therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "office": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "optician": [
+    null,
+    null,
+    "optician",
+    "optician"
+  ],
+  "optometrist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "orthopedics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "outdoor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "outdoor_seating": [
+    "outdoor_seating",
+    null,
+    null,
+    null
+  ],
+  "outpost": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "packaging": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "paint": [
+    null,
+    null,
+    "paint",
+    "paint"
+  ],
+  "painter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "parcel_locker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "parish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "park": [
+    null,
+    null,
+    "park",
+    "park"
+  ],
+  "parking": [
+    null,
+    null,
+    "parking",
+    "parking"
+  ],
+  "parking_entrance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "parquet_layer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "party": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pasta": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pastry": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pawnbroker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "perfumery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pet": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pet_grooming": [
+    null,
+    "pet_grooming",
+    null,
+    null
+  ],
+  "pharmacy": [
+    null,
+    "pharmacy",
+    "pharmacy",
+    "pharmacy"
+  ],
+  "phone": [
+    null,
+    null,
+    "emergency-phone",
+    "emergency_phone"
+  ],
+  "photo": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "photo_booth": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "photographer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "photographic_laboratory": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "physician": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "physiotherapist": [
+    null,
+    "physiotherapist",
+    null,
+    null
+  ],
+  "piercing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pitch": [
+    null,
+    null,
+    "pitch",
+    "pitch"
+  ],
+  "place_of_worship": [
+    null,
+    null,
+    "religious-christian",
+    null
+  ],
+  "planetarium": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "planter": [
+    "planter",
+    null,
+    "barrier",
+    null
+  ],
+  "playground": [
+    null,
+    null,
+    "playground",
+    "playground"
+  ],
+  "plumber": [
+    null,
+    "plumber",
+    null,
+    null
+  ],
+  "podiatrist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "police": [
+    null,
+    null,
+    "police",
+    "police"
+  ],
+  "political_party": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "popup": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "post_box": [
+    null,
+    "post_box",
+    null,
+    null
+  ],
+  "post_office": [
+    null,
+    "post_box",
+    "post",
+    "post"
+  ],
+  "poster_box": [
+    null,
+    "poster_box",
+    null,
+    null
+  ],
+  "pottery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "printer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "printer_ink": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "printing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "printmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "prison": [
+    null,
+    null,
+    "prison",
+    "prison"
+  ],
+  "property_management": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "psychic": [
+    null,
+    "psychic",
+    null,
+    null
+  ],
+  "psychotherapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "pub": [
+    null,
+    null,
+    "beer",
+    null
+  ],
+  "public_bath": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "public_bookcase": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "publisher": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "quango": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "radiotechnics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "railway_car": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "recycling": [
+    null,
+    null,
+    "recycling",
+    "recycling"
+  ],
+  "rehabilitation": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-bahai": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-buddhist": [
+    "religion-buddhist",
+    null,
+    null,
+    null
+  ],
+  "religion-christian": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-hindu": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-jewish": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-muslim": [
+    "religion_muslim",
+    null,
+    null,
+    null
+  ],
+  "religion-none": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "religion-scientologist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "rental": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "repair": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "research": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "research_institute": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "restaurant": [
+    null,
+    null,
+    "restaurant",
+    "restaurant"
+  ],
+  "restoration": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "retaining_wall": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "robotics": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "roofer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "rope": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ruins": [
+    null,
+    "ruins",
+    null,
+    null
+  ],
+  "sand": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sauna": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "school": [
+    null,
+    "school",
+    "school",
+    "school"
+  ],
+  "schoolyard": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "scout": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "screen": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "scrub": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "scuba_diving": [
+    null,
+    "scuba_diving",
+    null,
+    null
+  ],
+  "sculptor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "seafood": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "second_hand": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "security": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sewing": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "shoe_repair": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "shoemaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "shoes": [
+    "shoes",
+    null,
+    null,
+    null
+  ],
+  "shop": [
+    null,
+    null,
+    "shop",
+    "shop"
+  ],
+  "shrubbery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "signage": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "signmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sliding_gate": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "small_electric_vehicle": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "social": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "social_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "social_facility": [
+    null,
+    "social_facility",
+    null,
+    null
+  ],
+  "spa": [
+    null,
+    "spa",
+    null,
+    null
+  ],
+  "speech_therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "spices": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sport": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sports": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sports_agent": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sports_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "spring": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "stadium": [
+    null,
+    null,
+    "stadium",
+    "stadium"
+  ],
+  "startup_incubator": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "stationery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "statue": [
+    null,
+    "statue",
+    null,
+    null
+  ],
+  "stone": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "stonemason": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "stop": [
+    null,
+    "stop",
+    null,
+    null
+  ],
+  "storage_rental": [
+    null,
+    "storage_rental",
+    null,
+    null
+  ],
+  "street_lamp": [
+    null,
+    "street_lamp_arm",
+    null,
+    null
+  ],
+  "stripclub": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "studio": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "sun_protection": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "supermarket": [
+    null,
+    null,
+    "grocery",
+    null
+  ],
+  "surveillance": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "swimming_pool": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "swing_gate": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "swingerclub": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tailor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tanning_salon": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tap": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tattoo": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tax_advisor": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "taxi": [
+    null,
+    null,
+    "taxi",
+    null
+  ],
+  "tea": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "telecommunication": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "textile": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "theatre": [
+    null,
+    null,
+    "theatre",
+    "theatre"
+  ],
+  "theme_park": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "therapist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "ticket": [
+    null,
+    "ticket",
+    null,
+    null
+  ],
+  "ticket_validator": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tobacco": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "toilets": [
+    "toilets",
+    null,
+    null,
+    "toilets"
+  ],
+  "toilets-unisex": [
+    "toilets-unisex",
+    null,
+    null,
+    null
+  ],
+  "toilets-urinal": [
+    "toilets-urinal",
+    null,
+    null,
+    null
+  ],
+  "tomb": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tool_hire": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tower": [
+    null,
+    "tower",
+    null,
+    null
+  ],
+  "townhall": [
+    null,
+    "town_hall",
+    "town-hall",
+    null
+  ],
+  "toys": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "trade": [
+    "trade",
+    null,
+    null,
+    null
+  ],
+  "traffic_signals": [
+    null,
+    "traffic_signals",
+    null,
+    null
+  ],
+  "training": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "trampoline_park": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "travel_agency": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "travel_agent": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tree": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "trophy": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "truck": [
+    null,
+    "truck",
+    null,
+    null
+  ],
+  "tutoring": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "tyres": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "union": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "university": [
+    null,
+    null,
+    "college",
+    null
+  ],
+  "upholsterer": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vacant": [
+    "vacant",
+    null,
+    null,
+    null
+  ],
+  "variety_store": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-admission_tickets": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-candles": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-chemist": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-coffee": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-condoms": [
+    "vending_condoms",
+    "vending_love",
+    null,
+    null
+  ],
+  "vending-drinks": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-elongated_coin": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-excrement_bags": [
+    null,
+    "vending_pet_waste",
+    null,
+    null
+  ],
+  "vending-food": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-lottery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-meat": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-milk": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-newspapers": [
+    null,
+    "vending_newspaper",
+    null,
+    null
+  ],
+  "vending-parking_tickets": [
+    null,
+    "vending_tickets",
+    null,
+    null
+  ],
+  "vending-potatoes": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-public_transport_tickets": [
+    null,
+    "vending_tickets",
+    null,
+    null
+  ],
+  "vending-snacks": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-souvenirs": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-sun_cream": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-sweets": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending-umbrella": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "vending_machine": [
+    null,
+    "vending_machine",
+    null,
+    null
+  ],
+  "venue_centre": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "veterans": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "veterinary": [
+    null,
+    null,
+    "veterinary",
+    "veterinary"
+  ],
+  "video": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "video_games": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "viewpoint": [
+    null,
+    "binoculars",
+    "viewpoint",
+    "viewpoint"
+  ],
+  "visa": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wall": [
+    null,
+    "wall",
+    null,
+    null
+  ],
+  "waste_basket": [
+    null,
+    null,
+    "waste-basket",
+    "waste_basket"
+  ],
+  "watches": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "watchmaker": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water": [
+    null,
+    "water",
+    "water",
+    "water"
+  ],
+  "water_filter": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water_tap": [
+    null,
+    "water_tap",
+    null,
+    null
+  ],
+  "water_utility": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water_well": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "water_works": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wayside_cross": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wayside_shrine": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "weapons": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wellness": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wholesale": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "window_blind": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "window_construction": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "window_frames": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wine": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "winery": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wood": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "wool": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "works": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "yes": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "zoo": [
+    null,
+    "zoo",
+    "zoo",
+    "zoo"
+  ]
+}

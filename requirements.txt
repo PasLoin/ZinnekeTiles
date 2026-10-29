@@ -1,0 +1,14 @@
+# Dépendances Python — ZinnekeTiles
+#
+# Installation :
+#   pip install -r requirements.txt
+#
+# CI (GitHub Actions) :
+#   pip install -r requirements.txt --break-system-packages
+
+# Scripts de pipeline
+pyyaml>=6.0       # build_map.py, retro_style.py, retro.yml
+shapely>=2.1      # merge_buildings.py, generate_roofs.py
+
+# Tests Python
+pytest>=7.0       # tests/test_roundtrip.py
