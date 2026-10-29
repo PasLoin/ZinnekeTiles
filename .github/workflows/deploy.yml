@@ -1,0 +1,196 @@
+name: Build & Deploy PMTiles
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'www/*.pmtiles'
+      - 'sizepmtiles.md'
+      - 'brussels_capital_region-latest.osm.pbf'
+      - 'granulometry_report.md'
+      - 'landuse_report.md'
+      - 'street_furniture_report.md'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 1 * *'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt --break-system-packages -q
+
+      - name: Install osmium & tippecanoe
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osmium-tool build-essential libsqlite3-dev zlib1g-dev
+          git clone --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe
+          cd /tmp/tippecanoe && make -j$(nproc) && sudo make install
+
+      # ── Étape 1 : Compiler map.config.yaml → style.json + granulometry + pmtiles_params ──
+      - name: Build style and granulometry from config
+        run: |
+          if [ -f map.config.yaml ]; then
+            echo "→ map.config.yaml trouvé, compilation..."
+            python3 build_map.py \
+              --config      map.config.yaml \
+              --style-out   www/style.json \
+              --gran-out    granulometry.json \
+              --pmtiles-out pmtiles_params.json
+          else
+            echo "⚠️  map.config.yaml absent — style.json utilisé tel quel (mode legacy)"
+            echo "   Pour migrer : déclencher le workflow 'Retro-engineer config from style'"
+          fi
+
+      # ── Étape 2 : Télécharger les données OSM ──────────────────────────────────────────
+      - name: Download Brussels OSM extract
+        run: |
+          set -e
+          success=false
+          for i in 1 2 3; do
+            echo "Tentative $i/3..."
+            if wget --tries=3 --timeout=60 -nv \
+              https://raw.githubusercontent.com/PasLoin/Osm-python-analyse_Belgium/main/pbf_analyse/history/Brussels-daily.pbf; then
+              success=true
+              break
+            fi
+            echo "Échec, nouvelle tentative dans 10s..."
+            rm -f Brussels-daily.pbf.pbf
+            sleep 10
+          done
+          if [ "$success" = false ]; then
+            echo "::error::Impossible de télécharger le fichier OSM après 3 tentatives"
+            exit 1
+          fi
+
+          # Les scripts en aval (generate_json.bash, etc.) attendent ce nom précis
+          cp Brussels-daily.pbf brussels_capital_region-latest.osm.pbf
+
+          file brussels_capital_region-latest.osm.pbf
+          ls -lh Brussels-daily.pbf brussels_capital_region-latest.osm.pbf
+
+      - name: Check PBF freshness
+        run: |
+          echo "=== Downloaded PBF ==="
+          md5sum brussels_capital_region-latest.osm.pbf
+          osmium fileinfo brussels_capital_region-latest.osm.pbf
+          echo "=== Repo PBF ==="
+          git show HEAD:brussels_capital_region-latest.osm.pbf > /tmp/repo.pbf 2>/dev/null \
+            && md5sum /tmp/repo.pbf \
+            && osmium fileinfo /tmp/repo.pbf \
+            || echo "Pas encore dans le repo"
+
+      # ── Étape 3 : Extraction GeoJSON (inclut street_furniture.json, issue #51) ─────────
+      - name: Extract GeoJSON layers
+        run: bash generate_json.bash
+
+      - name: Generate 3D roofs
+        run: python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
+
+      # ── Étape 4 : POI icons (poi.json + street_furniture.json, issue #51) ──────────────
+      - name: Generate POI icon mapping
+        run: python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
+
+      # ── Étape 5 : Fusionner les bâtiments ─────────────────────────────────────────────
+      - name: Merge touching buildings
+        run: |
+          if python3 -c "import json,sys; p=json.load(open('pmtiles_params.json')); sys.exit(0 if any(i['file']=='buildings_merged.json' for i in p['layers']['buildings']['inputs']) else 1)"; then
+            python3 merge_buildings.py
+          else
+            echo "ℹ️  buildings.appear_at >= tiles.detail_from : pas de bâtiments fusionnés"
+          fi
+
+      # ── Étape 6 : Granulométrie (LOD) ─────────────────────────────────────────────────
+      - name: Apply granulometry (LOD filtering)
+        run: |
+          if [ -f granulometry.json ]; then
+            echo "→ Application des règles LOD..."
+            python3 apply_granulometry.py \
+              --gran   granulometry.json \
+              --report granulometry_report.md
+          else
+            echo "ℹ️  granulometry.json absent — étape LOD ignorée"
+          fi
+
+      # ── Étape 7 : Générer les PMTiles (inclut street_furniture.pmtiles, issue #51) ──
+      - name: Generate PMTiles
+        run: PMTILES_PARAMS=pmtiles_params.json bash generate_pmtiles.bash
+
+      # ── Étape 9 : Commit des artefacts ────────────────────────────────────────────────
+      # Uniquement sur main : sur une branche de travail, on build et on déploie
+      # une preview (étapes suivantes) SANS rien committer, pour que la branche
+      # ne contienne que les vrais changements (pas de conflits de merge sur les
+      # fichiers générés/binaires).
+      - name: Commit artifacts to repo
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cp *.pmtiles www/
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f \
+            www/*.pmtiles \
+            www/style.json \
+            www/poi-icons.json \
+            www/data-info.json \
+            www/roofs.glb \
+            missing-icons.txt \
+            sizepmtiles.md \
+            brussels_capital_region-latest.osm.pbf
+          # Optionnel : commiter aussi les rapports
+          [ -f granulometry_report.md ] && git add granulometry_report.md || true
+          [ -f landuse_report.md ] && git add landuse_report.md || true
+          [ -f street_furniture_report.md ] && git add street_furniture_report.md || true
+          if git diff --cached --quiet; then
+            echo "Pas de changements à commiter"
+          else
+            git commit -m "chore: update pmtiles, style and reports [skip ci]"
+            git push
+          fi
+
+      # ── Étape 10 : Déploiement GitHub Pages ───────────────────────────────────────────
+      - name: Prepare site
+        run: |
+          cp *.pmtiles www/ 2>/dev/null || true
+          cp -r www/ _site/
+          cp -f *.geojson   _site/ 2>/dev/null || true
+          cp -f sizepmtiles.md _site/ 2>/dev/null || true
+          [ -f granulometry_report.md ] && cp granulometry_report.md _site/ || true
+          [ -f landuse_report.md ] && cp landuse_report.md _site/ || true
+          [ -f street_furniture_report.md ] && cp street_furniture_report.md _site/ || true
+          echo "Site prêt :"
+          ls -lh _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,178 @@
+/**
+ * tests/unit/html_structure.test.js
+ * ──────────────────────────────────
+ * Valide la structure HTML de index.html :
+ *   - Éléments critiques présents
+ *   - Scripts et dépendances référencés
+ *   - Structure de la légende et des panneaux
+ */
+import { describe, it, expect, beforeAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
+
+let html;
+
+beforeAll(() => {
+  html = fs.readFileSync(
+    path.resolve(__dirname, '../../www/index.html'),
+    'utf-8'
+  );
+  document.documentElement.innerHTML = html;
+});
+
+describe('Structure HTML de base', () => {
+  it('contient le conteneur de carte #map', () => {
+    expect(html).toContain('id="map"');
+  });
+
+  it('contient le panneau titre', () => {
+    expect(html).toContain('id="title-panel"');
+  });
+
+  it('contient le panneau légende', () => {
+    expect(html).toContain('id="legend-panel"');
+    expect(html).toContain('id="legend-content"');
+  });
+
+  it('contient les boutons de contrôle', () => {
+    expect(html).toContain('id="toggle-3d"');
+    expect(html).toContain('id="toggle-data"');
+  });
+
+  it('contient le bouton des toits, masqué hors 3D', () => {
+    const btn = document.getElementById('toggle-roofs');
+    expect(btn).not.toBeNull();
+    expect(btn.hidden).toBe(true);
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    expect(html).toContain("from './roofs.js'");
+  });
+
+  it('le titre ZinnekeTiles renvoie vers le dépôt GitHub', () => {
+    const link = document.querySelector('#title-panel h1 a');
+    expect(link.textContent).toBe('ZinnekeTiles');
+    expect(link.getAttribute('href')).toBe('https://github.com/PasLoin/ZinnekeTiles');
+    expect(link.getAttribute('rel')).toContain('noopener');
+  });
+
+  it('ajoute le contrôle d\'inclinaison', () => {
+    expect(html).toContain("from './pitch_control.js'");
+    expect(html).toContain('new PitchControl()');
+    expect(html).toContain('visualizePitch: true');
+  });
+
+  it('prévoit une mise en page compacte pour mobile', () => {
+    expect(html).toContain('@media (max-width: 600px), (max-height: 500px)');
+    expect(html).toContain('initPanels()');
+    expect(html).toContain('trackLayout(');
+  });
+
+  it('contient le lien d\'édition OSM', () => {
+    expect(html).toContain('id="osm-edit"');
+  });
+});
+
+describe('Dépendances externes', () => {
+  it('charge MapLibre GL JS', () => {
+    expect(html).toContain('maplibre-gl');
+    expect(html).toMatch(/maplibre-gl@[\d.]+\/dist\/maplibre-gl\.js/);
+    expect(html).toMatch(/maplibre-gl@[\d.]+\/dist\/maplibre-gl\.css/);
+  });
+
+  it('charge PMTiles', () => {
+    expect(html).toContain('pmtiles');
+    expect(html).toMatch(/pmtiles@[\d.]+\/dist\/pmtiles\.js/);
+  });
+
+  it('charge le module sport markings', () => {
+    expect(html).toContain('load_sport_markings.js');
+  });
+});
+
+describe('Configuration de la carte', () => {
+  it('centre sur Bruxelles par défaut', () => {
+    expect(html).toContain('4.3517');
+    expect(html).toContain('50.8503');
+  });
+
+  it('a un zoom initial de 13', () => {
+    expect(html).toMatch(/zoom:\s*13/);
+  });
+
+  it('charge style.json', () => {
+    expect(html).toContain("fetch('./style.json')");
+  });
+
+  it('référence le chargement des POI', () => {
+    // Vérifie que le script importe le module POI
+    expect(html).toContain('poi_icons.js');
+  });
+});
+
+describe('Architecture modulaire', () => {
+  it('utilise script type=module', () => {
+    expect(html).toContain('type="module"');
+  });
+
+  it('importe map_ui.js', () => {
+    expect(html).toContain("from './map_ui.js'");
+  });
+
+  it('importe poi_icons.js', () => {
+    expect(html).toContain("from './poi_icons.js'");
+  });
+
+  it('les modules existent sur le disque', () => {
+    const fs = require('fs');
+    const path = require('path');
+    expect(fs.existsSync(path.resolve(__dirname, '../../www/map_ui.js'))).toBe(true);
+    expect(fs.existsSync(path.resolve(__dirname, '../../www/poi_icons.js'))).toBe(true);
+    expect(fs.existsSync(path.resolve(__dirname, '../../www/load_sport_markings.js'))).toBe(true);
+    expect(fs.existsSync(path.resolve(__dirname, '../../www/legend.js'))).toBe(true);
+  });
+});
+
+describe('Catégories de la légende', () => {
+  const legend = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, '../../www/style.json'), 'utf-8'),
+  ).metadata['brussels:legend'];
+  const labels = legend.flatMap((g) => [g.label, ...g.items.map((i) => i.label)]);
+
+  it('construit la légende depuis les données du style', () => {
+    expect(html).toContain("from './legend.js'");
+    expect(html).toContain('legendGroups(map.getStyle())');
+    expect(html).not.toContain('const categories = [');
+  });
+
+  it('déclare les catégories attendues dans style.json', () => {
+    const expectedLabels = [
+      'Résidentiel', 'Industriel', 'Commercial', 'Éducation',
+      'Forêt', 'Parcs', 'Pelouse', 'Eau', 'Bâtiments',
+      'Rail', 'Tram', 'Métro', 'Routes', 'Piétons', 'Cyclable',
+      'POI', 'Limites', 'Loisirs', 'Mobilier',
+    ];
+    for (const label of expectedLabels) {
+      expect(labels.some((l) => l.startsWith(label)), label).toBe(true);
+    }
+  });
+
+  it('propose Tout afficher / Tout masquer', () => {
+    const js = fs.readFileSync(path.resolve(__dirname, '../../www/legend.js'), 'utf-8');
+    expect(js).toContain('Tout afficher');
+    expect(js).toContain('Tout masquer');
+  });
+});
+
+describe('Styles CSS critiques', () => {
+  it('définit le style du conteneur carte en plein écran', () => {
+    expect(html).toMatch(/#map\s*\{[^}]*position:\s*absolute/);
+    expect(html).toMatch(/#map\s*\{[^}]*inset:\s*0/);
+  });
+
+  it('définit le style du popup data', () => {
+    expect(html).toContain('.data-popup');
+  });
+
+  it('gère l\'état collapsed des panneaux', () => {
+    expect(html).toContain('.collapsed .panel-content');
+  });
+});

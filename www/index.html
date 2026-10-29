@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ZinnekeTiles — carte mini maximale de Bruxelles</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+  
+  <script src="load_sport_markings.js"></script>
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: "DejaVu Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      background: #f2efe9; 
+    }
+    :root { --attrib-h: 20px; --controls-h: 240px; }
+    #map { position: absolute; inset: 0; }
+
+    .ui-top {
+      position: absolute; top: 10px; left: 16px; right: 16px; z-index: 5;
+      display: grid; gap: 8px; align-items: start;
+      grid-template-columns: 220px minmax(0, 1fr) auto;
+      grid-template-rows: auto 1fr;
+      grid-template-areas: "title . toggle" "title . levels";
+      pointer-events: none;
+    }
+    .ui-top > *, .ui-stack > * { pointer-events: auto; }
+    .ui-stack { display: contents; }
+
+    .panel {
+      min-width: 0;
+      background: rgba(242, 239, 233, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; width: 220px;
+    }
+    .panel-header {
+      padding: 10px 14px; display: flex; justify-content: space-between;
+      align-items: center; cursor: pointer; user-select: none;
+    }
+    .panel-content { padding: 0 14px 10px 14px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
+    .collapsed .panel-content { display: none; }
+    .toggle-icon { font-size: 10px; transition: transform 0.2s; padding: 8px 10px; margin: -8px -10px; }
+    .collapsed .toggle-icon { transform: rotate(-90deg); }
+
+    .title { grid-area: title; }
+    .title h1 { font-size: 14px; font-weight: bold; color: #222; letter-spacing: 0.02em; }
+    .title h1 a { color: inherit; text-decoration: none; }
+    .title h1 a:hover, .title h1 a:focus-visible { color: #734a08; text-decoration: underline; }
+    .title p { font-size: 11px; color: #666; margin-top: 2px; }
+    .osm-edit { display: block; font-size: 11px; margin-top: 8px; color: #0078ff; text-decoration: none; }
+    .osm-edit.disabled { color: #999; pointer-events: none; cursor: default; }
+
+    .legend {
+      position: absolute; left: 16px; z-index: 5;
+      bottom: calc(var(--attrib-h) + 12px);
+      max-height: min(50vh, calc(100vh - var(--attrib-h) - 150px));
+      max-height: min(50dvh, calc(100dvh - var(--attrib-h) - 150px));
+    }
+    .legend h2 { font-size: 13px; font-weight: bold; color: #222; }
+    .legend-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; user-select: none; transition: opacity 0.15s; }
+    .legend-row.off { opacity: 0.3; }
+    .legend-row .swatch { width: 16px; height: 4px; border-radius: 1px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+    .legend-row .swatch.fill { height: 12px; width: 12px; border-radius: 2px; }
+    .legend-row .swatch.dot { height: 8px; width: 8px; border-radius: 50%; margin: 0 4px; }
+    .legend-row .swatch.fill { margin: 0 2px; }
+    .legend-row span, .legend-item span { font-size: 11px; color: #444; }
+    .legend-row.mixed .swatch, .legend-row.mixed span { opacity: 0.55; }
+    .legend-row .legend-expand { margin-left: auto; background: none; border: 0; padding: 0 4px; font-size: 11px; color: #666; cursor: pointer; transition: transform 0.15s; }
+    .legend-row .legend-expand[aria-expanded="true"] { transform: rotate(90deg); }
+    .legend-items { padding: 0 0 4px 14px; border-left: 1px solid rgba(0,0,0,0.08); margin-left: 7px; }
+    .legend-items[hidden] { display: none; }
+    .legend-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; user-select: none; transition: opacity 0.15s; }
+    .legend-item.off { opacity: 0.3; }
+    .legend-item .swatch { width: 14px; height: 4px; border-radius: 1px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+    .legend-item .swatch.fill { height: 10px; width: 10px; border-radius: 2px; }
+    .legend-item .swatch.dot { height: 8px; width: 8px; border-radius: 50%; margin: 0 3px; }
+    .legend-item .swatch.fill { margin: 0 2px; }
+    .legend-actions { display: flex; gap: 6px; padding: 2px 0 6px; position: sticky; top: 0; background: rgba(242, 239, 233, 0.96); z-index: 1; }
+    .legend-actions button { flex: 1; font-size: 10px; padding: 3px 6px; border: 1px solid rgba(0,0,0,0.12); border-radius: 3px; background: #fff; color: #444; cursor: pointer; }
+    .legend-actions button:hover { background: #f7f4ee; }
+
+    .maplibregl-ctrl-group { border-radius: 4px !important; border: 1px solid rgba(0,0,0,0.1) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; }
+    .maplibregl-ctrl-attrib { font-size: 10px !important; background: rgba(255,255,255,0.7) !important; }
+    .view-toggle { grid-area: toggle; justify-self: end; display: flex; gap: 8px; }
+    .view-toggle button { background: rgba(242, 239, 233, 0.92); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #444; }
+    .view-toggle button:hover { background: #fff; }
+    .view-toggle button.active { background: #734a08; color: #fff; }
+    .view-toggle button[hidden] { display: none; }
+    .view-toggle button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .data-popup .maplibregl-popup-content { padding: 8px; font-size: 10px; max-width: 300px; max-height: 400px; overflow: auto; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; }
+    .data-popup table { width: 100%; border-collapse: collapse; }
+    .data-popup th, .data-popup td { text-align: left; padding: 2px 4px; border-bottom: 1px solid #eee; word-break: break-all; }
+    .data-popup th { color: #666; font-weight: bold; width: 35%; vertical-align: top; }
+    .data-popup .layer-info { border-bottom: 1px solid #ccc; margin-bottom: 5px; padding-bottom: 5px; font-weight: bold; color: #734a08; }
+    .panel[hidden] { display: none; }
+    .levels {
+      grid-area: levels; justify-self: end; width: 190px;
+      max-height: min(60vh, calc(100vh - var(--controls-h) - 70px));
+      max-height: min(60dvh, calc(100dvh - var(--controls-h) - 70px));
+    }
+    .levels h2 { font-size: 13px; font-weight: bold; color: #222; }
+    .levels fieldset { border: 0; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #444; }
+    .levels label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .levels-list { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; max-height: 32vh; overflow-y: auto; font-size: 11px; color: #444; }
+    .levels-list label.absent { color: #999; font-style: italic; }
+    .levels-list label.below { color: #2f5d8a; }
+    .levels-ground { border-top: 1px dashed #b9a98a; margin: 3px 0; font-size: 9px; color: #8a7a5a; text-align: right; line-height: 1.6; }
+    .levels-list.disabled { opacity: 0.4; pointer-events: none; }
+    .levels-note { font-size: 10px; color: #666; margin-top: 8px; }
+
+    .pitch-ctrl button { display: flex; align-items: center; justify-content: center; color: #333; }
+    .pitch-ctrl button:disabled svg { opacity: 0.25; }
+
+    @media (max-width: 600px), (max-height: 500px) {
+      .ui-top {
+        top: 10px; left: 10px; right: 10px; gap: 8px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto;
+        grid-template-areas: "stack toggle";
+      }
+      .ui-stack { grid-area: stack; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+      .title, .levels { width: min(220px, 100%); }
+      .levels {
+        max-height: calc(100vh - var(--attrib-h) - 115px);
+        max-height: calc(100dvh - var(--attrib-h) - 115px);
+      }
+      .levels-list { max-height: none; }
+      .view-toggle { flex-direction: column; align-items: stretch; gap: 6px; }
+      .view-toggle button { padding: 6px 8px; font-size: 11px; }
+      .legend {
+        left: 10px; width: min(220px, calc(100vw - 70px));
+        max-height: calc(100vh - var(--attrib-h) - 135px);
+        max-height: calc(100dvh - var(--attrib-h) - 135px);
+      }
+      .data-popup .maplibregl-popup-content { max-width: calc(100vw - 40px); max-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div class="ui-top">
+  <div class="ui-stack">
+    <div class="title panel" id="title-panel">
+      <div class="panel-header" onclick="window._togglePanel('title-panel')">
+        <h1><a id="repo-link" href="https://github.com/PasLoin/ZinnekeTiles" target="_blank" rel="noopener" onclick="event.stopPropagation()">ZinnekeTiles</a></h1>
+        <span class="toggle-icon">v</span>
+      </div>
+      <div class="panel-content">
+        <p>Bruxelles · tuiles vectorielles OpenStreetMap</p>
+        <a id="osm-edit" class="osm-edit disabled" target="_blank" href="#">éditer dans OpenStreetMap</a>
+      </div>
+    </div>
+
+    <div class="levels panel" id="levels-panel" hidden>
+      <div class="panel-header" onclick="window._togglePanel('levels-panel')">
+        <h2>Niveaux</h2>
+        <span class="toggle-icon">v</span>
+      </div>
+      <div class="panel-content">
+        <fieldset id="levels-mode">
+          <label><input type="radio" name="indoor-mode" value="off" checked /> Désactivé</label>
+          <label><input type="radio" name="indoor-mode" value="above" /> Au-dessus du sol (≥ 0)</label>
+          <label><input type="radio" name="indoor-mode" value="below" /> Souterrain (&lt; 0)</label>
+          <label><input type="radio" name="indoor-mode" value="select" /> Sélection</label>
+        </fieldset>
+        <div class="levels-list disabled" id="levels-list"></div>
+        <p class="levels-note" id="levels-note"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-toggle">
+    <button id="toggle-3d">MODE 3D</button> <button id="toggle-roofs" hidden aria-pressed="false" title="Visualiser les toits">TOITS</button> <button id="toggle-data">DATA</button>
+  </div>
+</div>
+
+<div class="legend panel" id="legend-panel">
+  <div class="panel-header" onclick="window._togglePanel('legend-panel')">
+    <h2>Légende</h2>
+    <span class="toggle-icon">v</span>
+  </div>
+  <div class="panel-content" id="legend-content"></div>
+</div>
+
+<script type="module">
+import { togglePanel, initPanels, showPanel, trackLayout, updateOsmLink, buildDataPopupHtml, buildAttribution } from './map_ui.js';
+import { PitchControl } from './pitch_control.js';
+import { loadAllPoiIcons } from './poi_icons.js';
+import { loadPatterns } from './patterns.js';
+import { legendGroups, createLegend } from './legend.js';
+import {
+  levelWindow, levelFilter, indoorPaint, indoorNote,
+  buildingsState, ensureLazyGroup, lazyLayersOf, DIMMED_OPACITY,
+  visibleLevels, sameLevels, panelLevels, levelLabel,
+  LEVEL_AWARE_SOURCES, poiLevelFilter, levelAwareFilter,
+  isIsolated, keepsInIsolation, BUILDING_LAYERS,
+} from './indoor.js';
+import { createRoofsLayer, eavesHeight, ROOFS_URL } from './roofs.js';
+
+window._togglePanel = togglePanel;
+initPanels();
+
+const protocol = new pmtiles.Protocol();
+maplibregl.addProtocol('pmtiles', protocol.tile.bind(protocol));
+
+const dataInfoPromise = fetch('./data-info.json')
+  .then(r => (r.ok ? r.json() : null))
+  .catch(() => null);
+
+fetch('./style.json')
+  .then(r => r.json())
+  .then(async style => {
+    for (const [name, src] of Object.entries(style.sources)) {
+      if (src.url && src.url.endsWith('.pmtiles')) {
+        src.url = 'pmtiles://' + new URL(src.url, location.href).href;
+      }
+    }
+    const dataInfo = await dataInfoPromise;
+    initMap(style, dataInfo);
+  })
+  .catch(err => {
+    console.error('Impossible de charger style.json:', err);
+    document.querySelector('.title p').textContent = 'Erreur de chargement du style';
+  });
+
+function initMap(style, dataInfo) {
+  const lazy = (style.metadata || {})['brussels:lazy'] || null;
+  const poiIconLayer = style.layers.find(l => l.id === 'poi-icon');
+  const leisureIconLayer = style.layers.find(l => l.id === 'leisure-icon');
+  const streetFurnitureIconLayer = style.layers.find(l => l.id === 'street-furniture-icon');
+  for (const layer of [leisureIconLayer, poiIconLayer, streetFurnitureIconLayer]) {
+    if (!layer) continue;
+    layer.layout = layer.layout || {};
+    layer.layout.visibility = 'none';
+    delete layer.layout['icon-image'];
+  }
+
+  const baseOpacity = {};
+  for (const layer of [...style.layers, ...((lazy && lazy.layers) || [])]) {
+    if (layer.type === 'fill-extrusion') {
+      baseOpacity[layer.id] = (layer.paint || {})['fill-extrusion-opacity'] ?? 1;
+    }
+  }
+  const indoorLayers = lazyLayersOf(lazy, 'indoor');
+  const levelAwareLayerIds = style.layers
+    .filter(l => LEVEL_AWARE_SOURCES.includes(l.source))
+    .map(l => l.id);
+  const filterMemo = {};
+  const legendFilters = {};
+  let levelExtra = null;
+
+  const map = new maplibregl.Map({
+    container: 'map', style,
+    center: [4.3517, 50.8503], zoom: 13,
+    hash: true, maxZoom: 19, minZoom: 10,
+    maxPitch: 85,
+    attributionControl: false,
+  });
+  window.map = map;
+  setupSportMarkings(map);
+
+  const customAttribution = buildAttribution(dataInfo);
+  map.addControl(new maplibregl.AttributionControl({
+    compact: false,
+    ...(customAttribution ? { customAttribution } : {}),
+  }), 'bottom-right');
+
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-right');
+  map.addControl(new PitchControl(), 'bottom-right');
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+  trackLayout(map.getContainer());
+
+  const state = {
+    loaded: false,
+    is3d: false,
+    buildingsOn: true,
+    indoorMode: 'off',
+    selected: new Set(),
+    levels: [],
+    isolated: false,
+    roofsOn: false,
+  };
+  const requestedVisibility = {};
+  const buildingLayerIds = new Set([...BUILDING_LAYERS.flat, ...BUILDING_LAYERS.extruded]);
+  let legend = null;
+  const legendVisibility = (id) => (!legend || legend.isOn(id) ? 'visible' : 'none');
+
+  function applyLegend(ids, on) {
+    const plain = ids.filter((id) => !buildingLayerIds.has(id));
+    for (const id of plain) setVisibility(id, on ? 'visible' : 'none');
+    if (plain.length !== ids.length) {
+      state.buildingsOn = on;
+      applyBuildings();
+    }
+  }
+
+  const toggleBtn = document.getElementById('toggle-3d');
+  const roofsBtn = document.getElementById('toggle-roofs');
+  const originalHeights = {};
+  let roofsLayer = null;
+  const levelsList = document.getElementById('levels-list');
+  const levelsNote = document.getElementById('levels-note');
+
+  const hiddenByIsolation = (id) => state.isolated && !keepsInIsolation(map.getLayer(id));
+
+  function setVisibility(id, v) {
+    requestedVisibility[id] = v;
+    if (!map.getLayer(id)) return;
+    map.setLayoutProperty(id, 'visibility', hiddenByIsolation(id) ? 'none' : v);
+  }
+
+  function applyIsolation(isolated) {
+    if (isolated === state.isolated) return;
+    state.isolated = isolated;
+    for (const layer of map.getStyle().layers) {
+      if (keepsInIsolation(layer)) continue;
+      if (!(layer.id in requestedVisibility)) {
+        requestedVisibility[layer.id] = (layer.layout || {}).visibility || 'visible';
+      }
+      map.setLayoutProperty(layer.id, 'visibility', isolated ? 'none' : requestedVisibility[layer.id]);
+    }
+  }
+
+  function currentWindow() {
+    if (!state.is3d || state.indoorMode === 'off') return null;
+    return levelWindow(state.indoorMode, state.selected, state.levels || []);
+  }
+
+  function applyBuildings() {
+    const { visibility, dimmed } = buildingsState({
+      is3d: state.is3d, buildingsOn: state.buildingsOn, window: currentWindow(), isolated: state.isolated,
+    });
+    for (const [id, v] of Object.entries(visibility)) setVisibility(id, v);
+    for (const id of ['buildings-3d', 'building-parts-3d']) {
+      if (!map.getLayer(id)) continue;
+      const base = baseOpacity[id] ?? 1;
+      map.setPaintProperty(id, 'fill-extrusion-opacity', dimmed ? Math.min(base, DIMMED_OPACITY) : base);
+    }
+    applyRoofs(visibility['buildings-3d'] === 'visible' && !dimmed);
+  }
+
+  function roofsAnchor() {
+    const ids = map.getStyle().layers.map(l => l.id);
+    const last = Math.max(ids.indexOf('buildings-3d'), ids.indexOf('building-parts-3d'));
+    return last >= 0 ? ids[last + 1] : undefined;
+  }
+
+  function disableRoofs() {
+    state.roofsOn = false;
+    roofsBtn.disabled = true;
+    roofsBtn.classList.remove('active');
+    roofsBtn.setAttribute('aria-pressed', 'false');
+    roofsBtn.title = 'Toits indisponibles : roofs.glb n\u2019a pas pu être chargé';
+    applyBuildings();
+  }
+
+  function applyRoofs(extrudedVisible) {
+    const wanted = state.roofsOn && extrudedVisible;
+    if (wanted && !roofsLayer) {
+      roofsLayer = createRoofsLayer({
+        url: ROOFS_URL,
+        minzoom: (map.getLayer('buildings-3d') || {}).minzoom ?? 13,
+        opacity: baseOpacity['buildings-3d'] ?? 0.75,
+        onLoad: () => applyBuildings(),
+        onError: disableRoofs,
+      });
+      map.addLayer(roofsLayer, roofsAnchor());
+    }
+    const shown = wanted && !!roofsLayer && roofsLayer.loaded;
+    if (roofsLayer) roofsLayer.setEnabled(shown);
+    for (const id of ['buildings-3d', 'building-parts-3d']) {
+      if (!map.getLayer(id)) continue;
+      if (!(id in originalHeights)) originalHeights[id] = map.getPaintProperty(id, 'fill-extrusion-height');
+      map.setPaintProperty(id, 'fill-extrusion-height', shown ? eavesHeight(originalHeights[id]) : originalHeights[id]);
+    }
+  }
+
+  const indoorActive = () => state.is3d && state.indoorMode !== 'off';
+
+  function applyIndoor() {
+    const active = indoorActive();
+    const win = currentWindow();
+    applyIsolation(active && isIsolated(state.indoorMode, state.selected, win));
+    if (active && lazy && ensureLazyGroup(map, lazy, 'indoor', location.href)) {
+      for (const layer of indoorLayers) {
+        if (map.getLayer(layer.id) && map.getLayer('buildings-3d')) map.moveLayer(layer.id, 'buildings-3d');
+      }
+    }
+    for (const layer of indoorLayers) {
+      if (!map.getLayer(layer.id)) continue;
+      if (!active) { setVisibility(layer.id, 'none'); continue; }
+      if (!win) {
+        map.setFilter(layer.id, ['==', 1, 0]);
+        setVisibility(layer.id, 'visible');
+        continue;
+      }
+      const extrusion = (layer.metadata || {})['brussels:extrusion'] || 'slab';
+      map.setFilter(layer.id, ['all', layer.filter, levelFilter(state.indoorMode, state.selected)]);
+      for (const [prop, value] of Object.entries(indoorPaint(extrusion, win, lazy))) {
+        map.setPaintProperty(layer.id, prop, value);
+      }
+      setVisibility(layer.id, 'visible');
+    }
+    applyLevelAwareLayers(active);
+    levelsNote.textContent = state.is3d ? indoorNote(state.indoorMode, win, state.isolated) : '';
+    applyBuildings();
+  }
+
+  function refreshFilter(id) {
+    if (!map.getLayer(id)) return;
+    const extras = [legendFilters[id], levelAwareLayerIds.includes(id) ? levelExtra : null].filter(Boolean);
+    const extra = extras.length > 1 ? ['all', ...extras] : (extras[0] || null);
+    const memo = levelAwareFilter(map.getFilter(id), filterMemo[id], extra);
+    filterMemo[id] = memo;
+    map.setFilter(id, memo.applied);
+  }
+
+  function applyLegendFilter(id, expr) {
+    legendFilters[id] = expr;
+    refreshFilter(id);
+  }
+
+  function applyLevelAwareLayers(active) {
+    levelExtra = active ? poiLevelFilter(state.indoorMode, state.selected) : null;
+    for (const id of levelAwareLayerIds) refreshFilter(id);
+  }
+
+  function renderLevels() {
+    levelsList.innerHTML = '';
+    if (state.indoorMode === 'off') return;
+    const entries = panelLevels(state.levels, state.selected);
+    if (!entries.length) {
+      if (state.indoorMode === 'select') levelsList.textContent = 'Aucun niveau intérieur dans cette vue.';
+      return;
+    }
+    let groundDrawn = false;
+    for (const { level, present } of entries) {
+      if (!groundDrawn && level < 0) {
+        const ground = document.createElement('div');
+        ground.className = 'levels-ground';
+        ground.textContent = 'sol';
+        levelsList.appendChild(ground);
+        groundDrawn = true;
+      }
+      const label = document.createElement('label');
+      label.classList.toggle('below', level < 0);
+      label.classList.toggle('absent', !present);
+      if (!present) label.title = 'Aucun élément à ce niveau dans la vue actuelle';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.value = String(level);
+      box.checked = state.selected.has(level);
+      box.addEventListener('change', () => {
+        if (box.checked) state.selected.add(level); else state.selected.delete(level);
+        if (!box.checked && !present) renderLevels();
+        applyIndoor();
+      });
+      label.append(box, document.createTextNode(` ${levelLabel(level)}`));
+      levelsList.appendChild(label);
+    }
+  }
+
+  function refreshLevels() {
+    if (!indoorActive() || !map.getSource('indoor')) return;
+    const b = map.getBounds();
+    const levels = visibleLevels(
+      map.querySourceFeatures('indoor', { sourceLayer: 'indoor' }),
+      [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()],
+    );
+    if (sameLevels(levels, state.levels)) return;
+    state.levels = levels;
+    renderLevels();
+    applyIndoor();
+  }
+
+  map.on('idle', refreshLevels);
+
+  document.querySelectorAll('input[name="indoor-mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+      state.indoorMode = radio.value;
+      levelsList.classList.toggle('disabled', state.indoorMode !== 'select');
+      renderLevels();
+      applyIndoor();
+    });
+  });
+
+  map.on('load', async () => {
+    await Promise.all([
+      loadPatterns(map, (style.metadata || {})['brussels:patterns']),
+      loadAllPoiIcons(map),
+    ]);
+    for (const id of ['poi-icon', 'leisure-icon', 'street-furniture-icon']) {
+      setVisibility(id, legendVisibility(id));
+    }
+    applyIndoor();
+  });
+
+  map.on('load', () => {
+    state.loaded = true;
+    legend = createLegend(document.getElementById('legend-content'), legendGroups(map.getStyle()), {
+      onChange: applyLegend,
+      onFilter: applyLegendFilter,
+    });
+  });
+
+  map.on('moveend', () => updateOsmLink(map));
+  map.on('zoomend', () => updateOsmLink(map));
+
+  function set3d(enabled) {
+    state.is3d = enabled;
+    toggleBtn.textContent = enabled ? 'MODE 2D' : 'MODE 3D';
+    showPanel('levels-panel', enabled);
+    roofsBtn.hidden = !enabled;
+    if (enabled && lazy) ensureLazyGroup(map, lazy, 'building_parts', location.href);
+    applyIndoor();
+    map.easeTo({ pitch: enabled ? 45 : 0, duration: 800 });
+  }
+
+  function setRoofs(enabled) {
+    state.roofsOn = enabled;
+    roofsBtn.classList.toggle('active', enabled);
+    roofsBtn.setAttribute('aria-pressed', String(enabled));
+    applyBuildings();
+  }
+
+  roofsBtn.onclick = () => {
+    if (!state.loaded) {
+      map.once('load', () => setRoofs(!state.roofsOn));
+      return;
+    }
+    setRoofs(!state.roofsOn);
+  };
+
+  toggleBtn.onclick = () => {
+    if (!state.loaded) {
+      map.once('load', () => set3d(!state.is3d));
+      return;
+    }
+    set3d(!state.is3d);
+  };
+
+  updateOsmLink(map);
+
+  const toggleDataBtn = document.getElementById('toggle-data');
+  let isDataMode = false;
+  const dataPopup = new maplibregl.Popup({
+    closeButton: false, closeOnClick: false,
+    className: 'data-popup', anchor: 'bottom-left', offset: [10, -10]
+  });
+
+  toggleDataBtn.onclick = () => {
+    isDataMode = !isDataMode;
+    toggleDataBtn.classList.toggle('active', isDataMode);
+    if (!isDataMode) { dataPopup.remove(); map.getCanvas().style.cursor = ''; }
+    else { map.getCanvas().style.cursor = 'crosshair'; }
+  };
+
+  function inspect(e) {
+    if (!isDataMode) return;
+    const features = map.queryRenderedFeatures(e.point);
+    if (features.length > 0) {
+      dataPopup.setLngLat(e.lngLat).setHTML(buildDataPopupHtml(features[0])).addTo(map);
+    } else {
+      dataPopup.remove();
+    }
+  }
+
+  map.on('mousemove', inspect);
+  map.on('click', inspect);
+
+  map.on('mouseleave', () => { if (isDataMode) dataPopup.remove(); });
+}
+</script>
+</body>
+</html>

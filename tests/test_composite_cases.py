@@ -1,0 +1,98 @@
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+import generate_poi_icons as gpi
+
+
+def write(tmp_path, props_list):
+    path = tmp_path / "street_furniture.json"
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]}, "properties": p}
+        for p in props_list
+    ]}))
+    return path
+
+
+@pytest.mark.parametrize("props, expected", [
+    ({"amenity": "toilets", "toilets:position": "urinal"}, "toilets-urinal"),
+    ({"amenity": "toilets", "toilets:position": "urinal", "male": "yes", "female": "no"}, "toilets-urinal"),
+    ({"amenity": "toilets", "female": "yes", "male": "no"}, "toilets-female"),
+    ({"amenity": "toilets", "male": "yes", "female": "no"}, "toilets-male"),
+    ({"amenity": "toilets", "male": "yes", "female": "yes"}, "toilets-unisex"),
+])
+def test_composite_case_selected(tmp_path, props, expected):
+    counts = gpi.extract_composite_cases(write(tmp_path, [props]))
+    assert counts == {expected: 1}
+
+
+@pytest.mark.parametrize("props", [
+    {"amenity": "toilets"},
+    {"amenity": "toilets", "male": "yes"},
+    {"amenity": "toilets", "toilets:position": "seated;urinal"},
+    {"amenity": "toilets", "unisex": "yes"},
+    {"amenity": "cafe", "male": "yes", "female": "yes"},
+])
+def test_composite_case_not_selected(tmp_path, props):
+    assert gpi.extract_composite_cases(write(tmp_path, [props])) == {}
+
+
+def test_composite_icons_exist_locally():
+    for case in gpi.COMPOSITE_CASES:
+        assert gpi.check_local(case["icon_key"]) == case["icon_key"]
+
+
+@pytest.mark.parametrize("artwork_type, expected", [
+    ("sculpture", "artwork-sculpture"),
+    ("statue", "artwork-statue"),
+    ("bust", "artwork-bust"),
+    ("mural", "artwork-mural"),
+    ("sgraffito", "artwork-mural"),
+    ("graffiti", "artwork-mural"),
+    ("mosaic", "artwork-mosaic"),
+    ("tilework", "artwork-mosaic"),
+    ("pinwheel", "artwork-pinwheel"),
+])
+def test_artwork_type_selected(tmp_path, artwork_type, expected):
+    props = {"tourism": "artwork", "artwork_type": artwork_type}
+    assert gpi.extract_composite_cases(write(tmp_path, [props])) == {expected: 1}
+
+
+@pytest.mark.parametrize("props", [
+    {"tourism": "artwork"},
+    {"tourism": "artwork", "artwork_type": "installation"},
+    {"historic": "memorial", "artwork_type": "statue"},
+])
+def test_artwork_type_not_selected(tmp_path, props):
+    assert gpi.extract_composite_cases(write(tmp_path, [props])) == {}
+
+
+def load(tmp_path, text):
+    path = tmp_path / "poi-icons.config.yaml"
+    path.write_text(text)
+    return gpi.load_composite_cases(path)
+
+
+def test_config_by_expands_in_order(tmp_path):
+    cases = load(tmp_path, "composite_cases:\n  - when: {tourism: artwork}\n    by: artwork_type\n    icons: {statue: artwork-statue, bust: artwork-bust}\n")
+    assert cases == [
+        {"icon_key": "artwork-statue", "conditions": [["tourism", "artwork"], ["artwork_type", "statue"]]},
+        {"icon_key": "artwork-bust", "conditions": [["tourism", "artwork"], ["artwork_type", "bust"]]},
+    ]
+
+
+@pytest.mark.parametrize("text", [
+    "composite_cases:\n  - icon: x\n    when: {male: yes}\n",
+    "composite_cases:\n  - icon: x\n    when: {amenity: toilets}\n    typo: 1\n",
+    "composite_cases:\n  - when: {amenity: toilets}\n",
+    "composite_cases:\n  - icon: x\n    when: {}\n",
+    "composite_cases:\n  - icon: x\n    when: {tourism: artwork}\n    by: artwork_type\n    icons: {statue: y}\n",
+])
+def test_config_rejects_invalid(tmp_path, text):
+    with pytest.raises(ValueError):
+        load(tmp_path, text)

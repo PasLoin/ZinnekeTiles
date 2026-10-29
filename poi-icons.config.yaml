@@ -1,0 +1,22 @@
+composite_cases:
+  - icon: toilets-urinal
+    when: { amenity: toilets, "toilets:position": urinal }
+  - icon: toilets-female
+    when: { amenity: toilets, female: "yes", male: "no" }
+  - icon: toilets-male
+    when: { amenity: toilets, male: "yes", female: "no" }
+  - icon: toilets-unisex
+    when: { amenity: toilets, male: "yes", female: "yes" }
+
+  - when: { tourism: artwork }
+    by: artwork_type
+    icons:
+      sculpture: artwork-sculpture
+      statue: artwork-statue
+      bust: artwork-bust
+      mural: artwork-mural
+      sgraffito: artwork-mural
+      graffiti: artwork-mural
+      mosaic: artwork-mosaic
+      tilework: artwork-mosaic
+      pinwheel: artwork-pinwheel
