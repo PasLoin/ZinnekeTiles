@@ -98,8 +98,19 @@ describe('Configuration de la carte', () => {
     expect(html).toMatch(/zoom:\s*13/);
   });
 
-  it('charge style.json', () => {
-    expect(html).toContain("fetch('./style.json')");
+  it('charge style.json ou la variante choisie', () => {
+    expect(html).toContain("from './style_variants.js'");
+    expect(html).toContain('fetch(current.url)');
+    const js = fs.readFileSync(path.resolve(__dirname, '../../www/style_variants.js'), 'utf-8');
+    expect(js).toContain("'./style.json'");
+    expect(js).toContain("'./styles.json'");
+  });
+
+  it('propose un sélecteur de style, masqué par défaut', () => {
+    const select = document.getElementById('style-select');
+    expect(select).not.toBeNull();
+    expect(select.hidden).toBe(true);
+    expect(select.getAttribute('aria-label')).toBeTruthy();
   });
 
   it('référence le chargement des POI', () => {
