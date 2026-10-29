@@ -14,15 +14,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Build styles from config
+        run: |
+          pip install -r requirements.txt --break-system-packages -q
+          python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '24'
 
-      - name: Validate style against MapLibre GL Style Spec
+      - name: Validate styles against MapLibre GL Style Spec
         run: |
           npm install --no-save @maplibre/maplibre-gl-style-spec
-          npx gl-style-validate www/style.json
+          for f in www/style.json www/style.*.json; do
+            [ -e "$f" ] || continue
+            npx gl-style-validate "$f"
+          done
 
       - name: Extract PMTiles JSON metadata
         id: metadata
@@ -38,14 +51,23 @@ jobs:
           INPUT_SCHEMA: .github/schemas/pmtiles-vector-metadata.schema.json
           INPUT_JSONS: ${{ steps.metadata.outputs.jsons }}
 
+      - name: List styles
+        id: styles
+        run: |
+          list=$(ls www/style.json www/style.*.json 2>/dev/null | paste -sd, -)
+          echo "jsons=$list" >> "$GITHUB_OUTPUT"
+
       - name: Validate style JSON structure
         uses: docker://orrosenblatt/validate-json-action:latest
         env:
           INPUT_SCHEMA: .github/schemas/maplibre-style-minimal.schema.json
-          INPUT_JSONS: www/style.json
+          INPUT_JSONS: ${{ steps.styles.outputs.jsons }}
 
       - name: Validate style PMTiles references
         run: |
-          python3 scripts/validate_style_pmtiles.py \
-            --style www/style.json \
-            --metadata-dir _pmtiles_metadata
+          for f in www/style.json www/style.*.json; do
+            [ -e "$f" ] || continue
+            python3 scripts/validate_style_pmtiles.py \
+              --style "$f" \
+              --metadata-dir _pmtiles_metadata
+          done
