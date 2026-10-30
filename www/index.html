@@ -55,6 +55,8 @@
     .title p { font-size: 11px; color: #666; margin-top: 2px; }
     .osm-edit { display: block; font-size: 11px; margin-top: 8px; color: #0078ff; text-decoration: none; }
     .osm-edit.disabled { color: #999; pointer-events: none; cursor: default; }
+    .style-select { display: block; width: 100%; margin-top: 8px; font-size: 11px; padding: 3px 4px; border: 1px solid rgba(0,0,0,0.12); border-radius: 3px; background: #fff; color: #444; cursor: pointer; }
+    .style-select[hidden] { display: none; }
 
     .legend {
       position: absolute; left: 16px; z-index: 5;
@@ -155,6 +157,7 @@
       <div class="panel-content">
         <p>Bruxelles · tuiles vectorielles OpenStreetMap</p>
         <a id="osm-edit" class="osm-edit disabled" target="_blank" href="#">éditer dans OpenStreetMap</a>
+        <select id="style-select" class="style-select" aria-label="Style de la carte" hidden></select>
       </div>
     </div>
 
@@ -203,6 +206,7 @@ import {
   isIsolated, keepsInIsolation, BUILDING_LAYERS,
 } from './indoor.js';
 import { createRoofsLayer, eavesHeight, ROOFS_URL } from './roofs.js';
+import { loadManifest, requestedStyleId, resolveStyle, defaultStyleId, styleHref, initStyleSelect } from './style_variants.js';
 
 window._togglePanel = togglePanel;
 initPanels();
@@ -214,7 +218,13 @@ const dataInfoPromise = fetch('./data-info.json')
   .then(r => (r.ok ? r.json() : null))
   .catch(() => null);
 
-fetch('./style.json')
+loadManifest()
+  .then(manifest => {
+    const current = resolveStyle(manifest, requestedStyleId(location.search));
+    initStyleSelect(document.getElementById('style-select'), manifest, current.id,
+      id => location.assign(styleHref(location.href, id, defaultStyleId(manifest))));
+    return fetch(current.url);
+  })
   .then(r => r.json())
   .then(async style => {
     for (const [name, src] of Object.entries(style.sources)) {
