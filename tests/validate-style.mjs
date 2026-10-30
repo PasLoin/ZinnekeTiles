@@ -18,7 +18,7 @@
  *   8. Pas d'IDs de layers dupliqués
  *
  * Usage :
- *   node tests/validate-style.mjs [--www ./www]
+ *   node tests/validate-style.mjs [--www ./www] [--style ./www/style.nb.json]
  *
  * Exit code :
  *   0 = tout OK (avec ou sans warnings)
@@ -34,7 +34,12 @@ const args = process.argv.slice(2);
 const wwwIdx = args.indexOf('--www');
 const WWW = wwwIdx >= 0 ? args[wwwIdx + 1] : './www';
 
-const STYLE_PATH = path.join(WWW, 'style.json');
+const styleIdx = args.indexOf('--style');
+const STYLE_PATH = styleIdx >= 0 ? args[styleIdx + 1] : path.join(WWW, 'style.json');
+const STYLE_NAME = path.basename(STYLE_PATH);
+const JUNIT_NAME = STYLE_NAME === 'style.json'
+  ? 'validate-results.xml'
+  : `validate-results-${STYLE_NAME.replace(/\.json$/, '')}.xml`;
 const POI_ICONS_PATH = path.join(WWW, 'poi-icons.json');
 const ICONS_DIR = path.join(WWW, 'assets', 'icons');
 
@@ -58,9 +63,9 @@ let style;
 try {
   const raw = fs.readFileSync(STYLE_PATH, 'utf-8');
   style = JSON.parse(raw);
-  ok(`style.json valide (${(raw.length / 1024).toFixed(0)} ko)`);
+  ok(`${STYLE_NAME} valide (${(raw.length / 1024).toFixed(0)} ko)`);
 } catch (e) {
-  error(`style.json invalide : ${e.message}`);
+  error(`${STYLE_NAME} invalide : ${e.message}`);
   process.exit(1);
 }
 
@@ -349,7 +354,7 @@ try {
   const escXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<testsuites tests="${checks}" failures="${errors}">\n`;
-  xml += `  <testsuite name="validate-style" tests="${checks}" failures="${errors}">\n`;
+  xml += `  <testsuite name="validate-style ${escXml(STYLE_NAME)}" tests="${checks}" failures="${errors}">\n`;
   for (const tc of testCases) {
     xml += `    <testcase name="${escXml(tc.name)}" classname="validate-style">`;
     if (tc.status === 'error') {
@@ -358,7 +363,7 @@ try {
     xml += `</testcase>\n`;
   }
   xml += `  </testsuite>\n</testsuites>\n`;
-  fs.writeFileSync(path.join(RESULTS_DIR, 'validate-results.xml'), xml);
+  fs.writeFileSync(path.join(RESULTS_DIR, JUNIT_NAME), xml);
 } catch (e) {
   console.warn(`  ⚠️  Impossible d'écrire le JUnit XML : ${e.message}`);
 }

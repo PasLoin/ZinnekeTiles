@@ -1,0 +1,134 @@
+variant:
+  label: Noir et blanc
+
+exclude: [leisure, trees, railway, public_transport, poi, street_furniture, boundaries]
+
+map:
+  background: "#ffffff"
+  font: "#000000"
+
+palette:
+  water: { tunnel_core: "#ffffff" }
+  buildings: { roof: "#7a7a7a" }
+  roads:
+    bridge_casing: "#000000"
+    busway_center: "#707070"
+    tunnel_area: "#adadad"
+    tunnel_area_outline: "#9a9a9a"
+    bridge_area: "#f2f2f2"
+    bridge_area_outline: "#adadad"
+    label: "#000000"
+    label_halo: "rgba(255,255,255,0.9)"
+    oneway: "#555555"
+    oneway_halo: "rgba(255,255,255,0.6)"
+  pedestrian: { no_access: "#c4c4c4" }
+  cycleway: { oneway: "#ffffff" }
+  addresses: { halo: "rgba(255,255,255,0.85)" }
+
+patterns:
+  military-hatch: { replace: { "#bd4a72": "#5a5a5a" } }
+  green-hatch: { replace: { "#bd4a72": "#9a9a9a" } }
+  grave_yard_generic: { replace: { "#88b78e": "#6e6e6e" } }
+  grave_yard_christian: { replace: { "#88b78e": "#6e6e6e" } }
+  grave_yard_jewish: { replace: { "#88b78e": "#6e6e6e" } }
+  grave_yard_muslim: { replace: { "#88b78e": "#6e6e6e" } }
+
+layers:
+
+  landuse:
+    color: "#f3f3f3"
+    subtypes:
+      allotments: { color: "#efefef" }
+      brownfield: { color: "#e6e6e6" }
+      cemetery: { color: "#e8e8e8" }
+      commercial: { color: "#eeeeee" }
+      construction: { color: "#e6e6e6" }
+      depot: { color: "#eeeeee" }
+      education: { color: "#ebebeb" }
+      farmland: { color: "#efefef" }
+      farmyard: { color: "#efefef" }
+      garages: { color: "#eeeeee" }
+      greenfield: { color: "#efefef" }
+      industrial: { color: "#eeeeee" }
+      landfill: { color: "#e6e6e6" }
+      military: { color: "#000000" }
+      quarry: { color: "#e2e2e2", outline_color: "#9a9a9a" }
+      railway: { color: "#eeeeee" }
+      recreation_ground: { color: "#efefef" }
+      religious: { color: "#ebebeb", outline_color: "#9a9a9a" }
+      retail: { color: "#eeeeee" }
+      village_green: { color: "#efefef" }
+
+  green:
+    color: "#e2e2e2"
+    subtypes:
+      flowerbed: { color: "#ececec", color_private: "#f0f0f0" }
+      forest: { color: "#d8d8d8", color_private: "#e4e4e4" }
+      garden: { color: "#e8e8e8", color_private: "#e2e2e2" }
+      grass: { color: "#ebebeb", color_private: "#efefef" }
+      grassland: { color: "#ebebeb", color_private: "#efefef" }
+      heath: { color: "#e4e4e4" }
+      meadow: { color: "#ebebeb", color_private: "#efefef" }
+      park: { color: "#e2e2e2", color_private: "#dcdcdc" }
+      scrub: { color: "#e0e0e0" }
+      shrubbery: { color: "#cfcfcf", color_private: "#d6d6d6" }
+      wood: { color: "#d8d8d8", color_private: "#e4e4e4" }
+
+  water:
+    color: "#c4c4c4"
+    subtypes:
+      wetland: { color: "#d6d6d6" }
+
+  buildings:
+    color: "#dcdcdc"
+    border_color: "#8c8c8c"
+    materials: null
+    osm_colour: false
+
+  addresses:
+    color: "#4d4d4d"
+
+  roads:
+    color: "#2b2b2b"
+    subtypes:
+      motorway:       { color: "#ffffff", outline_color: "#000000" }
+      motorway_link:  { color: "#ffffff", outline_color: "#000000" }
+      trunk:          { color: "#ffffff", outline_color: "#1a1a1a" }
+      trunk_link:     { color: "#ffffff", outline_color: "#1a1a1a" }
+      primary:        { color: "#ffffff", outline_color: "#2b2b2b" }
+      primary_link:   { color: "#ffffff", outline_color: "#2b2b2b" }
+      secondary:      { color: "#ffffff", outline_color: "#404040" }
+      secondary_link: { color: "#ffffff", outline_color: "#404040" }
+      tertiary:       { color: "#ffffff", outline_color: "#5c5c5c" }
+      tertiary_link:  { color: "#ffffff", outline_color: "#5c5c5c" }
+      residential:    { color: "#ffffff", outline_color: "#9a9a9a" }
+      unclassified:   { color: "#ffffff", outline_color: "#9a9a9a" }
+      living_street:  { color: "#f0f0f0", outline_color: "#9a9a9a" }
+      service:        { color: "#ffffff", outline_color: "#9a9a9a" }
+      busway:         { color: "#ffffff", outline_color: "#9a9a9a" }
+      track:          { color: "#8a8a8a" }
+
+  pedestrian:
+    color: "#3a3a3a"
+    subtypes:
+      footway: { color: "#7a7a7a", outline_color: "#ffffff" }
+      path: { color: "#7a7a7a", outline_color: "#ffffff" }
+      pedestrian: { color: "#f0f0f0", outline_color: "#8a8a8a" }
+      steps: { color: "#3a3a3a" }
+
+  cycleway:
+    color: "#1a1a1a"
+
+  indoor:
+    subtypes:
+      platform: { color: "#c8c8c8" }
+      footway: { color: "#dedede" }
+      corridor: { color: "#dedede" }
+      pedestrian: { color: "#e6e6e6" }
+      steps: { color: "#8a8a8a" }
+      room: { color: "#b4b4b4" }
+      area: { color: "#d2d2d2" }
+      wall: { color: "#5f5f5f" }
+      elevator: { color: "#6e6e6e" }
+      escalator: { color: "#7a7a7a" }
+      arrow: { color: "#ffffff" }

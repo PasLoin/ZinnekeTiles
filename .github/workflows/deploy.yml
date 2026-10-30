@@ -55,7 +55,8 @@ jobs:
               --config      map.config.yaml \
               --style-out   www/style.json \
               --gran-out    granulometry.json \
-              --pmtiles-out pmtiles_params.json
+              --pmtiles-out pmtiles_params.json \
+              --variants    styles
           else
             echo "⚠️  map.config.yaml absent — style.json utilisé tel quel (mode legacy)"
             echo "   Pour migrer : déclencher le workflow 'Retro-engineer config from style'"
@@ -159,6 +160,8 @@ jobs:
           [ -f granulometry_report.md ] && git add granulometry_report.md || true
           [ -f landuse_report.md ] && git add landuse_report.md || true
           [ -f street_furniture_report.md ] && git add street_furniture_report.md || true
+          [ -f www/styles.json ] && git add -f www/styles.json || true
+          git add -A -f -- 'www/style.*.json' 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Pas de changements à commiter"
           else
