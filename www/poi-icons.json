@@ -187,6 +187,11 @@
       },
       {
         "key": "door",
+        "value": "hinged",
+        "icon_key": "door-hinged"
+      },
+      {
+        "key": "door",
         "value": "overhead",
         "icon_key": "door-overhead"
       },
@@ -742,7 +747,7 @@
     null
   ],
   "car_sharing": [
-    null,
+    "car_sharing",
     null,
     null,
     null
@@ -2026,7 +2031,7 @@
     "doctors"
   ],
   "dog_park": [
-    null,
+    "dog_park",
     null,
     null,
     "dog_park"
@@ -2140,7 +2145,7 @@
     null
   ],
   "door-hinged": [
-    null,
+    "door-hinged",
     null,
     null,
     null
@@ -2482,7 +2487,7 @@
     null
   ],
   "fitness_centre": [
-    null,
+    "fitness_centre",
     null,
     null,
     "fitness_centre"
@@ -2854,7 +2859,7 @@
     null
   ],
   "ice_cream": [
-    null,
+    "ice_cream",
     null,
     null,
     "ice_cream"
@@ -3112,7 +3117,7 @@
     null
   ],
   "memorial": [
-    null,
+    "memorial",
     null,
     null,
     null
@@ -3532,7 +3537,7 @@
     null
   ],
   "planetarium": [
-    null,
+    "planetarium",
     null,
     null,
     null

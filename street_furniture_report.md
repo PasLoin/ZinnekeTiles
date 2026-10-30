@@ -30,13 +30,13 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | tag | valeur | features |
 | :--- | :--- | ---: |
 | `highway` | `street_lamp` | 10244 |
-| `amenity` | `bench` | 7832 |
+| `amenity` | `bench` | 7812 |
 | `barrier` | `bollard` | 7349 |
-| `amenity` | `waste_basket` | 6871 |
-| `barrier` | `fence` | 4654 |
+| `amenity` | `waste_basket` | 6865 |
+| `barrier` | `fence` | 4655 |
 | `barrier` | `gate` | 3519 |
 | `amenity` | `vending_machine` | 1811 |
-| `tourism` | `artwork` | 1213 |
+| `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
 | `barrier` | `lift_gate` | 845 |
 | `amenity` | `charging_station` | 769 |
