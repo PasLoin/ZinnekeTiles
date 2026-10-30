@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, hashlib, json, sys
+import argparse, copy, hashlib, json, re, sys
 from pathlib import Path
 
 try:
@@ -14,6 +14,45 @@ def c(v):
     if v is None: return None
     s = str(v).strip().lower()
     return COLORS.get(s, str(v))
+
+PALETTE_DEFAULTS = {
+    "water":            {"tunnel_core": "#e6faf9"},
+    "buildings":        {"roof": "#6b4f3a"},
+    "leisure":          {"outline": "#adadad"},
+    "roads": {
+        "bridge_casing": "#000000", "busway_center": "#6699ff",
+        "tunnel_area": "#adadad", "tunnel_area_outline": "#ffc0cb",
+        "bridge_area": "#ffebee", "bridge_area_outline": "#adadad",
+        "label": "#222222", "label_halo": "rgba(255,255,255,0.8)",
+        "oneway": "#666666", "oneway_halo": "rgba(255,255,255,0.6)",
+    },
+    "pedestrian":       {"no_access": "#bbbbbb"},
+    "cycleway":         {"oneway": "#ffffff"},
+    "railway":          {"bridge_casing": "#000000"},
+    "public_transport": {"casing": "#ffffff", "label": "#000000",
+                         "label_halo": "rgba(255,255,255,0.85)"},
+    "addresses":        {"halo": "rgba(255,255,255,0.85)"},
+    "poi":              {"stroke": "#fff", "label_halo": "rgba(255,255,255,0.8)"},
+}
+
+
+def palette(config, group):
+    raw = ((config.get("palette") or {}).get(group) or {})
+    return {k: c(raw.get(k, v)) for k, v in PALETTE_DEFAULTS[group].items()}
+
+
+def palette_errors(raw):
+    errors = []
+    for group, values in (raw or {}).items():
+        if group not in PALETTE_DEFAULTS:
+            errors.append(f"palette.{group} : groupe inconnu ({', '.join(sorted(PALETTE_DEFAULTS))})")
+            continue
+        for key in (values or {}):
+            if key not in PALETTE_DEFAULTS[group]:
+                errors.append(f"palette.{group}.{key} : clé inconnue "
+                              f"({', '.join(sorted(PALETTE_DEFAULTS[group]))})")
+    return errors
+
 
 def lc(layers, name):
     r = layers.get(name) or {}
@@ -30,6 +69,7 @@ def lc(layers, name):
         "extrusion_3d": r.get("extrusion_3d", False),
         "sports":       r.get("sports"),
         "materials":    {str(k): c(v) for k, v in (r.get("materials") or {}).items()},
+        "osm_colour":   r.get("osm_colour", True),
         "density":      poi_density(r),
     }
 
@@ -214,7 +254,8 @@ def green(cfg):
     return out
 
 
-def water(cfg):
+def water(cfg, pal=None):
+    pal = pal or palette({}, "water")
     col = cfg["color"] or "#aad3df"
     st  = cfg["subtypes"]
     out = []
@@ -258,7 +299,7 @@ def water(cfg):
         "source":"water","source-layer":"water",
         "filter":["all",["any",["==",["get","tunnel"],"yes"],["==",["get","tunnel"],"culvert"]],
                         ["==",["geometry-type"],"LineString"]],
-        "paint":{"line-color":"#e6faf9","line-opacity":0.4,
+        "paint":{"line-color":pal["tunnel_core"],"line-opacity":0.4,
                  "line-width":zoom([(13,1),(18,4)])}})
     return out
 
@@ -355,10 +396,13 @@ def facade_color(cfg, fallback):
         for value, color in sorted(materials.items()):
             by_material += [value, color]
         by_material.append(fallback)
+    if not cfg.get("osm_colour", True):
+        return by_material
     return ["to-color", ["get", "building:colour"], by_material, fallback]
 
 
-def buildings(cfg):
+def buildings(cfg, pal=None):
+    pal = pal or palette({}, "buildings")
     col = cfg["color"] or "#fce1c5"
     bc  = cfg["border_color"] or "#d4a574"
     ap  = cfg["appear_at"]
@@ -371,7 +415,7 @@ def buildings(cfg):
 
     is_roof = ["==", ["get", "building"], "roof"]
     is_untagged_roof = ["all", is_roof, ["!", has_height_info]]
-    roof_color = "#6b4f3a"
+    roof_color = pal["roof"]
 
     out = [{"id":"buildings-fill","type":"fill",
              "source":"buildings","source-layer":"buildings","minzoom":ap,
@@ -482,25 +526,34 @@ def indoor_layers(settings):
     return out
 
 
-def lazy_layers(config, buildings_cfg, before):
+LAZY_GROUPS = ("building_parts", "indoor")
+
+
+def lazy_layers(config, buildings_cfg, before, excluded=()):
     settings = indoor_settings(config)
     attribution = "© OpenStreetMap contributors"
+    groups = [g for g in LAZY_GROUPS if g not in excluded and "buildings" not in excluded]
+    if not groups:
+        return None
+    sources = {g: {"type": "vector", "url": f"./{g}.pmtiles", "attribution": attribution}
+               for g in groups}
+    layers = []
+    if "building_parts" in groups:
+        layers += building_parts_layers(buildings_cfg)
+    if "indoor" in groups:
+        layers += indoor_layers(settings)
     return {
         "before": before,
         "level_height": settings["level_height"],
         "slab": settings["slab"],
         "volume_ratio": settings["volume_ratio"],
-        "sources": {
-            "building_parts": {"type": "vector", "url": "./building_parts.pmtiles",
-                               "attribution": attribution},
-            "indoor": {"type": "vector", "url": "./indoor.pmtiles",
-                       "attribution": attribution},
-        },
-        "layers": building_parts_layers(buildings_cfg) + indoor_layers(settings),
+        "sources": sources,
+        "layers": layers,
     }
 
 
-def leisure(cfg):
+def leisure(cfg, pal=None):
+    pal = pal or palette({}, "leisure")
     st = cfg["subtypes"]
 
     fill_expr = ["match", ["get","leisure"]]
@@ -518,7 +571,7 @@ def leisure(cfg):
         if s["outline_color"]:
             outline_expr += [k, s["outline_color"]]
             has_custom_outline = True
-    outline_expr.append("#adadad")
+    outline_expr.append(pal["outline"])
 
     out = [
         {"id":"leisure-fill","type":"fill",
@@ -528,7 +581,7 @@ def leisure(cfg):
         {"id":"leisure-outline","type":"line",
          "source":"leisure","source-layer":"leisure",
          "filter":["==",["geometry-type"],"Polygon"],
-         "paint":{"line-color": outline_expr if has_custom_outline else "#adadad",
+         "paint":{"line-color": outline_expr if has_custom_outline else pal["outline"],
                   "line-width":.5}},
     ]
     return out + pitch_surfaces(cfg.get("sports"))
@@ -653,8 +706,6 @@ ROAD_DEFAULTS = {
 }
 
 ROAD_TUNNEL_VALUES = ["yes", "building_passage"]
-ROAD_BUSWAY_CENTER = "#6699ff"
-ROAD_BRIDGE_CASING = "#000000"
 ROAD_LABEL_VALUES  = ["motorway", "trunk", "primary", "secondary", "tertiary",
                       "residential", "unclassified", "living_street"]
 
@@ -705,12 +756,13 @@ def _lighten(hex_col, amount=0.5):
     return "#{:02x}{:02x}{:02x}".format(mix(r), mix(g), mix(b))
 
 
-def roads(cfg):
+def roads(cfg, pal=None):
+    pal = pal or palette({}, "roads")
     out = []
     sort_key = ["coalesce", ["to-number", ["get", "layer"]], 0]
 
     for mm in ["tunnel", "bridge"]:
-        fc = "#adadad" if mm == "tunnel" else "#ffebee"
+        fc = pal["tunnel_area"] if mm == "tunnel" else pal["bridge_area"]
         op = 0.1 if mm == "tunnel" else 0.5
         out.append({"id": f"man_made-{mm}-fill", "type": "fill",
             "source": "roads", "source-layer": "roads",
@@ -722,7 +774,7 @@ def roads(cfg):
             "source": "roads", "source-layer": "roads",
             "filter": ["==", ["get", "man_made"], mm],
             "layout": {"line-join": "round", "line-cap": "round", "line-sort-key": sort_key},
-            "paint": {"line-color": "#ffc0cb" if mm == "tunnel" else "#adadad",
+            "paint": {"line-color": pal["tunnel_area_outline"] if mm == "tunnel" else pal["bridge_area_outline"],
                       "line-width": 2, **dashed}})
         if mm == "tunnel":
             out.append({"id": "man_made-tunnel-line-fill", "type": "line",
@@ -730,7 +782,7 @@ def roads(cfg):
                 "filter": ["all", ["==", ["get", "man_made"], "tunnel"],
                                   ["==", ["geometry-type"], "LineString"]],
                 "layout": {"line-join": "round", "line-cap": "round", "line-sort-key": sort_key},
-                "paint": {"line-color": "#adadad", "line-opacity": .3,
+                "paint": {"line-color": pal["tunnel_area"], "line-opacity": .3,
                           "line-width": zoom([(14, 2), (16, 10), (18, 20)])}})
 
     is_tunnel = ["in", ["get", "tunnel"], ["literal", ROAD_TUNNEL_VALUES]]
@@ -758,7 +810,7 @@ def roads(cfg):
                 continue
             fill_w = _curve_from(s["widths"], s["appear_at"])
             if variant == "bridge":
-                col, w, extra = ROAD_BRIDGE_CASING, _casing_curve(fill_w, 1.6), {}
+                col, w, extra = pal["bridge_casing"], _casing_curve(fill_w, 1.6), {}
             elif variant == "tunnel":
                 col, w, extra = s["casing"], _casing_curve(fill_w), {"line-dasharray": [2, 1]}
             else:
@@ -790,7 +842,7 @@ def roads(cfg):
         "source": "roads", "source-layer": "roads", "minzoom": bap,
         "filter": ["match", ["get", "highway"], ["busway"], True, False],
         "layout": {"line-cap": "butt", "line-join": "round", "line-sort-key": sort_key},
-        "paint": {"line-color": ROAD_BUSWAY_CENTER,
+        "paint": {"line-color": pal["busway_center"],
                   "line-width": zoom(_curve_from([(12, .4), (18, 2)], bap)),
                   "line-dasharray": [2, 2]}})
 
@@ -802,7 +854,7 @@ def roads(cfg):
         "layout": {"text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
                    "text-size": zoom([(cfg["labels_at"], 10), (18, 13)]),
                    "symbol-placement": "line", "text-max-angle": 30},
-        "paint": {"text-color": "#222222", "text-halo-color": "rgba(255,255,255,0.8)",
+        "paint": {"text-color": pal["label"], "text-halo-color": pal["label_halo"],
                   "text-halo-width": 1.5}})
 
     out.append({"id": "road-oneway-arrows", "type": "symbol",
@@ -819,13 +871,12 @@ def roads(cfg):
             "text-keep-upright": False,
             "text-allow-overlap": True,
             "text-ignore-placement": True},
-        "paint": {"text-color": "#666666", "text-opacity": 0.7,
-                  "text-halo-color": "rgba(255,255,255,0.6)", "text-halo-width": 1}})
+        "paint": {"text-color": pal["oneway"], "text-opacity": 0.7,
+                  "text-halo-color": pal["oneway_halo"], "text-halo-width": 1}})
 
     return out
 
 
-FOOTWAY_NOACCESS = "#bbbbbb"
 FOOTWAY_WIDTHS = [(14, 0.7), (15, 1.0), (16, 1.3), (18, 1.3), (19, 1.6)]
 FOOTWAY_BACKGROUND = 2.0
 FOOTWAY_DASH_Z14 = (1, 3)
@@ -872,7 +923,7 @@ def _footway_dasharray(kind):
     return expr
 
 
-def _footway_layers(key, s, ap):
+def _footway_layers(key, s, ap, no_access):
     col = c(s.get("color", "#fa8072"))
     background = c(s.get("outline_color", "#ffffff"))
     hw = ["==", ["get", "highway"], key]
@@ -890,13 +941,14 @@ def _footway_layers(key, s, ap):
             "source": "pedestrian", "source-layer": "pedestrian", "minzoom": ap,
             "filter": ["all", hw, _footway_surface_filter(kind), visible],
             "layout": {"line-cap": "round", "line-join": "round"},
-            "paint": {"line-color": ["case", _footway_noaccess(), FOOTWAY_NOACCESS, col],
+            "paint": {"line-color": ["case", _footway_noaccess(), no_access, col],
                       "line-width": zoom(_curve_from(FOOTWAY_WIDTHS, ap)),
                       "line-dasharray": _footway_dasharray(kind)}})
     return out
 
 
-def pedestrian(cfg):
+def pedestrian(cfg, pal=None):
+    pal = pal or palette({}, "pedestrian")
     col = cfg["color"] or "#97644c"
     st  = cfg["subtypes"]
     ped = {**(st.get("pedestrian_street") or {}), **(st.get("pedestrian") or {})}
@@ -916,7 +968,7 @@ def pedestrian(cfg):
         "paint":{"line-color":ped_fill,"line-width":zoom([(ap_ped,.8),(18,4)])}})
     for key in ("footway", "path"):
         s = st.get(key) or {}
-        out += _footway_layers(key, s, s.get("appear_at", 14))
+        out += _footway_layers(key, s, s.get("appear_at", 14), pal["no_access"])
     s  = st.get("steps") or {}
     ap = s.get("appear_at", 14)
     out.append({"id":"pedestrian-steps","type":"line",
@@ -927,7 +979,8 @@ def pedestrian(cfg):
     return out
 
 
-def cycleway(cfg):
+def cycleway(cfg, pal=None):
+    pal = pal or palette({}, "cycleway")
     col = cfg["color"] or "#0000ff"
     out = [{"id":"cycleway","type":"line",
         "source":"cycleway","source-layer":"cycleway","minzoom":cfg["appear_at"],
@@ -949,7 +1002,7 @@ def cycleway(cfg):
             "text-keep-upright":False,
             "text-allow-overlap":True,
             "text-ignore-placement":True},
-        "paint":{"text-color":"#ffffff","text-opacity":0.95,
+        "paint":{"text-color":pal["oneway"],"text-opacity":0.95,
                  "text-halo-color":col,"text-halo-width":1.5}})
 
     return out
@@ -962,10 +1015,10 @@ RAILWAY_DEFS = {
     "miniature": (None,               [(14, .3), (18, 1)]),
 }
 RAILWAY_TUNNEL_VALUES = ["yes", "building_passage"]
-RAILWAY_BRIDGE_CASING = "#000000"
 
 
-def railway(cfg):
+def railway(cfg, pal=None):
+    pal = pal or palette({}, "railway")
     out = []
     resolved = {}
     for rw in RAILWAY_DEFS:
@@ -1022,7 +1075,7 @@ def railway(cfg):
                         "filter": ["all", ["match", ["get", "railway"], ["rail", "subway", "tram"], True, False],
                                           ["==", ["get", "bridge"], "yes"]],
                         "layout": {"line-join": "round"},
-                        "paint": {"line-color": RAILWAY_BRIDGE_CASING,
+                        "paint": {"line-color": pal["bridge_casing"],
                                   "line-width": zoom([(ap, 4), (18, 9)]), "line-opacity": .15}})
                 out.append({"id": f"railway-{rw}{suffix}-ties", "type": "line",
                     "source": "railway", "source-layer": "railway", "minzoom": ap, "filter": filt,
@@ -1041,7 +1094,8 @@ def railway(cfg):
     return out
 
 
-def public_transport(cfg):
+def public_transport(cfg, pal=None):
+    pal = pal or palette({}, "public_transport")
     col = cfg["color"] or "#e3004f"
     ap  = cfg["appear_at"]
     la  = cfg["labels_at"]
@@ -1055,7 +1109,7 @@ def public_transport(cfg):
         {"id":"public_transport-casing","type":"line",
          "source":"public_transport","source-layer":"public_transport","minzoom":ap,
          "layout":{"line-join":"round","line-cap":"round"},
-         "paint":{"line-color":"#ffffff","line-width":zoom([(ap,3),(18,9)]),"line-opacity":.6}},
+         "paint":{"line-color":pal["casing"],"line-width":zoom([(ap,3),(18,9)]),"line-opacity":.6}},
         {"id":"public_transport-line","type":"line",
          "source":"public_transport","source-layer":"public_transport","minzoom":ap,
          "layout":{"line-join":"round","line-cap":"round"},
@@ -1065,8 +1119,8 @@ def public_transport(cfg):
          "source":"public_transport","source-layer":"public_transport","minzoom":la,
          "layout":{"text-field":["get","ref"],"text-font":["Noto Sans Regular"],
                    "text-size":11,"symbol-placement":"line","text-max-angle":30},
-         "paint":{"text-color":["coalesce",["get","colour:text"],"#000000"],
-                  "text-halo-color":"rgba(255,255,255,0.85)","text-halo-width":1.5}},
+         "paint":{"text-color":["coalesce",["get","colour:text"],pal["label"]],
+                  "text-halo-color":pal["label_halo"],"text-halo-width":1.5}},
     ]
 
 
@@ -1098,7 +1152,8 @@ def address_anchor_expr():
     return expr
 
 
-def addresses(cfg):
+def addresses(cfg, pal=None):
+    pal = pal or palette({}, "addresses")
     ap = cfg["appear_at"]
     return [{"id":"address-labels","type":"symbol",
         "source":"addresses","source-layer":"addresses","minzoom":ap,
@@ -1109,7 +1164,7 @@ def addresses(cfg):
                   "text-padding":1,
                   "text-allow-overlap":False},
         "paint":{"text-color":cfg["color"] or "#6f5e50",
-                 "text-halo-color":"rgba(255,255,255,0.85)",
+                 "text-halo-color":pal["halo"],
                  "text-halo-width":1.2}}]
 
 
@@ -1120,7 +1175,8 @@ def boundaries(cfg):
                  "line-dasharray":[5,5],"line-opacity":.7}}]
 
 
-def poi(cfg):
+def poi(cfg, pal=None):
+    pal = pal or palette({}, "poi")
     fc = cfg["color"] or "#734a08"
     ap = cfg["appear_at"]
     la = cfg["labels_at"]
@@ -1130,7 +1186,7 @@ def poi(cfg):
          "source":"poi","source-layer":"poi","minzoom":dots,
          "paint":{"circle-radius":zoom([(dots,2),(18,4)]),
                   "circle-color":fc,
-                  "circle-stroke-color":"#fff","circle-stroke-width":.8,
+                  "circle-stroke-color":pal["stroke"],"circle-stroke-width":.8,
                   "circle-opacity":.85}}
     if d and d.get("overlap_at") is not None:
         overlap = ["step",["zoom"],False,d["overlap_at"],True]
@@ -1163,7 +1219,7 @@ def poi(cfg):
         icon["filter"] = rank_filter
     icon["layout"] = layout
     icon["paint"] = {"icon-opacity":.9,"text-color":fc,
-                     "text-halo-color":"rgba(255,255,255,0.8)","text-halo-width":1.2}
+                     "text-halo-color":pal["label_halo"],"text-halo-width":1.2}
     return [
         circle,
         icon,
@@ -1185,7 +1241,7 @@ def poi(cfg):
              "text-font":["Noto Sans Regular"],"text-size":10,
              "text-offset":[0,1.2],"text-anchor":"top","text-optional":True},
          "paint":{"icon-opacity":.9,"text-color":fc,
-                  "text-halo-color":"rgba(255,255,255,0.8)","text-halo-width":1.2}},
+                  "text-halo-color":pal["label_halo"],"text-halo-width":1.2}},
     ]
 
 
@@ -1344,36 +1400,46 @@ def order_layers(layers):
     return ground + extrusions + on_top, (on_top[0]["id"] if on_top else None)
 
 
-def build_style(config):
+def build_style(config, variant=None):
     source_hash = config_hash(config)
+    for err in palette_errors(config.get("palette")):
+        print(f"⚠  {err}", file=sys.stderr)
+    excluded = set()
+    name = (config.get("map") or {}).get("name", "Map")
+    if variant:
+        config = apply_variant(config, variant)
+        excluded = set(variant["raw"].get("exclude") or [])
+        name = (variant["raw"].get("map") or {}).get("name") or f"{name} · {variant['label']}"
     config = with_default_subtypes(config)
     L  = config.get("layers",{})
     M  = config.get("map",{})
     bgc = c(M.get("background","#f2efe9"))
     gl  = M.get("glyphs",
         "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf")
+    pal = lambda group: palette(config, group)
 
     layers = [{"id":"background","type":"background","paint":{"background-color":bgc}}]
     layers += landuse(lc(L,"landuse"))
     layers += green(lc(L,"green"))
-    layers += water(lc(L,"water"))
-    layers += leisure(lc(L,"leisure"))
-    layers += buildings(lc(L,"buildings"))
-    layers += addresses(lc(L,"addresses"))
+    layers += water(lc(L,"water"), pal("water"))
+    layers += leisure(lc(L,"leisure"), pal("leisure"))
+    layers += buildings(lc(L,"buildings"), pal("buildings"))
+    layers += addresses(lc(L,"addresses"), pal("addresses"))
     layers += trees(lc(L,"trees"), bgc)
-    layers += railway(lc(L,"railway"))
-    layers += public_transport(lc(L,"public_transport"))
-    layers += roads(lc(L,"roads"))
-    layers += pedestrian(lc(L,"pedestrian"))
-    layers += cycleway(lc(L,"cycleway"))
+    layers += railway(lc(L,"railway"), pal("railway"))
+    layers += public_transport(lc(L,"public_transport"), pal("public_transport"))
+    layers += roads(lc(L,"roads"), pal("roads"))
+    layers += pedestrian(lc(L,"pedestrian"), pal("pedestrian"))
+    layers += cycleway(lc(L,"cycleway"), pal("cycleway"))
     layers += boundaries(lc(L,"boundaries"))
     layers += pitch_markings(lc(L,"leisure")["sports"])
-    layers += poi(lc(L,"poi"))
+    layers += poi(lc(L,"poi"), pal("poi"))
     layers += street_furniture(lc(L,"street_furniture"))
+    layers = [l for l in layers if l.get("source") not in excluded]
     layers, first_label = order_layers(layers)
 
     sources = {n:{"type":"vector","url":f"./{n}.pmtiles",
-                  "attribution":"© OpenStreetMap contributors"} for n in SOURCES}
+                  "attribution":"© OpenStreetMap contributors"} for n in SOURCES if n not in excluded}
     meta_map = {k: M[k] for k in ("name","version","center","zoom","background","font","glyphs") if k in M}
     meta_tiles = {n: dict(raw["tiles"]) for n, raw in L.items() if (raw or {}).get("tiles")}
     metadata = {"brussels:map": meta_map,
@@ -1382,13 +1448,217 @@ def build_style(config):
                 "brussels:legend": build_legend(config, layers)}
     if meta_tiles:
         metadata["brussels:tiles"] = meta_tiles
-    density = poi_density(L.get("poi"))
+    density = poi_density(L.get("poi")) if "poi" not in excluded else None
     if density:
         metadata["brussels:poi_density"] = density_meta(density)
-    metadata["brussels:lazy"] = lazy_layers(config, lc(L, "buildings"), first_label)
-    return {"version":8,"name":M.get("name","Map"),
+    lazy = lazy_layers(config, lc(L, "buildings"), first_label, excluded)
+    if lazy:
+        metadata["brussels:lazy"] = lazy
+    if variant:
+        metadata["brussels:variant"] = {"id": variant["id"], "label": variant["label"],
+                                        "hash": config_hash(variant["raw"])}
+    return {"version":8,"name":name,
             "metadata":metadata,
             "sources":sources,"glyphs":gl,"layers":layers}
+
+
+VARIANT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+VARIANT_KEYS = ("variant", "exclude", "map", "palette", "patterns", "layers")
+VARIANT_DATA_KEYS = ("tiles", "density", "tag")
+DEFAULT_VARIANT = {"id": "default", "label": "Standard"}
+
+
+class VariantError(ValueError):
+    pass
+
+
+def deep_merge(base, over):
+    if not isinstance(base, dict) or not isinstance(over, dict):
+        return copy.deepcopy(over)
+    out = copy.deepcopy(base)
+    for key, value in over.items():
+        if value is None:
+            out.pop(key, None)
+        elif key in out:
+            out[key] = deep_merge(out[key], value)
+        else:
+            out[key] = copy.deepcopy(value)
+    return out
+
+
+def variant_layer_names(base):
+    return set((base.get("layers") or {})) | set(SOURCES) | {"indoor"}
+
+
+def _base_layer(base, name):
+    return (with_default_subtypes(base).get("layers") or {}).get(name) or {}
+
+
+def known_subtypes(base, name):
+    keys = set((_base_layer(base, name).get("subtypes") or {}))
+    if name == "roads":
+        keys |= set(ROAD_ORDER) | set(ROAD_LEGACY_GROUP.values())
+    if name == "indoor":
+        keys |= set(INDOOR_DEFAULTS["colors"])
+    return keys
+
+
+def base_appear_at(base, name, key=None):
+    raw = _base_layer(base, name)
+    ap = raw.get("appear_at", INDOOR_DEFAULTS["appear_at"] if name == "indoor" else 10)
+    if key is None:
+        return ap
+    if name == "roads" and key in ROAD_DEFAULTS:
+        return road_subtype(raw, key)["appear_at"]
+    return ((raw.get("subtypes") or {}).get(key) or {}).get("appear_at", ap)
+
+
+def _data_key_paths(node, path):
+    if not isinstance(node, dict):
+        return []
+    found = []
+    for key, value in node.items():
+        here = f"{path}.{key}"
+        if key in VARIANT_DATA_KEYS:
+            found.append(here)
+        found += _data_key_paths(value, here)
+    return found
+
+
+def variant_errors(base, raw, vid):
+    errors = []
+    if not VARIANT_ID_RE.match(vid) or vid == DEFAULT_VARIANT["id"]:
+        errors.append(f"identifiant « {vid} » invalide : minuscules, chiffres et tirets, "
+                      f"et différent de « {DEFAULT_VARIANT['id']} »")
+    if not isinstance(raw, dict):
+        return errors + ["le fichier doit contenir un objet YAML"]
+    for key in raw:
+        if key not in VARIANT_KEYS:
+            errors.append(f"clé de premier niveau inconnue : {key} ({', '.join(VARIANT_KEYS)})")
+    names = variant_layer_names(base)
+    exclude = raw.get("exclude") or []
+    if not isinstance(exclude, list):
+        errors.append("exclude doit être une liste de couches")
+        exclude = []
+    for name in exclude:
+        if name not in names | set(LAZY_GROUPS):
+            errors.append(f"exclude : couche inconnue « {name} »")
+    errors += palette_errors(raw.get("palette"))
+    declared = {**DEFAULT_PATTERNS, **(base.get("patterns") or {})}
+    for pname, pcfg in (raw.get("patterns") or {}).items():
+        if pname not in declared and not (pcfg or {}).get("file"):
+            errors.append(f"patterns.{pname} : nouveau motif sans « file »")
+    for name, layer in (raw.get("layers") or {}).items():
+        where = f"layers.{name}"
+        if name not in names:
+            errors.append(f"{where} : couche inconnue")
+            continue
+        if layer is None:
+            errors.append(f"{where} : une couche ne se supprime pas avec null, utilisez exclude")
+            continue
+        if not isinstance(layer, dict):
+            errors.append(f"{where} : objet YAML attendu")
+            continue
+        for path in _data_key_paths(layer, where):
+            errors.append(f"{path} : clé de données interdite dans une variante "
+                          f"(les tuiles sont communes à tous les styles)")
+        if "appear_at" in layer and layer["appear_at"] < base_appear_at(base, name):
+            errors.append(f"{where}.appear_at : {layer['appear_at']} < {base_appear_at(base, name)} "
+                          f"(une variante ne peut pas afficher plus tôt que les tuiles)")
+        known = known_subtypes(base, name)
+        for key, scfg in (layer.get("subtypes") or {}).items():
+            swhere = f"{where}.subtypes.{key}"
+            if key not in known:
+                errors.append(f"{swhere} : sous-type absent de la base")
+                continue
+            if isinstance(scfg, dict) and "appear_at" in scfg \
+                    and scfg["appear_at"] < base_appear_at(base, name, key):
+                errors.append(f"{swhere}.appear_at : {scfg['appear_at']} < "
+                              f"{base_appear_at(base, name, key)} "
+                              f"(une variante ne peut pas afficher plus tôt que les tuiles)")
+    return errors
+
+
+def load_variant(path):
+    path = Path(path)
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    meta = (raw.get("variant") or {}) if isinstance(raw, dict) else {}
+    return {"id": path.stem, "label": str(meta.get("label") or path.stem),
+            "path": str(path), "raw": raw}
+
+
+def apply_variant(base, variant):
+    raw = variant["raw"]
+    errors = variant_errors(base, raw, variant["id"])
+    if errors:
+        raise VariantError("\n".join(f"  - {e}" for e in errors))
+    merged = copy.deepcopy(base)
+    for key in ("map", "palette", "layers"):
+        if raw.get(key):
+            merged[key] = deep_merge(base.get(key) or {}, raw[key])
+    if raw.get("patterns"):
+        merged["patterns"] = deep_merge({**DEFAULT_PATTERNS, **(base.get("patterns") or {})},
+                                        raw["patterns"])
+    return merged
+
+
+def variant_files(directory):
+    directory = Path(directory)
+    if not directory.is_dir():
+        return []
+    files = sorted(list(directory.glob("*.yaml")) + list(directory.glob("*.yml")))
+    stems = [f.stem for f in files]
+    duplicates = sorted({s for s in stems if stems.count(s) > 1})
+    if duplicates:
+        raise VariantError(f"  - identifiants en double dans {directory} : {', '.join(duplicates)}")
+    return files
+
+
+def variant_style_path(style_out, vid):
+    style_out = Path(style_out)
+    return style_out.with_name(f"{style_out.stem}.{vid}{style_out.suffix}")
+
+
+def build_manifest(style_out, variants):
+    entries = [{**DEFAULT_VARIANT, "url": Path(style_out).name}]
+    for v in variants:
+        entries.append({"id": v["id"], "label": v["label"],
+                        "url": variant_style_path(style_out, v["id"]).name})
+    return {"default": DEFAULT_VARIANT["id"], "styles": entries}
+
+
+def build_variants(config, directory, style_out):
+    variants = [load_variant(f) for f in variant_files(directory)]
+    outputs = []
+    for v in variants:
+        try:
+            style = build_style(config, v)
+        except VariantError as e:
+            raise VariantError(f"{v['path']} :\n{e}") from None
+        out = variant_style_path(style_out, v["id"])
+        out.write_text(json.dumps(style, indent=2, ensure_ascii=False))
+        outputs.append((out, len(style["layers"])))
+    remove_stale_variants(style_out, {v["id"] for v in variants})
+    manifest = Path(style_out).with_name("styles.json")
+    manifest.write_text(json.dumps(build_manifest(style_out, variants), indent=2, ensure_ascii=False))
+    return outputs, manifest
+
+
+def remove_stale_variants(style_out, keep):
+    style_out = Path(style_out)
+    removed = []
+    for f in style_out.parent.glob(f"{style_out.stem}.*{style_out.suffix}"):
+        vid = f.name[len(style_out.stem) + 1:-len(style_out.suffix)]
+        if vid in keep:
+            continue
+        try:
+            meta = json.loads(f.read_text(encoding="utf-8")).get("metadata") or {}
+        except (ValueError, OSError):
+            continue
+        if (meta.get("brussels:variant") or {}).get("id") == vid:
+            f.unlink()
+            removed.append(f)
+    return removed
 
 
 SUBTYPE_LABELS = {
@@ -1738,6 +2008,8 @@ def main():
     p.add_argument("--gran-out",    default="granulometry.json")
     p.add_argument("--pmtiles-out", default="pmtiles_params.json")
     p.add_argument("--only", choices=["style","granulometry","pmtiles"], default=None)
+    p.add_argument("--variants",    default=None,
+                   help="dossier de variantes (*.yaml) → style.<id>.json + styles.json")
     args = p.parse_args()
     cfg_path = Path(args.config)
     if not cfg_path.exists():
@@ -1751,6 +2023,14 @@ def main():
         Path(args.style_out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.style_out).write_text(json.dumps(s,indent=2,ensure_ascii=False))
         print(f"✓  {args.style_out}  ({len(s['layers'])} layers MapLibre)")
+        if args.variants:
+            try:
+                outputs, manifest = build_variants(config, args.variants, args.style_out)
+            except VariantError as e:
+                print(f"✗  variante invalide — {e}", file=sys.stderr); sys.exit(1)
+            for out, n in outputs:
+                print(f"✓  {out}  ({n} layers MapLibre)")
+            print(f"✓  {manifest}  ({len(outputs) + 1} styles)")
     if only in (None,"granulometry"):
         g = build_granulometry(config)
         Path(args.gran_out).write_text(json.dumps(g,indent=2,ensure_ascii=False))
