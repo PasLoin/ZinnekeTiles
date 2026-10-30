@@ -1,0 +1,15 @@
+{
+  "default": "default",
+  "styles": [
+    {
+      "id": "default",
+      "label": "Standard",
+      "url": "style.json"
+    },
+    {
+      "id": "nb",
+      "label": "Noir et blanc",
+      "url": "style.nb.json"
+    }
+  ]
+}

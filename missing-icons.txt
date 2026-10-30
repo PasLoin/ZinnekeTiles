@@ -1,10 +1,10 @@
 street_lamp.svg (10244x)
-bench.svg (7803x)
+bench.svg (7783x)
 bollard.svg (7346x)
-waste_basket.svg (6871x)
-fence.svg (3986x)
+waste_basket.svg (6865x)
+fence.svg (3987x)
 gate.svg (3520x)
-restaurant.svg (1974x)
+restaurant.svg (1973x)
 vending_machine.svg (1811x)
 vending-parking_tickets.svg (1448x)
 fast_food.svg (936x)
@@ -12,16 +12,14 @@ recycling.svg (929x)
 convenience.svg (889x)
 lift_gate.svg (845x)
 pharmacy.svg (731x)
-clothes.svg (728x)
+clothes.svg (729x)
 school.svg (689x)
-memorial.svg (659x)  # aucun CDN non plus
 fire_hydrant.svg (647x)
 cafe.svg (631x)
 hairdresser.svg (569x)
 playground.svg (525x)
 information.svg (478x)
 fountain.svg (450x)
-door-hinged.svg (429x)  # aucun CDN non plus
 post_box.svg (414x)
 pub.svg (395x)
 bicycle_rental.svg (368x)
@@ -41,18 +39,17 @@ hotel.svg (212x)
 sports_centre.svg (210x)  # aucun CDN non plus
 cuisine-italian.svg (209x)  # aucun CDN non plus
 dog_toilet.svg (204x)  # aucun CDN non plus
-car_sharing.svg (186x)  # aucun CDN non plus
-laundry.svg (165x)
-jewelry.svg (146x)
+laundry.svg (164x)
+jewelry.svg (145x)
 bank.svg (142x)
 garden.svg (142x)
-optician.svg (140x)
+optician.svg (139x)
 fuel.svg (135x)
 cycle_barrier.svg (132x)
 bicycle_repair_station.svg (131x)  # aucun CDN non plus
 doctor.svg (126x)
 gallery.svg (125x)  # aucun CDN non plus
-yes.svg (117x)  # aucun CDN non plus
+yes.svg (115x)  # aucun CDN non plus
 museum.svg (113x)
 atm.svg (111x)
 cuisine-burger.svg (111x)  # aucun CDN non plus
@@ -60,9 +57,8 @@ bicycle.svg (110x)
 cuisine-coffee_shop.svg (110x)  # aucun CDN non plus
 estate_agent.svg (110x)  # aucun CDN non plus
 taxi.svg (110x)
+arts_centre.svg (108x)  # aucun CDN non plus
 public_bookcase.svg (108x)  # aucun CDN non plus
-arts_centre.svg (107x)  # aucun CDN non plus
-fitness_centre.svg (99x)
 florist.svg (98x)
 library.svg (96x)
 cuisine-regional.svg (90x)  # aucun CDN non plus
@@ -71,7 +67,7 @@ gift.svg (84x)
 cuisine-kebab.svg (78x)  # aucun CDN non plus
 deli.svg (77x)  # aucun CDN non plus
 theatre.svg (77x)
-pastry.svg (75x)  # aucun CDN non plus
+pastry.svg (76x)  # aucun CDN non plus
 cuisine-french.svg (71x)  # aucun CDN non plus
 car_repair.svg (69x)
 childcare.svg (69x)  # aucun CDN non plus
@@ -83,12 +79,11 @@ cuisine-chinese.svg (64x)  # aucun CDN non plus
 furniture.svg (63x)
 vending-excrement_bags.svg (63x)
 cosmetics.svg (61x)  # aucun CDN non plus
-ice_cream.svg (60x)
 cuisine-indian.svg (58x)  # aucun CDN non plus
 electronics.svg (57x)  # aucun CDN non plus
 cuisine-thai.svg (56x)  # aucun CDN non plus
+interior_decoration.svg (56x)  # aucun CDN non plus
 water_tap.svg (56x)
-interior_decoration.svg (55x)  # aucun CDN non plus
 cuisine-asian.svg (54x)  # aucun CDN non plus
 parking_entrance.svg (54x)  # aucun CDN non plus
 police.svg (53x)
@@ -139,8 +134,8 @@ cuisine-african.svg (29x)  # aucun CDN non plus
 cuisine-chicken.svg (29x)  # aucun CDN non plus
 locksmith.svg (29x)  # aucun CDN non plus
 pet.svg (29x)  # aucun CDN non plus
-confectionery.svg (28x)
 computer.svg (28x)  # aucun CDN non plus
+confectionery.svg (28x)
 houseware.svg (28x)  # aucun CDN non plus
 second_hand.svg (28x)  # aucun CDN non plus
 cuisine-pasta.svg (27x)  # aucun CDN non plus
@@ -154,9 +149,9 @@ cuisine-portuguese.svg (25x)  # aucun CDN non plus
 stationery.svg (25x)  # aucun CDN non plus
 door-yes.svg (24x)  # aucun CDN non plus
 photo_booth.svg (24x)  # aucun CDN non plus
-ticket.svg (24x)
 cuisine-mexican.svg (23x)  # aucun CDN non plus
 music.svg (23x)
+ticket.svg (23x)
 cuisine-syrian.svg (22x)  # aucun CDN non plus
 e-cigarette.svg (22x)  # aucun CDN non plus
 educational_institution.svg (22x)  # aucun CDN non plus
@@ -185,7 +180,6 @@ political_party.svg (18x)  # aucun CDN non plus
 vending-newspapers.svg (18x)
 carpet.svg (17x)  # aucun CDN non plus
 department_store.svg (17x)  # aucun CDN non plus
-dog_park.svg (17x)
 money_transfer.svg (17x)  # aucun CDN non plus
 photo.svg (17x)  # aucun CDN non plus
 screen.svg (17x)  # aucun CDN non plus
@@ -198,16 +192,16 @@ cinema.svg (15x)
 consulting.svg (15x)  # aucun CDN non plus
 notary.svg (15x)  # aucun CDN non plus
 tea.svg (15x)  # aucun CDN non plus
-union.svg (15x)  # aucun CDN non plus
 tyres.svg (15x)  # aucun CDN non plus
+union.svg (15x)  # aucun CDN non plus
 vending-coffee.svg (15x)  # aucun CDN non plus
 wholesale.svg (15x)  # aucun CDN non plus
 bed.svg (14x)  # aucun CDN non plus
 chamber.svg (14x)  # aucun CDN non plus
 coffee.svg (14x)
 curtain.svg (14x)  # aucun CDN non plus
-fashion_accessories.svg (14x)
 fabric.svg (14x)  # aucun CDN non plus
+fashion_accessories.svg (14x)
 kitchen.svg (14x)  # aucun CDN non plus
 lighting.svg (14x)  # aucun CDN non plus
 scrub.svg (14x)  # aucun CDN non plus
@@ -243,8 +237,8 @@ cuisine-french_tacos.svg (10x)  # aucun CDN non plus
 frozen_food.svg (10x)  # aucun CDN non plus
 games.svg (10x)  # aucun CDN non plus
 laboratory.svg (10x)  # aucun CDN non plus
-paint.svg (10x)
 outdoor.svg (10x)  # aucun CDN non plus
+paint.svg (10x)
 pet_grooming.svg (10x)
 roofer.svg (10x)  # aucun CDN non plus
 sport.svg (10x)  # aucun CDN non plus
@@ -255,8 +249,8 @@ collector.svg (9x)  # aucun CDN non plus
 courier.svg (9x)  # aucun CDN non plus
 cuisine-brasserie.svg (9x)  # aucun CDN non plus
 dressmaker.svg (9x)  # aucun CDN non plus
-health_food.svg (9x)  # aucun CDN non plus
 handicraft.svg (9x)  # aucun CDN non plus
+health_food.svg (9x)  # aucun CDN non plus
 medical_supply.svg (9x)  # aucun CDN non plus
 nutrition_supplements.svg (9x)  # aucun CDN non plus
 park.svg (9x)
@@ -304,8 +298,8 @@ bathroom_furnishing.svg (6x)  # aucun CDN non plus
 bureau_de_change.svg (6x)  # aucun CDN non plus
 carpenter.svg (6x)  # aucun CDN non plus
 centre.svg (6x)  # aucun CDN non plus
-cuisine-brunch.svg (6x)  # aucun CDN non plus
 cuisine-breakfast.svg (6x)  # aucun CDN non plus
+cuisine-brunch.svg (6x)  # aucun CDN non plus
 cuisine-coffee.svg (6x)  # aucun CDN non plus
 cuisine-local.svg (6x)  # aucun CDN non plus
 cuisine-persian.svg (6x)  # aucun CDN non plus
@@ -336,8 +330,8 @@ exit.svg (5x)  # aucun CDN non plus
 financial_advisor.svg (5x)  # aucun CDN non plus
 heath.svg (5x)  # aucun CDN non plus
 hifi.svg (5x)  # aucun CDN non plus
-hookah_lounge.svg (5x)  # aucun CDN non plus
 horse_riding.svg (5x)
+hookah_lounge.svg (5x)  # aucun CDN non plus
 household_linen.svg (5x)  # aucun CDN non plus
 indoor_play.svg (5x)  # aucun CDN non plus
 internet_cafe.svg (5x)  # aucun CDN non plus
@@ -367,8 +361,8 @@ upholsterer.svg (4x)  # aucun CDN non plus
 video.svg (4x)  # aucun CDN non plus
 water_well.svg (4x)  # aucun CDN non plus
 wayside_cross.svg (4x)  # aucun CDN non plus
-building.svg (3x)
 boutique.svg (3x)  # aucun CDN non plus
+building.svg (3x)
 city_gate.svg (3x)  # aucun CDN non plus
 clockmaker.svg (3x)  # aucun CDN non plus
 construction_company.svg (3x)  # aucun CDN non plus
@@ -428,22 +422,22 @@ billboard.svg (2x)
 bowling_alley.svg (2x)
 charge_point.svg (2x)  # aucun CDN non plus
 column.svg (2x)  # aucun CDN non plus
-cuisine-bulgarian.svg (2x)  # aucun CDN non plus
 cuisine-cambodian.svg (2x)  # aucun CDN non plus
+cuisine-bulgarian.svg (2x)  # aucun CDN non plus
 cuisine-couscous.svg (2x)  # aucun CDN non plus
-cuisine-egyptian.svg (2x)  # aucun CDN non plus
 cuisine-dessert.svg (2x)  # aucun CDN non plus
 cuisine-empanada.svg (2x)  # aucun CDN non plus
+cuisine-egyptian.svg (2x)  # aucun CDN non plus
 cuisine-fries.svg (2x)  # aucun CDN non plus
-cuisine-fried_chicken.svg (2x)  # aucun CDN non plus
 cuisine-fried_food.svg (2x)  # aucun CDN non plus
 cuisine-fusion.svg (2x)  # aucun CDN non plus
 cuisine-georgian.svg (2x)  # aucun CDN non plus
+cuisine-fried_chicken.svg (2x)  # aucun CDN non plus
 cuisine-mauritian.svg (2x)  # aucun CDN non plus
 cuisine-oriental.svg (2x)  # aucun CDN non plus
 cuisine-pakistani.svg (2x)  # aucun CDN non plus
-cuisine-tacos.svg (2x)  # aucun CDN non plus
 cuisine-taiwanese.svg (2x)  # aucun CDN non plus
+cuisine-tacos.svg (2x)  # aucun CDN non plus
 cuisine-teahouse.svg (2x)  # aucun CDN non plus
 cuisine-tibetan.svg (2x)  # aucun CDN non plus
 door-1.svg (2x)  # aucun CDN non plus
@@ -454,8 +448,8 @@ doors.svg (2x)  # aucun CDN non plus
 embankment.svg (2x)  # aucun CDN non plus
 engineer.svg (2x)  # aucun CDN non plus
 energy_supplier.svg (2x)  # aucun CDN non plus
-fireplace.svg (2x)
 flagpole.svg (2x)  # aucun CDN non plus
+fireplace.svg (2x)
 flooring.svg (2x)  # aucun CDN non plus
 gardener.svg (2x)  # aucun CDN non plus
 graphic_design.svg (2x)  # aucun CDN non plus
@@ -478,26 +472,26 @@ printmaker.svg (2x)  # aucun CDN non plus
 publisher.svg (2x)  # aucun CDN non plus
 sculptor.svg (2x)  # aucun CDN non plus
 small_electric_vehicle.svg (2x)  # aucun CDN non plus
-speech_therapist.svg (2x)  # aucun CDN non plus
 spices.svg (2x)  # aucun CDN non plus
+speech_therapist.svg (2x)  # aucun CDN non plus
 tanning_salon.svg (2x)  # aucun CDN non plus
 tutoring.svg (2x)  # aucun CDN non plus
 vending-chemist.svg (2x)  # aucun CDN non plus
 vending-sweets.svg (2x)  # aucun CDN non plus
 winery.svg (2x)  # aucun CDN non plus
-artist.svg (1x)  # aucun CDN non plus
 archive.svg (1x)  # aucun CDN non plus
 art_supplies.svg (1x)  # aucun CDN non plus
-audio_video_professional_supplies.svg (1x)  # aucun CDN non plus
+artist.svg (1x)  # aucun CDN non plus
 auction_house.svg (1x)  # aucun CDN non plus
+audio_video_professional_supplies.svg (1x)  # aucun CDN non plus
 barracks.svg (1x)  # aucun CDN non plus
 bell.svg (1x)  # aucun CDN non plus
 bicycle_parking.svg (1x)  # aucun CDN non plus
 bicycle_repair.svg (1x)
 bicycle_wash.svg (1x)  # aucun CDN non plus
 binoculars.svg (1x)
-board_games.svg (1x)  # aucun CDN non plus
 bonsai.svg (1x)  # aucun CDN non plus
+board_games.svg (1x)  # aucun CDN non plus
 broadcaster.svg (1x)  # aucun CDN non plus
 building_materials.svg (1x)  # aucun CDN non plus
 business.svg (1x)  # aucun CDN non plus
@@ -507,28 +501,28 @@ chapel.svg (1x)  # aucun CDN non plus
 city_wall.svg (1x)  # aucun CDN non plus
 coffee_roaster.svg (1x)  # aucun CDN non plus
 coaching.svg (1x)  # aucun CDN non plus
-construction.svg (1x)
-copyright_collective.svg (1x)  # aucun CDN non plus
 cooperative.svg (1x)  # aucun CDN non plus
+copyright_collective.svg (1x)  # aucun CDN non plus
+construction.svg (1x)
 crypt.svg (1x)  # aucun CDN non plus
-cuisine-afghan.svg (1x)  # aucun CDN non plus
 cuisine-algerian.svg (1x)  # aucun CDN non plus
+cuisine-afghan.svg (1x)  # aucun CDN non plus
 cuisine-arabic.svg (1x)  # aucun CDN non plus
-cuisine-american.svg (1x)  # aucun CDN non plus
 cuisine-armenian.svg (1x)  # aucun CDN non plus
+cuisine-american.svg (1x)  # aucun CDN non plus
 cuisine-azerbaijani.svg (1x)  # aucun CDN non plus
-cuisine-baklawa.svg (1x)  # aucun CDN non plus
 cuisine-balkan.svg (1x)  # aucun CDN non plus
 cuisine-beer.svg (1x)  # aucun CDN non plus
+cuisine-baklawa.svg (1x)  # aucun CDN non plus
 cuisine-bread.svg (1x)  # aucun CDN non plus
 cuisine-british.svg (1x)  # aucun CDN non plus
-cuisine-cameroonian.svg (1x)  # aucun CDN non plus
 cuisine-canteen.svg (1x)  # aucun CDN non plus
-cuisine-chocolate.svg (1x)  # aucun CDN non plus
-cuisine-chips.svg (1x)  # aucun CDN non plus
+cuisine-cameroonian.svg (1x)  # aucun CDN non plus
 cuisine-colombian.svg (1x)  # aucun CDN non plus
-cuisine-deli.svg (1x)  # aucun CDN non plus
+cuisine-chips.svg (1x)  # aucun CDN non plus
 cuisine-creole.svg (1x)  # aucun CDN non plus
+cuisine-chocolate.svg (1x)  # aucun CDN non plus
+cuisine-deli.svg (1x)  # aucun CDN non plus
 cuisine-fast_food.svg (1x)  # aucun CDN non plus
 cuisine-finger_food.svg (1x)  # aucun CDN non plus
 cuisine-fondue.svg (1x)  # aucun CDN non plus
@@ -537,49 +531,49 @@ cuisine-hot_pot.svg (1x)  # aucun CDN non plus
 cuisine-hot_dog.svg (1x)  # aucun CDN non plus
 cuisine-indonesian.svg (1x)  # aucun CDN non plus
 cuisine-kosovar.svg (1x)  # aucun CDN non plus
-cuisine-meat.svg (1x)  # aucun CDN non plus
 cuisine-malagasy.svg (1x)  # aucun CDN non plus
+cuisine-meat.svg (1x)  # aucun CDN non plus
 cuisine-meatballs.svg (1x)  # aucun CDN non plus
+cuisine-nigerian.svg (1x)  # aucun CDN non plus
 cuisine-nepalese.svg (1x)  # aucun CDN non plus
 cuisine-new_zealand.svg (1x)  # aucun CDN non plus
-cuisine-nigerian.svg (1x)  # aucun CDN non plus
 cuisine-organic.svg (1x)  # aucun CDN non plus
-cuisine-painza.svg (1x)  # aucun CDN non plus
 cuisine-palestinian.svg (1x)  # aucun CDN non plus
+cuisine-painza.svg (1x)  # aucun CDN non plus
 cuisine-piadina.svg (1x)  # aucun CDN non plus
 cuisine-polish.svg (1x)  # aucun CDN non plus
 cuisine-sardinian.svg (1x)  # aucun CDN non plus
-cuisine-seasonal.svg (1x)  # aucun CDN non plus
 cuisine-senegalese.svg (1x)  # aucun CDN non plus
-cuisine-smoothie.svg (1x)  # aucun CDN non plus
-cuisine-soup.svg (1x)  # aucun CDN non plus
 cuisine-snack.svg (1x)  # aucun CDN non plus
+cuisine-smoothie.svg (1x)  # aucun CDN non plus
+cuisine-seasonal.svg (1x)  # aucun CDN non plus
+cuisine-soup.svg (1x)  # aucun CDN non plus
 cuisine-spaghetti_bolognese.svg (1x)  # aucun CDN non plus
-cuisine-swiss.svg (1x)  # aucun CDN non plus
 cuisine-swedish.svg (1x)  # aucun CDN non plus
-cuisine-tea_shop.svg (1x)  # aucun CDN non plus
+cuisine-swiss.svg (1x)  # aucun CDN non plus
 cuisine-tunisian.svg (1x)  # aucun CDN non plus
+cuisine-tea_shop.svg (1x)  # aucun CDN non plus
 cuisine-turc.svg (1x)  # aucun CDN non plus
 cuisine-venezuelan.svg (1x)  # aucun CDN non plus
 cuisine-west_african.svg (1x)  # aucun CDN non plus
-cuisine-world.svg (1x)  # aucun CDN non plus
 cuisine-warm_dishes.svg (1x)  # aucun CDN non plus
 culture.svg (1x)  # aucun CDN non plus
 cuisine-yes.svg (1x)  # aucun CDN non plus
+cuisine-world.svg (1x)  # aucun CDN non plus
 demolition_company.svg (1x)  # aucun CDN non plus
 distillery;brewery.svg (1x)  # aucun CDN non plus
-doctor;laboratory.svg (1x)  # aucun CDN non plus
 distillery.svg (1x)  # aucun CDN non plus
-door-3.svg (1x)  # aucun CDN non plus
-door-A.svg (1x)  # aucun CDN non plus
-door-D.svg (1x)  # aucun CDN non plus
-door-bibliothèque des sciences et techniques.svg (1x)  # aucun CDN non plus
-door-C.svg (1x)  # aucun CDN non plus
+doctor;laboratory.svg (1x)  # aucun CDN non plus
 door-B.2.252.svg (1x)  # aucun CDN non plus
+door-3.svg (1x)  # aucun CDN non plus
+door-bibliothèque des sciences et techniques.svg (1x)  # aucun CDN non plus
+door-D.svg (1x)  # aucun CDN non plus
+door-2.svg (1x)  # aucun CDN non plus
+door-C.svg (1x)  # aucun CDN non plus
 door-B.svg (1x)  # aucun CDN non plus
+door-A.svg (1x)  # aucun CDN non plus
 door-Y.svg (1x)  # aucun CDN non plus
 door-Z.svg (1x)  # aucun CDN non plus
-door-2.svg (1x)  # aucun CDN non plus
 door-hig.svg (1x)  # aucun CDN non plus
 door-motorised.svg (1x)  # aucun CDN non plus
 drinking_fountain.svg (1x)  # aucun CDN non plus
@@ -587,9 +581,9 @@ door_construction.svg (1x)  # aucun CDN non plus
 driver_training.svg (1x)  # aucun CDN non plus
 ebikes;micro_mobility;scooters.svg (1x)  # aucun CDN non plus
 duty_free.svg (1x)  # aucun CDN non plus
-electrical.svg (1x)  # aucun CDN non plus
-education.svg (1x)  # aucun CDN non plus
 electro.svg (1x)  # aucun CDN non plus
+education.svg (1x)  # aucun CDN non plus
+electrical.svg (1x)  # aucun CDN non plus
 electronics_repair;data_recovery.svg (1x)  # aucun CDN non plus
 events_centre.svg (1x)  # aucun CDN non plus
 financial_advice.svg (1x)  # aucun CDN non plus
@@ -599,33 +593,32 @@ folly.svg (1x)  # aucun CDN non plus
 fort.svg (1x)  # aucun CDN non plus
 freemasonry.svg (1x)  # aucun CDN non plus
 garden_furniture.svg (1x)  # aucun CDN non plus
-glassblower.svg (1x)  # aucun CDN non plus
 give_way.svg (1x)  # aucun CDN non plus
+glassblower.svg (1x)  # aucun CDN non plus
 grassland.svg (1x)  # aucun CDN non plus
 history.svg (1x)  # aucun CDN non plus
 hvac.svg (1x)  # aucun CDN non plus
 ironingshop.svg (1x)  # aucun CDN non plus
 jeweller.svg (1x)  # aucun CDN non plus
+locomotive.svg (1x)  # aucun CDN non plus
 lottery.svg (1x)  # aucun CDN non plus
 machine_parts.svg (1x)  # aucun CDN non plus
-locomotive.svg (1x)  # aucun CDN non plus
 medical_imaging.svg (1x)  # aucun CDN non plus
 metal_painter.svg (1x)  # aucun CDN non plus
-metal_works.svg (1x)  # aucun CDN non plus
-milestone.svg (1x)
-military.svg (1x)
 minerals.svg (1x)  # aucun CDN non plus
+metal_works.svg (1x)  # aucun CDN non plus
+military.svg (1x)
+milestone.svg (1x)
 monitoring_station.svg (1x)  # aucun CDN non plus
 nature_reserve.svg (1x)  # aucun CDN non plus
 occupational_therapist;speech_therapist.svg (1x)  # aucun CDN non plus
 office.svg (1x)  # aucun CDN non plus
-parking.svg (1x)
-parish.svg (1x)  # aucun CDN non plus
 packaging.svg (1x)  # aucun CDN non plus
-pasta.svg (1x)  # aucun CDN non plus
+parish.svg (1x)  # aucun CDN non plus
+parking.svg (1x)
 parquet_layer.svg (1x)  # aucun CDN non plus
+pasta.svg (1x)  # aucun CDN non plus
 party.svg (1x)  # aucun CDN non plus
-planetarium.svg (1x)  # aucun CDN non plus
 popup.svg (1x)  # aucun CDN non plus
 psychic.svg (1x)
 public_bath.svg (1x)  # aucun CDN non plus
@@ -637,37 +630,37 @@ repair.svg (1x)  # aucun CDN non plus
 restoration.svg (1x)  # aucun CDN non plus
 robotics.svg (1x)  # aucun CDN non plus
 rope.svg (1x)  # aucun CDN non plus
-sand.svg (1x)  # aucun CDN non plus
-scuba_diving.svg (1x)
 schoolyard.svg (1x)  # aucun CDN non plus
-sliding_gate.svg (1x)  # aucun CDN non plus
+scuba_diving.svg (1x)
+sand.svg (1x)  # aucun CDN non plus
 signmaker.svg (1x)  # aucun CDN non plus
-spa.svg (1x)
-signage.svg (1x)  # aucun CDN non plus
 social.svg (1x)  # aucun CDN non plus
+signage.svg (1x)  # aucun CDN non plus
+sliding_gate.svg (1x)  # aucun CDN non plus
+spa.svg (1x)
+spring.svg (1x)  # aucun CDN non plus
 sports_agent.svg (1x)  # aucun CDN non plus
 startup_incubator.svg (1x)  # aucun CDN non plus
-spring.svg (1x)  # aucun CDN non plus
 statue.svg (1x)
 stone.svg (1x)  # aucun CDN non plus
 swimming_pool.svg (1x)  # aucun CDN non plus
-sun_protection.svg (1x)  # aucun CDN non plus
 swing_gate.svg (1x)  # aucun CDN non plus
-textile.svg (1x)  # aucun CDN non plus
 tap.svg (1x)  # aucun CDN non plus
+textile.svg (1x)  # aucun CDN non plus
+sun_protection.svg (1x)  # aucun CDN non plus
 theme_park.svg (1x)  # aucun CDN non plus
-traffic_signals.svg (1x)
 training.svg (1x)  # aucun CDN non plus
-truck.svg (1x)
+traffic_signals.svg (1x)
 travel_agent.svg (1x)  # aucun CDN non plus
+truck.svg (1x)
 trophy.svg (1x)  # aucun CDN non plus
 vending-candles.svg (1x)  # aucun CDN non plus
-vending-meat.svg (1x)  # aucun CDN non plus
-vending-elongated_coin.svg (1x)  # aucun CDN non plus
 vending-food.svg (1x)  # aucun CDN non plus
+vending-elongated_coin.svg (1x)  # aucun CDN non plus
 vending-lottery.svg (1x)  # aucun CDN non plus
-vending-snacks.svg (1x)  # aucun CDN non plus
+vending-meat.svg (1x)  # aucun CDN non plus
 vending-milk.svg (1x)  # aucun CDN non plus
+vending-snacks.svg (1x)  # aucun CDN non plus
 vending-potatoes.svg (1x)  # aucun CDN non plus
 vending-sun_cream.svg (1x)  # aucun CDN non plus
 vending-souvenirs.svg (1x)  # aucun CDN non plus
