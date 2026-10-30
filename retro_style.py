@@ -21,7 +21,7 @@ try:
 except ImportError:
     print("✗  pip install pyyaml", file=sys.stderr); sys.exit(1)
 
-from build_map import _lighten, default_subtype_label, swatch_type, SWATCH_TYPES
+from build_map import _lighten, default_subtype_label, swatch_type, SWATCH_TYPES, INDOOR_DEFAULTS
 
 # ── Groupes : préfixes de layer-id → nom de couche ────────────────────────────
 
@@ -317,6 +317,47 @@ def extract_materials(layers):
                         if isinstance(pairs[i], str) and isinstance(pairs[i + 1], str)}
             stack.extend(expr[1:])
     return {}
+
+
+INDOOR_SCALARS = ("level_height", "slab", "volume_ratio")
+
+
+def parse_indoor(lazy):
+    layers = {l.get("id"): l for l in (lazy or {}).get("layers") or [] if l.get("source") == "indoor"}
+    if not layers:
+        return {}
+    out = {}
+    for key in INDOOR_SCALARS:
+        if key in lazy and lazy[key] != INDOOR_DEFAULTS[key]:
+            out[key] = lazy[key]
+    zooms = [l["minzoom"] for l in layers.values() if isinstance(l.get("minzoom"), (int, float))]
+    if zooms and min(zooms) != INDOOR_DEFAULTS["appear_at"]:
+        out["appear_at"] = min(zooms)
+    for lid, key in (("indoor-3d-floor", "floor_opacity"), ("indoor-3d-volume", "volume_opacity")):
+        value = ((layers.get(lid) or {}).get("paint") or {}).get("fill-extrusion-opacity")
+        if isinstance(value, (int, float)) and value != INDOOR_DEFAULTS[key]:
+            out[key] = value
+    expr = ((layers.get("indoor-3d-floor") or {}).get("paint") or {}).get("fill-extrusion-color")
+    if isinstance(expr, list) and expr[:2] == ["match", ["get", "kind"]]:
+        pairs = expr[2:-1]
+        colors = {pairs[i]: pairs[i + 1] for i in range(0, len(pairs) - 1, 2)}
+        changed = {k: {"color": v} for k, v in sorted(colors.items())
+                   if k in INDOOR_DEFAULTS["colors"] and v != INDOOR_DEFAULTS["colors"][k]}
+        if changed:
+            out["subtypes"] = changed
+    return out
+
+
+def dump_indoor(indoor):
+    lines = ["  indoor:"]
+    for key in ("appear_at",) + INDOOR_SCALARS + ("floor_opacity", "volume_opacity"):
+        if key in indoor:
+            lines.append(f"    {key}: {indoor[key]}")
+    if indoor.get("subtypes"):
+        lines.append("    subtypes:")
+        for kind, scfg in indoor["subtypes"].items():
+            lines.append(f"      {kind}: {flow_value(scfg)}")
+    return "\n".join(lines)
 
 
 # ── Analyse principale d'un groupe ───────────────────────────────────────────
@@ -730,6 +771,10 @@ def main():
             info["density"] = meta_density
         if name == "leisure":
             info["sports"] = parse_sports(style_layers)
+        if name == "buildings" and not info.get("materials"):
+            info["materials"] = extract_materials(
+                [l for l in (metadata.get("brussels:lazy") or {}).get("layers") or []
+                 if l.get("source") == "building_parts"])
         groups[name] = info
         st_n = len(info["subtypes"])
         specials = sum(
@@ -785,6 +830,10 @@ def main():
         "#   by_pattern     motif par valeur de la clé \"by\" (défaut: pattern)",
         "#   tunnel_color   couleur des tronçons en tunnel (défaut: color éclaircie)",
         "#",
+        "# Section layers.indoor (facultative, rendu 3D intérieur) :",
+        "#   appear_at, level_height, slab, volume_ratio, floor_opacity, volume_opacity",
+        "#   subtypes.<kind>.color  couleur par type (room, corridor, steps, wall...)",
+        "#",
         "# L'ordre des couches et des sous-types est celui de la légende.",
         "#",
         "# Section patterns : motifs SVG chargés par la carte",
@@ -816,6 +865,11 @@ def main():
 
     for name, info in groups.items():
         out_lines.append(dump_layer(name, info))
+        out_lines.append("")
+
+    indoor = parse_indoor(metadata.get("brussels:lazy"))
+    if indoor:
+        out_lines.append(dump_indoor(indoor))
         out_lines.append("")
 
     Path(args.out).write_text("\n".join(out_lines))
