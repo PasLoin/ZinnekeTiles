@@ -21,7 +21,7 @@ try:
 except ImportError:
     print("✗  pip install pyyaml", file=sys.stderr); sys.exit(1)
 
-from build_map import _lighten, default_subtype_label, swatch_type, SWATCH_TYPES, INDOOR_DEFAULTS
+from build_map import _lighten, default_subtype_label, swatch_type, SWATCH_TYPES, INDOOR_DEFAULTS, PALETTE_DEFAULTS
 
 # ── Groupes : préfixes de layer-id → nom de couche ────────────────────────────
 
@@ -317,6 +317,70 @@ def extract_materials(layers):
                         if isinstance(pairs[i], str) and isinstance(pairs[i + 1], str)}
             stack.extend(expr[1:])
     return {}
+
+
+PALETTE_SOURCES = {
+    ("water", "tunnel_core"):           ("water-tunnel-core", "line-color", ()),
+    ("buildings", "roof"):              ("buildings-3d", "fill-extrusion-color", (2,)),
+    ("leisure", "outline"):             ("leisure-outline", "line-color", (-1,)),
+    ("roads", "bridge_casing"):         ("roads-bridge-casing-motorway", "line-color", ()),
+    ("roads", "busway_center"):         ("roads-center-busway", "line-color", ()),
+    ("roads", "tunnel_area"):           ("man_made-tunnel-fill", "fill-color", ()),
+    ("roads", "tunnel_area_outline"):   ("man_made-tunnel-outline", "line-color", ()),
+    ("roads", "bridge_area"):           ("man_made-bridge-fill", "fill-color", ()),
+    ("roads", "bridge_area_outline"):   ("man_made-bridge-outline", "line-color", ()),
+    ("roads", "label"):                 ("road-labels", "text-color", ()),
+    ("roads", "label_halo"):            ("road-labels", "text-halo-color", ()),
+    ("roads", "oneway"):                ("road-oneway-arrows", "text-color", ()),
+    ("roads", "oneway_halo"):           ("road-oneway-arrows", "text-halo-color", ()),
+    ("pedestrian", "no_access"):        ("pedestrian-footway-paved", "line-color", (2,)),
+    ("cycleway", "oneway"):             ("cycleway-oneway-arrows", "text-color", ()),
+    ("railway", "bridge_casing"):       ("railway-bridge-casing", "line-color", ()),
+    ("public_transport", "casing"):     ("public_transport-casing", "line-color", ()),
+    ("public_transport", "label"):      ("public_transport-label", "text-color", (2,)),
+    ("public_transport", "label_halo"): ("public_transport-label", "text-halo-color", ()),
+    ("addresses", "halo"):              ("address-labels", "text-halo-color", ()),
+    ("poi", "stroke"):                  ("poi-circle", "circle-stroke-color", ()),
+    ("poi", "label_halo"):              ("poi-icon", "text-halo-color", ()),
+}
+
+
+def color_at(expr, path):
+    if isinstance(expr, str):
+        return expr
+    for i in path:
+        if not isinstance(expr, list) or not expr:
+            return None
+        try:
+            expr = expr[i]
+        except IndexError:
+            return None
+    return expr if isinstance(expr, str) else None
+
+
+def parse_palette(layers):
+    by_id = {l.get("id"): l for l in layers}
+    out = {}
+    for (group, key), (lid, prop, path) in PALETTE_SOURCES.items():
+        layer = by_id.get(lid)
+        if not layer:
+            continue
+        value = color_at((layer.get("paint") or {}).get(prop), path)
+        if value and value != PALETTE_DEFAULTS[group][key]:
+            out.setdefault(group, {})[key] = value
+    return out
+
+
+def uses_osm_colour(layers):
+    for lid, index in (("buildings-3d", 3), ("building-parts-3d", None)):
+        layer = next((l for l in layers if l.get("id") == lid), None)
+        if not layer:
+            continue
+        expr = (layer.get("paint") or {}).get("fill-extrusion-color")
+        if index is not None and isinstance(expr, list) and expr[:1] == ["case"] and len(expr) > index:
+            expr = expr[index]
+        return isinstance(expr, list) and expr[:1] == ["to-color"]
+    return True
 
 
 INDOOR_SCALARS = ("level_height", "slab", "volume_ratio")
@@ -703,6 +767,8 @@ def dump_layer(name, info):
         lines.append(f"    extrusion_3d: true")
     if info.get("materials"):
         lines.append(f"    materials: {flow_value(info['materials'])}")
+    if info.get("osm_colour") is False:
+        lines.append("    osm_colour: false")
     lines.append(f"    appear_at: {appear}")
     if la and la != appear + 3:
         lines.append(f"    labels_at: {la}")
@@ -771,6 +837,9 @@ def main():
             info["density"] = meta_density
         if name == "leisure":
             info["sports"] = parse_sports(style_layers)
+        if name == "buildings":
+            info["osm_colour"] = uses_osm_colour(
+                style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or []))
         if name == "buildings" and not info.get("materials"):
             info["materials"] = extract_materials(
                 [l for l in (metadata.get("brussels:lazy") or {}).get("layers") or []
@@ -798,6 +867,7 @@ def main():
         "#   visible        false pour masquer la couche au chargement",
         "#   extrusion_3d   true pour activer le rendu 3D buildings",
         "#   materials      buildings 3D : couleur par building:material",
+        "#   osm_colour     buildings 3D : false pour ignorer building:colour",
         "#                  (building:colour reste prioritaire)",
         "#   appear_at      zoom minimum d'apparition",
         "#   labels_at      zoom minimum des étiquettes (défaut: appear_at+3)",
@@ -830,6 +900,9 @@ def main():
         "#   by_pattern     motif par valeur de la clé \"by\" (défaut: pattern)",
         "#   tunnel_color   couleur des tronçons en tunnel (défaut: color éclaircie)",
         "#",
+        "# Section palette (facultative) : couleurs annexes par groupe",
+        "#   (ponts, tunnels, étiquettes, halos, flèches de sens unique...)",
+        "#",
         "# Section layers.indoor (facultative, rendu 3D intérieur) :",
         "#   appear_at, level_height, slab, volume_ratio, floor_opacity, volume_opacity",
         "#   subtypes.<kind>.color  couleur par type (room, corridor, steps, wall...)",
@@ -860,6 +933,12 @@ def main():
         out_lines.append("patterns:")
         for pname, pcfg in sorted(meta_patterns.items()):
             out_lines.append(f"  {flow_key(pname)}: {flow_value(pcfg)}")
+        out_lines.append("")
+    palette = parse_palette(style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or []))
+    if palette:
+        out_lines.append("palette:")
+        for group, values in palette.items():
+            out_lines.append(f"  {group}: {flow_value(values)}")
         out_lines.append("")
     out_lines += ["layers:", ""]
 
