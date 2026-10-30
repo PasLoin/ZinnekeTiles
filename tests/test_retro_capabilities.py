@@ -44,7 +44,12 @@ CASES = {
     "indoor volume_ratio": (["layers", "indoor", "volume_ratio"], 0.7),
     "indoor opacités": (["layers", "indoor", "floor_opacity"], 0.6),
     "indoor appear_at": (["layers", "indoor", "appear_at"], 16),
+    "osm_colour false": (["layers", "buildings", "osm_colour"], False),
 }
+CASES.update({
+    f"palette {group}.{key}": (["palette", group, key], "#123456")
+    for group, keys in bm.PALETTE_DEFAULTS.items() for key in keys
+})
 
 
 def signature(style):
@@ -89,3 +94,16 @@ def test_indoor_section_is_style_only():
 def test_default_indoor_is_not_written():
     out = retro(bm.build_style(BASE))
     assert "indoor" not in out["layers"]
+
+
+def test_default_palette_is_not_written():
+    out = retro(bm.build_style(BASE))
+    assert "palette" not in out
+    assert "osm_colour" not in out["layers"]["buildings"]
+
+
+def test_osm_colour_survives_without_3d_buildings():
+    cfg = with_value(["layers", "buildings", "osm_colour"], False)
+    cfg["layers"]["buildings"]["extrusion_3d"] = False
+    style = bm.build_style(cfg)
+    assert signature(bm.build_style(retro(style))) == signature(style)
