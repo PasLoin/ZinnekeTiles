@@ -2,17 +2,15 @@
 
 ## Principe général
 
-Le style MapLibre (`www/style.json`) est **généré automatiquement** — ne l'éditez pas à la main.
+Le style MapLibre (`www/style.json`) est généré par `build_map.py` : ne l'éditez pas à la main, vos modifications disparaîtraient au build suivant.
 
-La source de vérité est `map.config.yaml`. Toute modification de couleur, de zoom ou de sous-type passe par ce fichier, puis par `build_map.py`.
+Toute modification de couleur, de zoom ou de sous-type passe par `map.config.yaml`, puis par `build_map.py`.
 
 ```
 map.config.yaml  ──►  build_map.py  ──►  www/style.json
 ```
 
----
-
-## Cas 1 — Modifier une couleur ou un zoom
+## Cas 1 : modifier une couleur ou un zoom
 
 1. Ouvrez `map.config.yaml`.
 2. Trouvez la couche concernée et ajustez le champ voulu (`color`, `appear_at`, `opacity`…).
@@ -36,56 +34,60 @@ git add map.config.yaml www/style.json
 git commit -m "style: ..."
 ```
 
----
+Un changement de couleur suffit tel quel. Un changement d'`appear_at` ou de section `tiles` modifie aussi ce qui part dans les tuiles : il ne sera visible qu'après une régénération des PMTiles, faite par le déploiement automatique.
 
-## Cas 2 — Travailler depuis Maputnik
+## Cas 2 : travailler depuis Maputnik
 
-Maputnik permet d'éditer le style visuellement, mais produit un `style.json` modifié — pas un `map.config.yaml`.
+Maputnik permet d'éditer le style visuellement, mais il produit un `style.json` modifié, pas un `map.config.yaml`.
 
 Pour réintégrer un style édité dans Maputnik :
 
+1. Exportez le style depuis Maputnik (bouton Export) et enregistrez-le, par exemple sous `maputnik.json`.
+2. Reconstruisez une configuration depuis ce style :
+
 ```bash
-# 1. Téléchargez le style depuis Maputnik (bouton Export)
-#    et écrasez www/style.json
-
-# 2. Reconstruisez map.config.yaml depuis ce style :
-python3 retro_style.py --style www/style.json --out map.config.yaml
-
-# 3. Vérifiez le YAML généré, puis régénérez le style propre :
-python3 build_map.py
-
-# 4. Vérifiez que le round-trip n'a pas perdu d'information :
-python3 -m pytest tests/test_roundtrip.py -v
+python3 retro_style.py --style maputnik.json --out map.config.new.yaml
 ```
+
+3. Comparez avec la configuration actuelle, remplacez-la, puis régénérez le style :
+
+```bash
+diff map.config.yaml map.config.new.yaml
+mv map.config.new.yaml map.config.yaml
+python3 build_map.py
+```
+
+4. Lancez les tests d'aller-retour :
+
+```bash
+python3 -m pytest tests/test_roundtrip.py tests/test_retro_capabilities.py -v
+```
+
+`retro_style.py` retrouve tout ce que la configuration sait exprimer. Ce que Maputnik permet en plus, comme une épaisseur de trait ou un layer ajouté à la main, n'est pas repris : vérifiez le rendu après l'étape 3.
 
 > Maputnik en ligne avec le style de ce dépôt :
 > [maputnik.github.io/editor](https://maputnik.github.io/editor/#15.4/50.832973/4.318494/-1.9/39)
-> — charger depuis URL : `https://pmtiles.duckdns.org/brussels_ultimate_style.json`
+> (charger depuis l'URL `https://pmtiles.duckdns.org/brussels_ultimate_style.json`)
 
----
+## Cas 3 : importer un style externe
 
-## Cas 3 — Importer un style externe
-
-Même procédure que Maputnik : placez le `style.json` externe dans `www/`, puis lancez `retro_style.py`.
+La procédure est la même que pour Maputnik, à condition que le style ait été construit pour les tuiles et les identifiants de layers de ZinnekeTiles. Un style écrit pour d'autres tuiles (OpenMapTiles, Shortbread…) ne donne rien d'utilisable.
 
 ```bash
-python3 retro_style.py --style www/style.json --out map.config.yaml
-python3 build_map.py
+python3 retro_style.py --style mon-style.json --out map.config.new.yaml
 ```
 
-Le workflow GitHub `retro.yml` fait la même chose sans ligne de commande :
+Le workflow GitHub `retro.yml` fait la même chose sans ligne de commande. Dans l'onglet Actions, choisissez *Retro-engineer config from style* puis Run workflow, avec ces paramètres :
 
-1. Onglet **Actions** → *Retro-engineer config from style* → **Run workflow**
-2. Paramètres :
-   - `style_path` : chemin du style source (défaut : `www/style.json`)
-   - `config_out` : chemin de sortie (défaut : `map.config.yaml`)
-   - `overwrite` : `true` pour écraser l'existant
+- `style_path` : chemin du style source (défaut : `www/style.json`)
+- `config_out` : chemin de sortie (défaut : `map.config.yaml`)
+- `overwrite` : `true` pour écraser l'existant
 
 Le YAML généré est commité automatiquement dans le dépôt.
 
----
+## Référence rapide des champs de `map.config.yaml`
 
-## Référence rapide — champs de `map.config.yaml`
+La liste complète, avec les sections `map`, `patterns` et `layers.indoor`, est dans le [README](README.md#modifier-le-style-de-la-carte). Les champs les plus courants :
 
 ### Niveau couche
 
@@ -117,30 +119,25 @@ layers:
         opacity: 0.8               # opacité
 ```
 
----
-
 ## Tests de non-régression
 
-Après toute modification du style ou de la config, lancez :
+Après toute modification du style ou de la configuration, lancez :
 
 ```bash
-# Round-trip complet retro_style ↔ build_map
-python3 -m pytest tests/test_roundtrip.py -v
-
-# Cohérence style.json ↔ PMTiles ↔ assets
+python3 -m pytest tests/test_roundtrip.py tests/test_retro_capabilities.py -v
 npm run test:validate
 ```
 
-Ces tests sont aussi lancés automatiquement sur chaque PR par le workflow `.github/workflows/tests.yml`.
+La première commande vérifie l'aller-retour entre `retro_style.py` et `build_map.py`, la seconde la cohérence entre `style.json`, les PMTiles et les assets.
 
----
+Le workflow `.github/workflows/tests.yml` les lance aussi sur chaque pull request.
 
 ## Installation de l'environnement Python
 
-Toutes les dépendances Python sont versionnées dans `requirements.txt` :
+Les dépendances Python sont listées dans `requirements.txt` :
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Cela installe `pyyaml` (build_map.py, retro_style.py), `shapely` (merge_buildings.py) et `pytest` (tests/test_roundtrip.py). Le CI utilise le même fichier — l'environnement local et le CI sont identiques.
+Cela installe `pyyaml` (lecture de la configuration), `shapely` (calculs géométriques des scripts d'extraction) et `pytest` (tests). Le CI installe le même fichier.
