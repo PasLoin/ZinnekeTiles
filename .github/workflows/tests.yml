@@ -34,7 +34,7 @@ jobs:
         run: pip install -r requirements.txt --break-system-packages -q
 
       - name: Build style from config
-        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style
+        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -96,7 +96,7 @@ jobs:
         run: pip install -r requirements.txt --break-system-packages -q
 
       - name: Build style from config
-        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style
+        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -104,14 +104,19 @@ jobs:
           node-version: 20
 
       - name: Validate style ↔ PMTiles ↔ assets
-        run: node tests/validate-style.mjs
+        run: |
+          node tests/validate-style.mjs
+          for f in www/style.*.json; do
+            [ -e "$f" ] || continue
+            node tests/validate-style.mjs --style "$f"
+          done
 
       - name: Upload validation results
         if: always()
         uses: actions/upload-artifact@v5
         with:
           name: validate-results
-          path: test-results/validate-results.xml
+          path: test-results/validate-results*.xml
           retention-days: 7
 
   # ═══════════════════════════════════════════════════════
@@ -134,7 +139,7 @@ jobs:
         run: pip install -r requirements.txt --break-system-packages -q
 
       - name: Run round-trip tests
-        run: python3 -m pytest tests/test_roundtrip.py tests/test_idempotence.py tests/test_filter_geojson.py tests/test_config_honored.py tests/test_legend.py tests/test_retro_capabilities.py -v --junit-xml=test-results/roundtrip-results.xml
+        run: python3 -m pytest tests/test_roundtrip.py tests/test_idempotence.py tests/test_filter_geojson.py tests/test_config_honored.py tests/test_legend.py tests/test_variants.py tests/test_retro_capabilities.py -v --junit-xml=test-results/roundtrip-results.xml
 
       - name: Upload roundtrip test results
         if: always()
@@ -165,7 +170,7 @@ jobs:
         run: pip install -r requirements.txt --break-system-packages -q
 
       - name: Build style from config
-        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style
+        run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
