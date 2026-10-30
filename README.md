@@ -16,6 +16,8 @@ Le bouton MODE 3D extrude les bâtiments selon leur hauteur. La couleur suit `bu
 
 Le bouton DATA affiche les attributs OSM de l'objet sous le curseur. À partir du zoom 16, le lien « éditer dans OpenStreetMap » ouvre l'éditeur au même endroit. Les terrains de sport sont colorés par sport et reçoivent leurs lignes de marquage à partir du zoom 17. Les icônes de POI viennent de fichiers locaux ou des jeux Temaki, Maki et OSM Liberty, et un système de grille limite leur nombre aux zooms moyens en gardant les plus importants. L'attribution indique la date des données OSM et celle de la dernière mise à jour.
 
+Plusieurs styles peuvent être proposés sur les mêmes tuiles. Un sélecteur apparaît alors dans le panneau titre, et le style choisi se retrouve dans l'adresse (`?style=nb` pour le noir et blanc).
+
 L'interface est utilisable sur téléphone : les panneaux se réorganisent sous 600 px de large ou 500 px de haut.
 
 ## Prérequis système
@@ -49,6 +51,7 @@ La configuration et le style :
 
 - `map.config.yaml` est la source du style. On modifie ce fichier, jamais `www/style.json`.
 - `build_map.py` compile `map.config.yaml` en trois fichiers : `www/style.json`, `granulometry.json` (quels objets et quels attributs garder à chaque zoom) et `pmtiles_params.json` (zooms et simplification de chaque PMTiles).
+- `styles/*.yaml` contient les variantes de style, des surcharges de `map.config.yaml` compilées en `www/style.<id>.json` (voir [Variantes de style](#variantes-de-style)).
 - `retro_style.py` reconstruit un `map.config.yaml` à partir d'un `style.json` (voir [Reconstruire la configuration depuis un style](#reconstruire-la-configuration-depuis-un-style)).
 - `poi-icons.config.yaml` déclare les icônes qui dépendent de plusieurs tags à la fois (toilettes hommes/femmes, types d'œuvres d'art…).
 
@@ -123,6 +126,7 @@ python3 build_map.py
 | `swatch_colors` | Pastille multicolore, par exemple `["#007cc2", "#ef3e42"]` pour les lignes STIB |
 | `extrusion_3d` | `true` pour le rendu 3D des bâtiments |
 | `materials` | Bâtiments : couleur 3D par valeur de `building:material` (`building:colour` reste prioritaire) |
+| `osm_colour` | Bâtiments : `false` pour ignorer `building:colour` en 3D, utile pour un rendu monochrome |
 | `tiles` | Paramètres du PMTiles : `min_zoom`, `max_zoom`, `simplification`, et `detail_from` pour les bâtiments |
 | `sports` | Loisirs uniquement : couleur, contour et longueur des terrains par sport (`default`, `values`), zoom des marquages (`markings_at`) |
 | `density` | POI uniquement : désencombrement, voir plus bas |
@@ -153,6 +157,30 @@ Pour les routes, les sous-types sont les classes `highway` : `motorway`, `trunk`
 
 Chaque motif SVG utilisé par `pattern` ou `by_pattern` y est déclaré avec `file` (chemin dans `www/`), `size` (en pixels) et `replace`, une table de substitution de couleurs appliquée au SVG au chargement. Le même fichier peut ainsi servir avec plusieurs couleurs.
 
+### Section `palette`
+
+Cette section facultative regroupe les couleurs secondaires qui ne dépendent pas d'un sous-type : ponts, tunnels, étiquettes, halos, flèches de sens unique. Sans elle, les valeurs par défaut de `build_map.py` s'appliquent.
+
+| Groupe | Clés |
+| :--- | :--- |
+| `water` | `tunnel_core` |
+| `buildings` | `roof` |
+| `leisure` | `outline` |
+| `roads` | `bridge_casing`, `busway_center`, `tunnel_area`, `tunnel_area_outline`, `bridge_area`, `bridge_area_outline`, `label`, `label_halo`, `oneway`, `oneway_halo` |
+| `pedestrian` | `no_access` |
+| `cycleway` | `oneway` |
+| `railway` | `bridge_casing` |
+| `public_transport` | `casing`, `label`, `label_halo` |
+| `addresses` | `halo` |
+| `poi` | `stroke`, `label_halo` |
+
+```yaml
+palette:
+  roads: { label: "#222222", bridge_casing: "#000000" }
+```
+
+Une clé inconnue déclenche un avertissement au build.
+
 ### Section `layers.indoor`
 
 Cette section est facultative et ne concerne que le rendu 3D de l'intérieur. Elle accepte `appear_at`, `level_height` (hauteur d'un niveau en mètres), `slab` (épaisseur des planchers), `volume_ratio` (hauteur des volumes rapportée à celle du niveau), `floor_opacity`, `volume_opacity`, et une couleur par type d'espace dans `subtypes` : `room`, `corridor`, `footway`, `pedestrian`, `platform`, `steps`, `escalator`, `elevator`, `wall`, `area` et `arrow`. Sans cette section, les valeurs par défaut de `build_map.py` s'appliquent.
@@ -175,7 +203,7 @@ python3 retro_style.py --style www/style.json --out map.config.new.yaml
 
 Sans `--out`, le script écrit dans `map.config.yaml` et écrase le fichier existant. Mieux vaut écrire à côté puis comparer.
 
-Le script relit tous les champs décrits plus haut : couleurs, contours, zooms, opacités, visibilité, libellés, motifs, couleurs privées, clés `by`, couleurs de tunnel, pastilles de légende, matériaux, paramètres `tiles`, `sports`, `density`, section `patterns`, section `map` et réglages de l'intérieur 3D. Il s'appuie sur les métadonnées que `build_map.py` range dans le style (légende, motifs, tuiles, désencombrement, couches 3D chargées à la demande) et sur les identifiants de layers de ZinnekeTiles.
+Le script relit tous les champs décrits plus haut : couleurs, contours, zooms, opacités, visibilité, libellés, motifs, couleurs privées, clés `by`, couleurs de tunnel, pastilles de légende, matériaux, `osm_colour`, paramètres `tiles`, `sports`, `density`, sections `map`, `patterns` et `palette`, et réglages de l'intérieur 3D. Il n'écrit `palette` et `layers.indoor` que si leurs valeurs diffèrent des valeurs par défaut. Il s'appuie sur les métadonnées que `build_map.py` range dans le style (légende, motifs, tuiles, désencombrement, couches 3D chargées à la demande) et sur les identifiants de layers de ZinnekeTiles.
 
 Il a trois limites :
 
@@ -187,6 +215,72 @@ Le workflow GitHub `retro.yml` lance le script depuis l'onglet Actions, sous *Re
 
 Deux suites de tests surveillent cet aller-retour. `tests/test_roundtrip.py` vérifie sur la configuration réelle que l'aller-retour garde le nombre et l'ordre des layers, les sources et les principales couleurs et zooms. `tests/test_retro_capabilities.py` modifie un champ de la configuration à la fois et vérifie que le style reconstruit est identique à l'original.
 
+## Variantes de style
+
+Plusieurs styles peuvent coexister sur les mêmes PMTiles. `map.config.yaml` reste la base et produit `www/style.json`. Chaque fichier `styles/<id>.yaml` est une surcharge partielle de la base, compilée en `www/style.<id>.json`, et le manifeste `www/styles.json` liste tous les styles.
+
+```bash
+python3 build_map.py --only style --variants styles
+```
+
+```
+map.config.yaml                    →  www/style.json
+map.config.yaml + styles/nb.yaml   →  www/style.nb.json
+                                   →  www/styles.json
+```
+
+### Format d'une variante
+
+```yaml
+variant:
+  label: Noir et blanc
+exclude: [poi, trees]
+map:
+  background: "#ffffff"
+palette:
+  roads: { label: "#000000" }
+patterns:
+  green-hatch: { replace: { "#bd4a72": "#9a9a9a" } }
+layers:
+  water: { color: "#c4c4c4" }
+  roads:
+    subtypes:
+      primary: { color: "#ffffff", outline_color: "#2b2b2b" }
+```
+
+| Clé | Rôle |
+| :--- | :--- |
+| `variant.label` | Nom affiché dans le sélecteur (défaut : l'identifiant) |
+| `exclude` | Couches retirées du style, de ses sources et de la légende, donc jamais téléchargées. Accepte aussi `indoor` et `building_parts` |
+| `map`, `palette`, `patterns`, `layers` | Fusionnés récursivement sur la base. `null` supprime une clé (ex : `materials: null`) |
+
+L'identifiant d'une variante est le nom de son fichier, en minuscules, chiffres et tirets (`nb`, `noir-et-blanc`) ; `default` est réservé. Pour masquer une couche sans la retirer, utilisez `visible: false` : elle reste dans le style, décochée dans la légende.
+
+Dans le style compilé, `metadata["brussels:config_hash"]` reste celui de la base, puisqu'il identifie les tuiles, et `metadata["brussels:variant"]` porte l'identifiant, le libellé et le hash de la variante. Supprimer `styles/x.yaml` supprime `www/style.x.json` au build suivant.
+
+### Ce qu'une variante ne peut pas faire
+
+Les tuiles sont communes à tous les styles, donc une variante ne modifie que la présentation. `build_map.py` refuse une variante qui :
+
+- contient `tiles`, `density` ou `tag` ;
+- abaisse un `appear_at` sous celui de la base, car les objets n'existent pas dans les tuiles à ce zoom (le relever est permis) ;
+- déclare une couche, un sous-type, une clé de palette ou une clé de premier niveau inconnus ;
+- ajoute un motif sans `file`.
+
+Le build échoue alors avec la liste complète des erreurs.
+
+### Dans la carte
+
+`www/index.html` lit `www/styles.json` et affiche un sélecteur dans le panneau titre dès qu'il y a au moins deux styles. Le style choisi passe par le paramètre `?style=<id>`, qui conserve la position (`#zoom/lat/lon`) :
+
+```
+https://pasloin.github.io/ZinnekeTiles/?style=nb#16/50.8466/4.3528
+```
+
+Un identifiant inconnu ou un manifeste absent ramène au style par défaut.
+
+Une autre page peut aussi charger directement `https://pasloin.github.io/ZinnekeTiles/style.nb.json`. Les URL des sources (`./roads.pmtiles`) et des motifs (`assets/…`) y sont relatives : résolvez-les par rapport à l'URL du style avant de créer la carte, et préfixez les sources par `pmtiles://`.
+
 ## Workflow de développement complet
 
 L'ordre est le même que dans le déploiement : configuration, extraction, enrichissement, granulométrie, PMTiles, validation, tests.
@@ -194,8 +288,10 @@ L'ordre est le même que dans le déploiement : configuration, extraction, enric
 ### 1. Compiler la configuration
 
 ```bash
-python3 build_map.py
+python3 build_map.py --variants styles
 ```
+
+Sans `--variants`, seul le style de base est compilé.
 
 ### 2. Extraire les couches GeoJSON
 
@@ -298,9 +394,11 @@ En mode compact (largeur ≤ 600 px ou hauteur ≤ 500 px), le panneau Niveaux p
 
 Le workflow `deploy.yml` reconstruit et publie la carte. Il se lance à chaque push sur `main` qui ne touche pas seulement des fichiers générés, à la main depuis l'onglet Actions, et le 1er de chaque mois à 3 h UTC.
 
-Il compile la configuration, télécharge l'extrait OSM du jour, puis enchaîne l'extraction, les toits, les icônes, la fusion des bâtiments, la granulométrie et les PMTiles. Il commite ensuite les fichiers générés (PMTiles, `style.json`, `poi-icons.json`, `data-info.json`, `roofs.glb`, rapports) et publie `www/` sur GitHub Pages avec les rapports. Si `map.config.yaml` est absent, il garde `www/style.json` tel quel.
+Il compile la configuration et les variantes, télécharge l'extrait OSM du jour, puis enchaîne l'extraction, les toits, les icônes, la fusion des bâtiments, la granulométrie et les PMTiles. Il commite ensuite les fichiers générés (PMTiles, `style.json`, styles des variantes et `styles.json`, `poi-icons.json`, `data-info.json`, `roofs.glb`, rapports) et publie `www/` sur GitHub Pages avec les rapports. Si `map.config.yaml` est absent, il garde `www/style.json` tel quel.
 
-Sur chaque pull request, `tests.yml` lance les tests unitaires, la validation du style, les tests Python de compilation et d'aller-retour, et les tests E2E, et `validate-pmtiles-metadata.yml` confronte le style à la spécification MapLibre et aux métadonnées des PMTiles.
+Sur chaque pull request, `tests.yml` compile les variantes puis lance les tests unitaires, la validation de chaque style, les tests Python de compilation, de variantes et d'aller-retour, et les tests E2E. `validate-pmtiles-metadata.yml` confronte chaque style à la spécification MapLibre et aux métadonnées des PMTiles.
+
+Le déploiement vers GitHub Pages n'est autorisé que depuis `main`. Pour tester une branche, ouvrez une pull request : les tests compilent et valident les variantes.
 
 ## Mettre à jour le PBF
 
@@ -319,7 +417,7 @@ osmium fileinfo brussels_capital_region-latest.osm.pbf
 Après remplacement du PBF, relancez toute la chaîne :
 
 ```bash
-python3 build_map.py
+python3 build_map.py --variants styles
 ./generate_json.bash
 python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
 python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
@@ -369,7 +467,7 @@ npm test -- tests/unit/poi_icons.test.js
 | Commande | Description |
 | :--- | :--- |
 | `pip install -r requirements.txt` | Installe les dépendances Python (pyyaml, shapely, pytest). |
-| `python3 build_map.py` | Compile `map.config.yaml` en `www/style.json`, granulométrie et paramètres PMTiles. |
+| `python3 build_map.py --variants styles` | Compile `map.config.yaml` en `www/style.json`, granulométrie et paramètres PMTiles, plus une `www/style.<id>.json` par variante et `www/styles.json`. |
 | `python3 retro_style.py --out map.config.new.yaml` | Reconstruit une configuration depuis `www/style.json`. |
 | `python3 apply_granulometry.py` | Applique les règles de granulométrie aux GeoJSON. |
 | `python3 -m pytest tests` | Lance tous les tests Python. |
@@ -394,6 +492,7 @@ npm test -- tests/unit/poi_icons.test.js
 - Icônes POI manquantes : consultez `missing-icons.txt`, ajoutez un SVG local ou un override, puis relancez `generate_poi_icons.py`.
 - Playwright ne trouve pas Chromium : lancez `npx playwright install chromium`.
 - Le style référence une couche absente : comparez `www/style.json`, les noms des fichiers `www/*.pmtiles` et les `vector_layers` extraits par `scripts/extract_pmtiles_metadata.py`.
+- `variante invalide` au build : le message liste chaque clé refusée avec son chemin dans `styles/<id>.yaml`. Voir [Ce qu'une variante ne peut pas faire](#ce-quune-variante-ne-peut-pas-faire).
 - `map.config.yaml` et `www/style.json` divergent : lancez `python3 build_map.py` pour régénérer le style depuis la configuration, ou `retro_style.py` pour reconstruire la configuration depuis le style.
 - Les tests d'aller-retour échouent : `tests/test_retro_capabilities.py` indique quel champ `retro_style.py` ne retrouve plus. Sinon, comparez le YAML produit par `retro_style.py` avec `map.config.yaml`. Une différence signale soit un champ que `retro_style.py` ne lit pas, soit un rendu de `build_map.py` qui n'a pas d'équivalent dans la configuration.
 
