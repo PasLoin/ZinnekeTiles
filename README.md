@@ -4,9 +4,21 @@ Is it possible to run Brussels on a mini maximal vector tile on github page ?
 
 *Anciennement « Brussels minimal vector tile ».*
 
-Prototype de carte MapLibre pour la Région de Bruxelles-Capitale, générée à partir d'un extrait OpenStreetMap PBF local et publiée comme fichiers PMTiles statiques dans `www/`.
+Carte MapLibre de la Région de Bruxelles-Capitale, générée à partir d'un extrait OpenStreetMap et publiée sur GitHub Pages sous forme de fichiers PMTiles statiques, sans serveur de tuiles : [pasloin.github.io/ZinnekeTiles](https://pasloin.github.io/ZinnekeTiles/).
 
-L'objectif est de garder un jeu de tuiles vectorielles minimal, lisible et versionnable pour GitHub Pages : une couche PMTiles par thème, un style MapLibre unique, et une suite de tests qui vérifie à la fois le style, l'interface et le rendu dans un navigateur.
+Chaque thème a son propre fichier PMTiles dans `www/`, et le style MapLibre est compilé depuis un seul fichier de configuration, `map.config.yaml`. La carte est régénérée chaque mois à partir des données OSM du jour.
+
+## Ce que fait la carte
+
+La carte affiche quinze couches : occupation du sol, espaces verts, loisirs et terrains de sport, eau, bâtiments, numéros de rue, arbres et haies, rail, lignes STIB, routes, chemins piétons, pistes cyclables, limites administratives, POI et mobilier urbain. La légende est générée depuis la configuration et permet d'afficher ou de masquer chaque couche et chaque sous-type.
+
+Le bouton MODE 3D extrude les bâtiments selon leur hauteur. La couleur suit `building:colour`, puis `building:material`, puis la couleur de la couche. Les parties de bâtiments (`building:part`) ne sont téléchargées qu'au passage en 3D, et l'intérieur des bâtiments qu'au choix d'un mode dans le panneau Niveaux. Le bouton TOITS ajoute les toits modélisés à partir des tags `roof:*` (forme, hauteur, orientation, couleur), et le panneau Niveaux affiche l'intérieur cartographié : tout ce qui est au-dessus du sol, uniquement le souterrain, ou un niveau choisi.
+
+Le bouton DATA affiche les attributs OSM de l'objet sous le curseur. À partir du zoom 16, le lien « éditer dans OpenStreetMap » ouvre l'éditeur au même endroit. Les terrains de sport sont colorés par sport et reçoivent leurs lignes de marquage à partir du zoom 17. Les icônes de POI viennent de fichiers locaux ou des jeux Temaki, Maki et OSM Liberty, et un système de grille limite leur nombre aux zooms moyens en gardant les plus importants. L'attribution indique la date des données OSM et celle de la dernière mise à jour.
+
+Plusieurs styles peuvent être proposés sur les mêmes tuiles. Un sélecteur apparaît alors dans le panneau titre, et le style choisi se retrouve dans l'adresse (`?style=nb` pour le noir et blanc).
+
+L'interface est utilisable sur téléphone : les panneaux se réorganisent sous 600 px de large ou 500 px de haut.
 
 ## Prérequis système
 
@@ -16,7 +28,7 @@ Installez les outils suivants avant de régénérer les données :
 | :--- | :--- | :--- |
 | `osmium` / `osmium-tool` | Filtrer le PBF OSM et exporter les GeoJSON intermédiaires. | `osmium --version` |
 | `tippecanoe` | Convertir les GeoJSON en archives PMTiles. | `tippecanoe --version` |
-| `python3` | Exécuter les scripts d'enrichissement des couches. | `python3 --version` |
+| `python3` | Exécuter les scripts d'extraction, d'enrichissement et de compilation. | `python3 --version` |
 | Node.js + npm | Installer et lancer Vitest, Playwright et les validateurs JS. | `node --version && npm --version` |
 | Navigateurs Playwright | Exécuter les tests E2E Chromium desktop/mobile. | `npx playwright install chromium` |
 
@@ -35,29 +47,41 @@ npx playwright install chromium
 
 ## Vue d'ensemble du dépôt
 
-- `brussels_capital_region-latest.osm.pbf` : extrait source OpenStreetMap attendu par le pipeline.
-- `requirements.txt` : dépendances Python versionnées (`pyyaml`, `shapely`, `pytest`).
-- `map.config.yaml` : **source de vérité du style**. Modifier ce fichier, pas `www/style.json` directement.
-- `build_map.py` : compile `map.config.yaml` → `www/style.json` + `granulometry.json` + `pmtiles_params.json`.
-- `styles/*.yaml` : variantes de style (surcharges de `map.config.yaml`), compilées en `www/style.<id>.json` — voir [Variantes de style](#variantes-de-style).
-- `retro_style.py` : ingénierie inverse d'un `style.json` existant → `map.config.yaml` (bootstrap ou import).
-- `generate_json.bash` : extrait les couches thématiques depuis le PBF et produit les GeoJSON intermédiaires (`roads.json`, `poi.json`, etc.).
-- `apply_granulometry.py` : filtre les GeoJSON selon les règles LOD générées par `build_map.py`.
-- `filter_geojson.py` : nettoie chaque GeoJSON exporté par osmium (objets référencés hors filtre, doublons ligne/surface des ways fermées, mobilier urbain cartographié en ligne ou surface ramené à un point).
-- `compute_pitch_bearing.py`, `extract_stib_routes.py`, `merge_buildings.py` : enrichissements appliqués aux GeoJSON. Le rendu des terrains de sport (section `leisure.sports` du YAML), les motifs (`patterns`) et les paramètres PMTiles (`tiles`) sont générés par `build_map.py` depuis `map.config.yaml`.
-- `generate_poi_icons.py` : génère `www/poi-icons.json` et `missing-icons.txt` à partir des types POI réellement présents.
-- `generate_pmtiles.bash` : convertit les GeoJSON en PMTiles et met à jour `sizepmtiles.md`.
-- `www/` : application statique, style MapLibre, icônes et PMTiles publiables.
-- `tests/` : tests unitaires Vitest, tests E2E Playwright, validation du style et tests Python de non-régression.
+La configuration et le style :
 
----
+- `map.config.yaml` est la source du style. On modifie ce fichier, jamais `www/style.json`.
+- `build_map.py` compile `map.config.yaml` en trois fichiers : `www/style.json`, `granulometry.json` (quels objets et quels attributs garder à chaque zoom) et `pmtiles_params.json` (zooms et simplification de chaque PMTiles).
+- `styles/*.yaml` contient les variantes de style, des surcharges de `map.config.yaml` compilées en `www/style.<id>.json` (voir [Variantes de style](#variantes-de-style)).
+- `retro_style.py` reconstruit un `map.config.yaml` à partir d'un `style.json` (voir [Reconstruire la configuration depuis un style](#reconstruire-la-configuration-depuis-un-style)).
+- `poi-icons.config.yaml` déclare les icônes qui dépendent de plusieurs tags à la fois (toilettes hommes/femmes, types d'œuvres d'art…).
+
+L'extraction depuis le PBF, lancée par `generate_json.bash` :
+
+- `filter_geojson.py` nettoie chaque export osmium : objets référencés hors filtre, doublons ligne/surface des ways fermées, mobilier urbain cartographié en ligne ou en surface ramené à un point.
+- `compute_building_coverage.py` repère les bâtiments entièrement couverts par leurs `building:part`, pour ne pas les dessiner deux fois en 3D.
+- `extract_addresses.py` construit la couche des numéros de rue, `extract_indoor.py` celle de l'intérieur des bâtiments (avec la liste des niveaux, `www/indoor-levels.json`), et `extract_stib_routes.py` les lignes STIB à partir des relations de transport.
+- `normalize_disused_shops.py`, `normalize_multi_values.py` et `assign_levels.py` (avec `osm_levels.py`) harmonisent les POI : commerces fermés, valeurs multiples comme `cuisine=pita;durum`, niveau de chaque objet.
+- `compute_pitch_bearing.py` calcule l'orientation des terrains de sport pour leurs marquages.
+- `check_landuse_coverage.py` et `check_street_furniture_coverage.py` comparent les valeurs présentes dans l'extrait à celles que la configuration dessine, et écrivent `landuse_report.md` et `street_furniture_report.md`.
+- Le script écrit aussi `www/data-info.json` avec la date de l'extrait.
+
+Les étapes suivantes :
+
+- `generate_roofs.py` modélise les toits en 3D et écrit `www/roofs.glb`.
+- `generate_poi_icons.py` cherche une icône pour chaque type de POI et de mobilier présent, écrit `www/poi-icons.json` et liste les manques dans `missing-icons.txt`.
+- `merge_buildings.py` fusionne les bâtiments mitoyens pour les zooms bas.
+- `apply_granulometry.py` applique `granulometry.json` aux GeoJSON et écrit `granulometry_report.md`.
+- `generate_pmtiles.bash` produit un PMTiles par couche avec les paramètres de `pmtiles_params.json` et met à jour `sizepmtiles.md`.
+
+Le reste :
+
+- `www/` contient l'application statique, le style, les icônes, les motifs et les PMTiles publiés.
+- `tests/` contient les tests Python, les tests unitaires Vitest, les tests E2E Playwright et le validateur de style.
+- `design-icons-specs.md` décrit les contraintes de dessin des icônes locales, et `how-to.md` reprend les cas d'édition courants.
 
 ## Modifier le style de la carte
 
-> **Règle principale : ne jamais éditer `www/style.json` directement.**
-> Ce fichier est généré automatiquement par `build_map.py` à partir de `map.config.yaml`.
-
-### Cycle de travail normal
+`www/style.json` est généré par `build_map.py` : toute modification faite à la main dans ce fichier disparaît au build suivant.
 
 ```
 map.config.yaml  →  build_map.py  →  www/style.json
@@ -70,12 +94,24 @@ map.config.yaml  →  build_map.py  →  www/style.json
 python3 build_map.py
 ```
 
-3. Vérifiez visuellement (voir [Serveur local](#serveur-local)).
-4. Commitez `map.config.yaml` **et** `www/style.json`.
+3. Vérifiez visuellement (voir [Tests unitaires et E2E](#7-tests-unitaires-et-e2e) pour `npm run serve`).
+4. Commitez `map.config.yaml` et `www/style.json`.
 
-### Champs disponibles dans `map.config.yaml`
+### Ce que la configuration pilote en dehors du style
 
-**Niveau couche :**
+`map.config.yaml` décide aussi de ce qui part dans les tuiles. Changer un `appear_at` modifie la granulométrie : sous ce zoom, les objets sont retirés des PMTiles. La section `tiles` d'une couche fixe ses zooms et sa simplification dans Tippecanoe, et les sous-types de `street_furniture` servent de filtres d'extraction à osmium. Ces changements ne prennent effet qu'après une régénération des tuiles, alors qu'un changement de couleur ne demande qu'un `python3 build_map.py`.
+
+### Section `map`
+
+| Champ | Description |
+| :--- | :--- |
+| `name`, `version` | Nom et version du style |
+| `center`, `zoom` | Position initiale de la carte |
+| `background` | Couleur du fond |
+| `font` | Couleur par défaut des étiquettes |
+| `glyphs` | URL des polices |
+
+### Champs d'une couche
 
 | Champ | Description |
 | :--- | :--- |
@@ -84,12 +120,20 @@ python3 build_map.py
 | `border_color` | Couleur du contour (ex : buildings) |
 | `appear_at` | Zoom minimum d'apparition |
 | `labels_at` | Zoom minimum des étiquettes (défaut : `appear_at + 3`) |
-| `opacity` | Opacité globale (0.0–1.0) |
+| `opacity` | Opacité globale, de 0 à 1 |
 | `visible` | `false` pour masquer la couche au chargement (décochée dans la légende) |
 | `swatch` | Pastille de légende : `fill`, `line` ou `dot` (défaut : type de layer majoritaire) |
-| `extrusion_3d` | `true` pour activer le rendu 3D des bâtiments |
+| `swatch_colors` | Pastille multicolore, par exemple `["#007cc2", "#ef3e42"]` pour les lignes STIB |
+| `extrusion_3d` | `true` pour le rendu 3D des bâtiments |
+| `materials` | Bâtiments : couleur 3D par valeur de `building:material` (`building:colour` reste prioritaire) |
+| `osm_colour` | Bâtiments : `false` pour ignorer `building:colour` en 3D, utile pour un rendu monochrome |
+| `tiles` | Paramètres du PMTiles : `min_zoom`, `max_zoom`, `simplification`, et `detail_from` pour les bâtiments |
+| `sports` | Loisirs uniquement : couleur, contour et longueur des terrains par sport (`default`, `values`), zoom des marquages (`markings_at`) |
+| `density` | POI uniquement : désencombrement, voir plus bas |
 
-**Niveau sous-type (`subtypes`) :**
+La section `density` des POI contient `grid` (taille de cellule en pixels), `show` (nombre maximal de POI par cellule à chaque zoom), `tiers` (paliers d'importance par tag, du plus important au moins important), `dots_at` (zoom à partir duquel les POI sans icône deviennent des points) et `overlap_at` (zoom à partir duquel les icônes peuvent se chevaucher).
+
+### Champs d'un sous-type (`subtypes`)
 
 | Champ | Description |
 | :--- | :--- |
@@ -99,23 +143,23 @@ python3 build_map.py
 | `color_private` | Couleur si `access=private` |
 | `pattern` | `fill-pattern` (ex : `military-hatch`) |
 | `pattern_private` | `fill-pattern` uniquement si `access=private` (ex : `green-hatch`) |
-| `outline_color` | Couleur du contour |
+| `pattern_at` | Zoom d'apparition du motif (défaut : `appear_at`) |
+| `outline_color` | Couleur du contour, ou de la bordure pour les routes |
 | `appear_at` | Zoom minimum pour ce sous-type |
-| `opacity` | Opacité fill (0.0–1.0) |
+| `opacity` | Opacité du remplissage, de 0 à 1 |
+| `by` | Clé OSM secondaire qui fait varier le rendu (ex : `religion` pour les cimetières, `leaf_type` pour les arbres) |
+| `by_color`, `by_pattern` | Couleur ou motif par valeur de la clé `by` |
+| `tunnel_color` | Couleur des tronçons en tunnel (défaut : `color` éclaircie) |
 
-### Légende
+Pour les routes, les sous-types sont les classes `highway` : `motorway`, `trunk`, `primary`, `secondary`, `tertiary` et leurs bretelles `_link`, puis `residential`, `unclassified`, `living_street`, `service`, `busway` et `track`. Les épaisseurs de trait sont fixées dans `build_map.py` et ne se règlent pas depuis la configuration.
 
-La légende n'est plus écrite à la main dans `index.html` : `build_map.py` la génère dans `style.json` (`metadata["brussels:legend"]`) et `www/legend.js` la construit au chargement.
+### Section `patterns`
 
-- Un groupe par couche de `map.config.yaml`, dans l'ordre du fichier ; une sous-entrée par sous-type qui possède ses propres layers, dans l'ordre des `subtypes`.
-- Chaque layer sourcé du style est rattaché à un groupe : une couche ajoutée plus tard apparaît donc automatiquement dans la légende.
-- Les layers sans sous-type (étiquettes, flèches, ouvrages d'art…) suivent le groupe : ils restent visibles tant qu'au moins une sous-entrée est cochée.
-- Couleur : `color` de la config, sinon couleur lue dans la peinture des layers (hors casing, tunnel et pont), sinon `#cccccc`.
-- Boutons « Tout afficher » / « Tout masquer », groupes repliables, état mixte quand seule une partie des sous-entrées est cochée.
+Chaque motif SVG utilisé par `pattern` ou `by_pattern` y est déclaré avec `file` (chemin dans `www/`), `size` (en pixels) et `replace`, une table de substitution de couleurs appliquée au SVG au chargement. Le même fichier peut ainsi servir avec plusieurs couleurs.
 
-### Couleurs annexes (`palette`)
+### Section `palette`
 
-Les couleurs secondaires qui ne dépendent pas d'un sous-type sont regroupées dans une section `palette` facultative. Sans cette section, les valeurs par défaut de `build_map.py` s'appliquent.
+Cette section facultative regroupe les couleurs secondaires qui ne dépendent pas d'un sous-type : ponts, tunnels, étiquettes, halos, flèches de sens unique. Sans elle, les valeurs par défaut de `build_map.py` s'appliquent.
 
 | Groupe | Clés |
 | :--- | :--- |
@@ -135,42 +179,45 @@ palette:
   roads: { label: "#222222", bridge_casing: "#000000" }
 ```
 
-Sur `buildings`, `osm_colour: false` ignore le tag `building:colour` en 3D (utile pour un rendu monochrome). Combinez-le avec `materials: null` dans une variante pour retirer aussi les couleurs par matériau.
+Une clé inconnue déclenche un avertissement au build.
 
-### Importer un style externe (bootstrap `retro_style.py`)
+### Section `layers.indoor`
 
-Si vous disposez d'un `style.json` MapLibre existant (Maputnik, import externe…) et souhaitez en faire la source de vérité, utilisez `retro_style.py` pour en extraire automatiquement un `map.config.yaml` :
+Cette section est facultative et ne concerne que le rendu 3D de l'intérieur. Elle accepte `appear_at`, `level_height` (hauteur d'un niveau en mètres), `slab` (épaisseur des planchers), `volume_ratio` (hauteur des volumes rapportée à celle du niveau), `floor_opacity`, `volume_opacity`, et une couleur par type d'espace dans `subtypes` : `room`, `corridor`, `footway`, `pedestrian`, `platform`, `steps`, `escalator`, `elevator`, `wall`, `area` et `arrow`. Sans cette section, les valeurs par défaut de `build_map.py` s'appliquent.
+
+### Légende
+
+`build_map.py` écrit la légende dans `style.json` (`metadata["brussels:legend"]`) et `www/legend.js` la construit au chargement.
+
+Il y a un groupe par couche de `map.config.yaml`, dans l'ordre du fichier, et une sous-entrée par sous-type qui a ses propres layers, dans l'ordre des `subtypes`. Chaque layer du style est rattaché à un groupe, si bien qu'une couche ajoutée plus tard apparaît d'elle-même dans la légende. Les layers sans sous-type (étiquettes, flèches, ouvrages d'art…) suivent leur groupe et restent visibles tant qu'au moins une sous-entrée est cochée.
+
+La couleur d'une entrée est la `color` de la configuration. À défaut, c'est la couleur lue dans la peinture des layers (hors bordures, tunnels et ponts), et en dernier recours `#cccccc`. Les groupes se replient, un groupe partiellement coché s'affiche dans un état mixte, et deux boutons permettent de tout afficher ou de tout masquer.
+
+### Reconstruire la configuration depuis un style
+
+`retro_style.py` fait le chemin inverse de `build_map.py` : il lit un `style.json` et écrit un `map.config.yaml`. C'est utile pour reprendre un style modifié dans Maputnik.
 
 ```bash
-python3 retro_style.py --style www/style.json --out map.config.yaml
+python3 retro_style.py --style www/style.json --out map.config.new.yaml
 ```
 
-Ce script extrait couleurs, `border_color`, `appear_at`, `labels_at`, `extrusion_3d`, opacités, `color_private`, patterns et sous-types pour toutes les couches reconnues.
+Sans `--out`, le script écrit dans `map.config.yaml` et écrase le fichier existant. Mieux vaut écrire à côté puis comparer.
 
-> **Attention :** si `map.config.yaml` existe déjà, ajoutez `--out map.config.new.yaml` pour ne pas l'écraser, puis comparez.
+Le script relit tous les champs décrits plus haut : couleurs, contours, zooms, opacités, visibilité, libellés, motifs, couleurs privées, clés `by`, couleurs de tunnel, pastilles de légende, matériaux, `osm_colour`, paramètres `tiles`, `sports`, `density`, sections `map`, `patterns` et `palette`, et réglages de l'intérieur 3D. Il n'écrit `palette` et `layers.indoor` que si leurs valeurs diffèrent des valeurs par défaut. Il s'appuie sur les métadonnées que `build_map.py` range dans le style (légende, motifs, tuiles, désencombrement, couches 3D chargées à la demande) et sur les identifiants de layers de ZinnekeTiles.
 
-Le workflow GitHub `retro.yml` fait la même chose en un clic depuis l'onglet **Actions** :
+Il a trois limites :
 
-1. Actions → *Retro-engineer config from style* → **Run workflow**
-2. Choisissez `overwrite: true` pour écraser l'existant, ou laissez `false` pour créer un fichier parallèle.
-3. Le fichier YAML généré est commité automatiquement.
+- Une modification que la configuration ne sait pas exprimer, comme une épaisseur de trait ou un layer ajouté à la main, n'est pas reprise et disparaît au build suivant.
+- Un style construit pour d'autres tuiles (OpenMapTiles, Shortbread…) n'utilise ni nos couches ni nos identifiants, et le script n'en tire rien d'utilisable.
+- Les commentaires et la mise en forme du `map.config.yaml` d'origine ne sont pas conservés.
 
-### Garantie bidirectionnelle
+Le workflow GitHub `retro.yml` lance le script depuis l'onglet Actions, sous *Retro-engineer config from style*. Il prend le chemin du style source (`style_path`), le fichier de sortie (`config_out`) et `overwrite`, à mettre sur `true` pour écraser un fichier existant. Le YAML produit est commité automatiquement.
 
-La chaîne est conçue pour être réversible sans perte :
-
-```
-map.config.yaml  →  build_map.py   →  www/style.json
-www/style.json   →  retro_style.py →  map.config.yaml  →  build_map.py  →  www/style.json (≃ identique)
-```
-
-Les tests de non-régression Python (`tests/test_roundtrip.py`) vérifient automatiquement cette propriété à chaque PR.
-
----
+Deux suites de tests surveillent cet aller-retour. `tests/test_roundtrip.py` vérifie sur la configuration réelle que l'aller-retour garde le nombre et l'ordre des layers, les sources et les principales couleurs et zooms. `tests/test_retro_capabilities.py` modifie un champ de la configuration à la fois et vérifie que le style reconstruit est identique à l'original.
 
 ## Variantes de style
 
-Plusieurs styles peuvent coexister sur les **mêmes PMTiles**. `map.config.yaml` reste la base et produit `www/style.json`. Chaque fichier `styles/<id>.yaml` est une surcharge partielle de la base, compilée en `www/style.<id>.json`. Le manifeste `www/styles.json` liste tous les styles.
+Plusieurs styles peuvent coexister sur les mêmes PMTiles. `map.config.yaml` reste la base et produit `www/style.json`. Chaque fichier `styles/<id>.yaml` est une surcharge partielle de la base, compilée en `www/style.<id>.json`, et le manifeste `www/styles.json` liste tous les styles.
 
 ```bash
 python3 build_map.py --only style --variants styles
@@ -204,24 +251,23 @@ layers:
 | Clé | Rôle |
 | :--- | :--- |
 | `variant.label` | Nom affiché dans le sélecteur (défaut : l'identifiant) |
-| `exclude` | Couches retirées du style, de ses sources et de la légende (rien n'est téléchargé). Accepte aussi `indoor` et `building_parts` |
+| `exclude` | Couches retirées du style, de ses sources et de la légende, donc jamais téléchargées. Accepte aussi `indoor` et `building_parts` |
 | `map`, `palette`, `patterns`, `layers` | Fusionnés récursivement sur la base. `null` supprime une clé (ex : `materials: null`) |
 
-- **Identifiant** : nom du fichier, en minuscules, chiffres et tirets (`nb`, `noir-et-blanc`). `default` est réservé.
-- **Masquer sans retirer** : `visible: false` garde la couche dans le style, décochée dans la légende ; `exclude` la supprime.
-- **Hachage** : `metadata["brussels:config_hash"]` reste celui de la base (il identifie les tuiles) ; `metadata["brussels:variant"]` porte l'identifiant, le libellé et le hash de la variante.
-- **Fichiers obsolètes** : supprimer `styles/x.yaml` supprime `www/style.x.json` au build suivant.
+L'identifiant d'une variante est le nom de son fichier, en minuscules, chiffres et tirets (`nb`, `noir-et-blanc`) ; `default` est réservé. Pour masquer une couche sans la retirer, utilisez `visible: false` : elle reste dans le style, décochée dans la légende.
+
+Dans le style compilé, `metadata["brussels:config_hash"]` reste celui de la base, puisqu'il identifie les tuiles, et `metadata["brussels:variant"]` porte l'identifiant, le libellé et le hash de la variante. Supprimer `styles/x.yaml` supprime `www/style.x.json` au build suivant.
 
 ### Ce qu'une variante ne peut pas faire
 
-Les tuiles sont communes à tous les styles : une variante ne modifie que la présentation. `build_map.py` refuse donc une variante qui :
+Les tuiles sont communes à tous les styles, donc une variante ne modifie que la présentation. `build_map.py` refuse une variante qui :
 
 - contient `tiles`, `density` ou `tag` ;
-- abaisse un `appear_at` sous celui de la base (les objets n'existent pas dans les tuiles à ce zoom) — le relever est permis ;
+- abaisse un `appear_at` sous celui de la base, car les objets n'existent pas dans les tuiles à ce zoom (le relever est permis) ;
 - déclare une couche, un sous-type, une clé de palette ou une clé de premier niveau inconnus ;
 - ajoute un motif sans `file`.
 
-Le build échoue avec la liste complète des erreurs.
+Le build échoue alors avec la liste complète des erreurs.
 
 ### Dans la carte
 
@@ -235,48 +281,45 @@ Un identifiant inconnu ou un manifeste absent ramène au style par défaut.
 
 Une autre page peut aussi charger directement `https://pasloin.github.io/ZinnekeTiles/style.nb.json`. Les URL des sources (`./roads.pmtiles`) et des motifs (`assets/…`) y sont relatives : résolvez-les par rapport à l'URL du style avant de créer la carte, et préfixez les sources par `pmtiles://`.
 
----
-
 ## Workflow de développement complet
 
-L'ordre recommandé est : **config → extraction → LOD → PMTiles → validation → tests**.
+L'ordre est le même que dans le déploiement : configuration, extraction, enrichissement, granulométrie, PMTiles, validation, tests.
 
-### 1. Modifier le style (si besoin)
+### 1. Compiler la configuration
 
 ```bash
-# Éditer map.config.yaml, puis :
-python3 build_map.py
+python3 build_map.py --variants styles
 ```
 
-### 2. Extraction des couches GeoJSON
+Sans `--variants`, seul le style de base est compilé.
+
+### 2. Extraire les couches GeoJSON
 
 ```bash
 ./generate_json.bash
 ```
 
-Cette commande lit `brussels_capital_region-latest.osm.pbf`, vérifie que le fichier est bien un PBF OSM, puis produit les couches GeoJSON suivantes : `roads`, `buildings`, `water`, `green`, `trees`, `landuse`, `boundaries`, `poi`, `leisure`, `pedestrian`, `cycleway`, `railway` et `public_transport`.
+La commande vérifie que `brussels_capital_region-latest.osm.pbf` est bien un PBF OSM, puis produit les couches `roads`, `buildings`, `water`, `green`, `trees`, `landuse`, `boundaries`, `street_furniture`, `addresses`, `poi`, `leisure`, `pedestrian`, `cycleway`, `railway`, `public_transport`, `building_parts` et `indoor`. Elle écrit aussi `www/data-info.json`, `www/indoor-levels.json` et les rapports de couverture `landuse_report.md` et `street_furniture_report.md`.
 
-À cette étape, les POI surfaciques sont convertis en points représentatifs et dédoublonnés. La couche `public_transport` est reconstruite depuis les relations STIB/MIVB.
+Les POI surfaciques sont convertis en points et dédoublonnés, les lignes STIB sont reconstruites depuis les relations, et l'orientation des terrains de sport est calculée au passage. Relancez `python3 compute_pitch_bearing.py` seul uniquement si vous modifiez `leisure.json` sans refaire l'extraction.
 
-### 3. Enrichissement des données et du style
+### 3. Enrichir
 
 ```bash
+python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
+python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
 python3 merge_buildings.py
-python3 generate_poi_icons.py
 ```
 
-- `merge_buildings.py` produit `buildings_merged.json` pour les zooms bas, tout en conservant `buildings_detail.json` pour les zooms hauts. Il n'est utile que si `buildings.appear_at` est inférieur à `buildings.tiles.detail_from` (13 par défaut) : sinon `pmtiles_params.json` ne référence pas le fichier fusionné.
-- `generate_poi_icons.py` inspecte `poi.json`, résout les icônes locales/CDN disponibles, écrit `www/poi-icons.json`, puis liste les manques dans `missing-icons.txt`.
+`merge_buildings.py` produit `buildings_merged.json` pour les zooms bas et garde `buildings_detail.json` pour les zooms hauts. Il ne sert que si `buildings.appear_at` est inférieur à `buildings.tiles.detail_from` (13 par défaut) ; sinon `pmtiles_params.json` ne référence pas le fichier fusionné.
 
-> `generate_json.bash` lance déjà `compute_pitch_bearing.py` après l'extraction de `leisure.json`. Relancez `compute_pitch_bearing.py` manuellement uniquement si vous modifiez `leisure.json` sans refaire toute l'extraction.
-
-### 4. Application de la granulométrie (LOD)
+### 4. Appliquer la granulométrie
 
 ```bash
 python3 apply_granulometry.py
 ```
 
-Filtre les GeoJSON selon les règles LOD définies dans `granulometry.json` (généré par `build_map.py`). Les features hors zoom d'apparition sont supprimées ; les propriétés sont allégées aux zooms bas pour réduire la taille des tuiles.
+Les objets sont retirés sous leur zoom d'apparition, et leurs attributs sont allégés aux zooms bas pour réduire la taille des tuiles. Le résumé est écrit dans `granulometry_report.md`.
 
 ```bash
 # Simuler sans écrire (dry-run) :
@@ -286,29 +329,24 @@ python3 apply_granulometry.py --dry-run
 python3 apply_granulometry.py --layers roads,poi
 ```
 
-### 5. Génération des PMTiles
+### 5. Générer les PMTiles
 
 ```bash
 ./generate_pmtiles.bash
-```
-
-Le script produit un fichier `.pmtiles` par source vectorielle et met à jour le rapport `sizepmtiles.md`. Les fichiers générés à la racine doivent ensuite remplacer ceux de `www/` :
-
-```bash
 mv *.pmtiles www/
 ```
 
-Les sources déclarées dans `www/style.json` doivent correspondre aux noms des PMTiles publiés dans `www/`.
+Le script produit un `.pmtiles` par couche à la racine, avec les zooms et la simplification de `pmtiles_params.json`, et met à jour `sizepmtiles.md`. Une couche sans données est sautée avec un avertissement et l'ancienne version reste dans `www/`.
 
-### 6. Validation du style et des PMTiles
+### 6. Valider le style et les PMTiles
 
-Validation rapide utilisée par npm :
+Validation rapide :
 
 ```bash
 npm run test:validate
 ```
 
-Validation stricte avec lecture des métadonnées PMTiles :
+Validation stricte, qui lit les métadonnées des PMTiles et vérifie que chaque layer vectoriel de `www/style.json` référence une source et un `source-layer` réellement présents :
 
 ```bash
 mkdir -p tmp/pmtiles-metadata
@@ -316,63 +354,51 @@ python3 scripts/extract_pmtiles_metadata.py www/*.pmtiles --out-dir tmp/pmtiles-
 python3 scripts/validate_style_pmtiles.py --style www/style.json --metadata-dir tmp/pmtiles-metadata
 ```
 
-La première commande extrait les métadonnées PMTiles. La seconde vérifie que chaque layer vectoriel de `www/style.json` référence une source existante et un `source-layer` réellement présent dans le PMTiles.
-
 ### 7. Tests unitaires et E2E
 
-Tests unitaires :
+Les tests Python couvrent la compilation, l'aller-retour avec `retro_style.py` et les scripts d'extraction (toits, adresses, intérieur, niveaux…) :
+
+```bash
+python3 -m pytest tests
+```
+
+Les tests unitaires Vitest se lancent une fois, en mode watch ou avec la couverture :
 
 ```bash
 npm test
-```
-
-Tests unitaires en mode watch :
-
-```bash
 npm run test:watch
-```
-
-Couverture Vitest :
-
-```bash
 npm run test:coverage
 ```
 
-Tests Python de non-régression (round-trip `retro_style` ↔ `build_map`) :
-
-```bash
-python3 -m pytest tests/test_roundtrip.py -v
-```
-
-Tests E2E Playwright :
+Les tests E2E Playwright démarrent eux-mêmes un serveur statique sur le port 8080 via `playwright.config.js` :
 
 ```bash
 npm run test:e2e
 ```
 
-Playwright démarre automatiquement un serveur statique sur `http://localhost:8080` via `playwright.config.js`. Pour tester manuellement l'application :
+Pour regarder la carte en local, sur http://localhost:8080 :
 
 ```bash
 npm run serve
 ```
 
-Suite complète :
-
-```bash
-npm run test:all
-```
+`npm run test:all` enchaîne Vitest, la validation du style et Playwright.
 
 #### Mise en page mobile
 
-`tests/e2e/map-layout.spec.js` vérifie qu'aucun élément de l'interface (titre, niveaux, légende, boutons, contrôles MapLibre, attribution) ne se chevauche ni ne sort de l'écran, du petit téléphone (360×640) à l'écran d'ordinateur, en 2D comme en 3D et avec chaque panneau ouvert. Il tourne aussi dans le projet `mobile-chrome`. Toute modification de `www/index.html` qui touche aux panneaux ou aux contrôles doit le garder vert.
+`tests/e2e/map-layout.spec.js` vérifie qu'aucun élément de l'interface (titre, niveaux, légende, boutons, contrôles MapLibre, attribution) ne se chevauche ni ne sort de l'écran, du petit téléphone (360×640) à l'écran d'ordinateur, en 2D comme en 3D et avec chaque panneau ouvert. Il tourne aussi dans le projet `mobile-chrome`. Une modification de `www/index.html` qui touche aux panneaux ou aux contrôles doit le garder vert.
 
-En mode compact (largeur ≤ 600 px ou hauteur ≤ 500 px) :
+En mode compact (largeur ≤ 600 px ou hauteur ≤ 500 px), le panneau Niveaux passe sous le titre et les boutons s'empilent à droite. Un seul panneau est ouvert à la fois et la légende démarre repliée. Elle se place au-dessus de l'attribution, dont la hauteur est suivie en continu (`--attrib-h`, `--controls-h`).
 
-- le panneau Niveaux passe sous le titre et les boutons s'empilent à droite ;
-- un seul panneau est ouvert à la fois, la légende démarre repliée ;
-- la légende se place au-dessus de l'attribution, dont la hauteur est suivie en continu (`--attrib-h`, `--controls-h`).
+## Déploiement automatique
 
----
+Le workflow `deploy.yml` reconstruit et publie la carte. Il se lance à chaque push sur `main` qui ne touche pas seulement des fichiers générés, à la main depuis l'onglet Actions, et le 1er de chaque mois à 3 h UTC.
+
+Il compile la configuration et les variantes, télécharge l'extrait OSM du jour, puis enchaîne l'extraction, les toits, les icônes, la fusion des bâtiments, la granulométrie et les PMTiles. Il commite ensuite les fichiers générés (PMTiles, `style.json`, styles des variantes et `styles.json`, `poi-icons.json`, `data-info.json`, `roofs.glb`, rapports) et publie `www/` sur GitHub Pages avec les rapports. Si `map.config.yaml` est absent, il garde `www/style.json` tel quel.
+
+Sur chaque pull request, `tests.yml` compile les variantes puis lance les tests unitaires, la validation de chaque style, les tests Python de compilation, de variantes et d'aller-retour, et les tests E2E. `validate-pmtiles-metadata.yml` confronte chaque style à la spécification MapLibre et aux métadonnées des PMTiles.
+
+Le déploiement vers GitHub Pages n'est autorisé que depuis `main`. Pour tester une branche, ouvrez une pull request : les tests compilent et valident les variantes.
 
 ## Mettre à jour le PBF
 
@@ -388,120 +414,87 @@ file brussels_capital_region-latest.osm.pbf
 osmium fileinfo brussels_capital_region-latest.osm.pbf
 ```
 
-Après remplacement du PBF, relancez le workflow complet :
+Après remplacement du PBF, relancez toute la chaîne :
 
 ```bash
-python3 build_map.py
+python3 build_map.py --variants styles
 ./generate_json.bash
+python3 generate_roofs.py --buildings buildings_detail.json --parts building_parts.json --out www/roofs.glb
+python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
 python3 merge_buildings.py
 python3 apply_granulometry.py
-python3 generate_poi_icons.py
 ./generate_pmtiles.bash
 mv *.pmtiles www/
 npm run test:validate
-python3 -m pytest tests/test_roundtrip.py -v
+python3 -m pytest tests
 npm test
 npm run test:e2e
 ```
 
-Si vous préférez une source OSM différente, conservez le même nom de fichier ou modifiez la variable `SRC` dans `generate_json.bash`.
-
----
+Pour une autre source OSM, gardez le même nom de fichier ou modifiez la variable `SRC` dans `generate_json.bash`.
 
 ## Ajouter une couche
 
-Ajouter une couche implique de modifier les trois parties du pipeline : extraction, tuilage, style.
+Une nouvelle couche touche l'extraction, la compilation du style et la reconstruction inverse.
 
-1. **Extraire les objets OSM** dans `generate_json.bash`.
-   - Ajoutez un appel `extract nouvelle_couche ...` pour un filtrage simple.
-   - Pour une extraction relationnelle ou une transformation avancée, suivez le modèle de `public_transport` ou ajoutez un script Python dédié.
-2. **Déclarer la couche dans `map.config.yaml`** avec ses couleurs et zooms, puis régénérez :
-```bash
-   python3 build_map.py
-```
-3. **Appliquer la granulométrie** (optionnel) : les règles LOD sont auto-générées par `build_map.py`. Vérifiez `granulometry.json` puis relancez `apply_granulometry.py`.
-4. **Générer le PMTiles** dans `generate_pmtiles.bash`.
-   - Ajoutez la couche aux tableaux `MAX_ZOOM` et `SIMPLIFICATION`.
-   - Ajoutez son nom dans la boucle des couches standard, sauf si elle nécessite une commande Tippecanoe spéciale comme `buildings`.
-5. **Publier le fichier** dans `www/`.
-   - Après génération, déplacez `nouvelle_couche.pmtiles` vers `www/`.
-6. **Déclarer la source MapLibre** dans `www/style.json`.
-   - La source est ajoutée automatiquement par `build_map.py` si la couche est déclarée dans `map.config.yaml`.
-7. **Valider**.
-   - Lancez `npm run test:validate`, puis `python3 -m pytest tests/test_roundtrip.py -v`.
-   - Ajoutez ou adaptez des tests dans `tests/unit/` ou `tests/e2e/` si l'interface, la légende ou les layers visibles changent.
-
----
+1. Extrayez les objets OSM dans `generate_json.bash`, avec un appel `extract nouvelle_couche ...` pour un filtrage simple, ou un script Python dédié sur le modèle de `extract_stib_routes.py` pour une extraction plus complexe.
+2. Dans `build_map.py`, ajoutez le nom à `SOURCES` et à `PMTILES_DEFAULTS`, écrivez la fonction qui produit les layers de la couche et appelez-la dans `build_style()`. La source MapLibre, la légende, la granulométrie et les paramètres PMTiles en découlent. Si seuls les sous-types déclarés doivent rester dans les tuiles, ajoutez aussi la couche à `SUBTYPE_ONLY_LAYERS`.
+3. Déclarez la couche dans `map.config.yaml` avec ses couleurs, zooms et, au besoin, une section `tiles`, puis lancez `python3 build_map.py`.
+4. Ajoutez les préfixes d'identifiants de ses layers à `GROUPS` dans `retro_style.py`, pour que l'aller-retour la retrouve.
+5. Régénérez les données (granulométrie et PMTiles) et déplacez `nouvelle_couche.pmtiles` dans `www/`.
+6. Lancez `npm run test:validate` et `python3 -m pytest tests`, puis ajoutez ou adaptez des tests dans `tests/unit/` ou `tests/e2e/` si l'interface, la légende ou les layers visibles changent.
 
 ## Ajouter une icône POI
 
-Les icônes POI sont résolues par `www/poi_icons.js` à partir du manifeste `www/poi-icons.json`. Ce manifeste est généré par `generate_poi_icons.py`.
+`www/poi_icons.js` charge les icônes listées dans `www/poi-icons.json`, que génère `generate_poi_icons.py`. Pour chaque type présent dans `poi.json` et `street_furniture.json`, le script cherche un fichier local dans `www/assets/icons/`, puis une icône Temaki, Maki ou OSM Liberty. Les règles de nommage et de dessin sont dans [design-icons-specs.md](design-icons-specs.md).
 
-1. Identifiez la clé OSM qui doit produire l'icône.
-   - Exemple simple : `shop=butcher` produit le type `butcher`.
-   - Exemple sous-type : `cuisine=friture` produit la clé `cuisine-friture`.
-2. Ajoutez un SVG local dans `www/assets/icons/` si aucune icône CDN ne convient.
-   - Utilisez un nom explicite et stable, par exemple `www/assets/icons/butcher.svg`.
-   - L'icône doit être sous licence CC0 (voir [Licences](#licences)) : dessin original ou reprise d'un jeu CC0 comme openstreetmap-carto.
-3. Si le nom local/CDN ne correspond pas à la clé POI, ajoutez ou ajustez l'entrée dans `CDN_NAME_OVERRIDES` dans `generate_poi_icons.py`.
-   - Les overrides peuvent pointer vers un fichier local (`local`) ou vers un nom d'icône Temaki, Maki ou Liberty.
-4. Regénérez le manifeste :
+1. Identifiez la clé OSM qui doit produire l'icône. `shop=butcher` donne le type `butcher`, `cuisine=friture` donne `cuisine-friture`.
+2. Si aucune icône CDN ne convient, ajoutez un SVG dans `www/assets/icons/`, par exemple `www/assets/icons/butcher.svg`. Il doit être sous licence CC0 (voir [Licences](#licences)) : dessin original ou reprise d'un jeu CC0 comme openstreetmap-carto.
+3. Si le nom du fichier ou de l'icône CDN ne correspond pas au type, ajoutez une entrée dans `CDN_NAME_OVERRIDES` de `generate_poi_icons.py`. Elle peut pointer vers un fichier local (`local`) ou vers une icône Temaki, Maki ou Liberty.
+4. Si l'icône dépend de plusieurs tags à la fois (par exemple `amenity=toilets` avec `male=yes` et `female=no`), déclarez le cas dans `composite_cases` de `poi-icons.config.yaml`.
+5. Régénérez le manifeste et vérifiez les manques :
 
 ```bash
-python3 generate_poi_icons.py
-```
-
-5. Vérifiez les manques restants :
-
-```bash
+python3 generate_poi_icons.py --poi-json poi.json street_furniture.json
 cat missing-icons.txt
 npm test -- tests/unit/poi_icons.test.js
 ```
 
-6. Lancez les tests E2E si l'icône modifie le rendu visible de la carte ou de la légende.
-
----
+6. Lancez les tests E2E si l'icône change le rendu visible de la carte ou de la légende.
 
 ## Commandes utiles
 
 | Commande | Description |
 | :--- | :--- |
-| `pip install -r requirements.txt` | Installe toutes les dépendances Python (pyyaml, shapely, pytest). |
-| `python3 build_map.py` | Compile `map.config.yaml` → `www/style.json` + granulométrie + params PMTiles. |
-| `python3 retro_style.py` | Ingénierie inverse `www/style.json` → `map.config.yaml`. |
-| `python3 apply_granulometry.py` | Applique les règles LOD aux GeoJSON. |
-| `npm run serve` | Sert `www/` sur le port 8080 pour inspection locale. |
+| `pip install -r requirements.txt` | Installe les dépendances Python (pyyaml, shapely, pytest). |
+| `python3 build_map.py --variants styles` | Compile `map.config.yaml` en `www/style.json`, granulométrie et paramètres PMTiles, plus une `www/style.<id>.json` par variante et `www/styles.json`. |
+| `python3 retro_style.py --out map.config.new.yaml` | Reconstruit une configuration depuis `www/style.json`. |
+| `python3 apply_granulometry.py` | Applique les règles de granulométrie aux GeoJSON. |
+| `python3 -m pytest tests` | Lance tous les tests Python. |
+| `npm run serve` | Sert `www/` sur le port 8080. |
 | `npm test` | Lance les tests unitaires Vitest. |
 | `npm run test:watch` | Lance Vitest en mode interactif. |
 | `npm run test:coverage` | Produit la couverture des tests unitaires. |
-| `npm run test:validate` | Valide la cohérence de `www/style.json` et des assets attendus. |
+| `npm run test:validate` | Vérifie la cohérence de `www/style.json`, des PMTiles et des assets. |
 | `npm run test:e2e` | Lance les tests Playwright desktop et mobile. |
 | `npm run test:e2e:ui` | Ouvre l'interface Playwright. |
 | `npm run test:e2e:report` | Affiche le dernier rapport Playwright. |
-| `npm run test:all` | Lance unitaires, validation de style et E2E. |
-| `python3 -m pytest tests/test_roundtrip.py -v` | Tests de non-régression Python (round-trip style ↔ config). |
+| `npm run test:all` | Lance Vitest, la validation du style et Playwright. |
 
----
+## Limitations connues
 
-## Connus et limitations
-
-### CSS inline et handlers inline
-
-La page `www/index.html` contient actuellement du CSS inline et des handlers `onclick` inline. Cela fonctionne mais complexifie une future politique CSP stricte. Une refactorisation vers `www/style.css` + `addEventListener` est planifiée.
-
----
+`www/index.html` contient du CSS inline et des handlers `onclick` inline. Ça fonctionne, mais ça complique une future politique CSP stricte. Une refactorisation vers `www/style.css` et `addEventListener` est prévue.
 
 ## Dépannage
 
-- **`brussels_capital_region-latest.osm.pbf n'est pas un fichier PBF valide`** : le téléchargement a probablement renvoyé une page HTML ou un fichier incomplet. Relancez le téléchargement et vérifiez `file ...`.
-- **`tippecanoe: command not found`** : installez Tippecanoe et vérifiez qu'il est dans le `PATH`.
-- **Icônes POI manquantes** : consultez `missing-icons.txt`, ajoutez un SVG local ou un override, puis relancez `python3 generate_poi_icons.py`.
-- **Playwright ne trouve pas Chromium** : lancez `npx playwright install chromium`.
-- **Le style référence une couche absente** : comparez `www/style.json`, les noms de fichiers `www/*.pmtiles` et les `vector_layers` extraits par `scripts/extract_pmtiles_metadata.py`.
-- **`map.config.yaml` et `www/style.json` divergent** : lancez `python3 build_map.py` pour régénérer le style depuis la config, ou `python3 retro_style.py` pour reconstruire la config depuis le style.
-- **Les tests round-trip échouent** : comparez le YAML généré par `retro_style.py` avec `map.config.yaml` de référence. Les divergences indiquent un champ non capturé par `retro_style.py` ou un comportement de `build_map.py` qui n'a pas d'équivalent dans la config.
-
----
+- `brussels_capital_region-latest.osm.pbf n'est pas un fichier PBF valide` : le téléchargement a sans doute renvoyé une page HTML ou un fichier incomplet. Relancez-le et vérifiez avec `file ...`.
+- `tippecanoe: command not found` : installez Tippecanoe et vérifiez qu'il est dans le `PATH`.
+- Icônes POI manquantes : consultez `missing-icons.txt`, ajoutez un SVG local ou un override, puis relancez `generate_poi_icons.py`.
+- Playwright ne trouve pas Chromium : lancez `npx playwright install chromium`.
+- Le style référence une couche absente : comparez `www/style.json`, les noms des fichiers `www/*.pmtiles` et les `vector_layers` extraits par `scripts/extract_pmtiles_metadata.py`.
+- `variante invalide` au build : le message liste chaque clé refusée avec son chemin dans `styles/<id>.yaml`. Voir [Ce qu'une variante ne peut pas faire](#ce-quune-variante-ne-peut-pas-faire).
+- `map.config.yaml` et `www/style.json` divergent : lancez `python3 build_map.py` pour régénérer le style depuis la configuration, ou `retro_style.py` pour reconstruire la configuration depuis le style.
+- Les tests d'aller-retour échouent : `tests/test_retro_capabilities.py` indique quel champ `retro_style.py` ne retrouve plus. Sinon, comparez le YAML produit par `retro_style.py` avec `map.config.yaml`. Une différence signale soit un champ que `retro_style.py` ne lit pas, soit un rendu de `build_map.py` qui n'a pas d'équivalent dans la configuration.
 
 ## Licences
 

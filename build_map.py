@@ -1873,7 +1873,7 @@ def build_granulometry(config):
     config = with_default_subtypes(config)
     L   = config.get("layers",{})
     out = {"_meta":{"generated_by":"build_map.py"},"layers":{}}
-    names = list(L) + [n for n in SOURCES if n not in L]
+    names = [n for n in L if n in SOURCES] + [n for n in SOURCES if n not in L]
     for name in names:
         raw  = L.get(name) or {}
         ap   = raw.get("appear_at", 10)
