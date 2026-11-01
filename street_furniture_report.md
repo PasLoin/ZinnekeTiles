@@ -30,12 +30,12 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | tag | valeur | features |
 | :--- | :--- | ---: |
 | `highway` | `street_lamp` | 10244 |
-| `amenity` | `bench` | 7814 |
+| `amenity` | `bench` | 7817 |
 | `barrier` | `bollard` | 7349 |
 | `amenity` | `waste_basket` | 6865 |
 | `barrier` | `fence` | 4660 |
-| `barrier` | `gate` | 3521 |
-| `amenity` | `vending_machine` | 1811 |
+| `barrier` | `gate` | 3522 |
+| `amenity` | `vending_machine` | 1812 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
 | `barrier` | `lift_gate` | 845 |
@@ -58,7 +58,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `amenity` | `clock` | 51 |
 | `amenity` | `lounger` | 48 |
 | `emergency` | `life_ring` | 39 |
-| `amenity` | `parcel_locker` | 36 |
+| `amenity` | `parcel_locker` | 37 |
 | `amenity` | `photo_booth` | 24 |
 | `emergency` | `assembly_point` | 22 |
 | `barrier` | `bus_trap` | 15 |
@@ -84,7 +84,7 @@ Configurés et/ou listés comme candidats (wiki OSM), mais absents de l'extrait 
 
 | vending | features |
 | :--- | ---: |
-| `parking_tickets` | 1448 |
+| `parking_tickets` | 1449 |
 | `public_transport_tickets` | 232 |
 | `excrement_bags` | 63 |
 | `newspapers` | 18 |
