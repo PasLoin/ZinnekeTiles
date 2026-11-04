@@ -12,8 +12,7 @@ on:
       - 'street_furniture_report.md'
   workflow_dispatch:
   schedule:
-    - cron: '0 3 1 * *'
-
+      - cron: '30 13 * * *'
 permissions:
   contents: write
   pages: write
