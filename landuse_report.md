@@ -28,14 +28,14 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.landus
 
 | landuse | features |
 | :--- | ---: |
-| `residential` | 2449 |
+| `residential` | 2453 |
 | `commercial` | 466 |
 | `construction` | 331 |
 | `industrial` | 315 |
 | `allotments` | 290 |
 | `farmland` | 242 |
 | `railway` | 197 |
-| `village_green` | 140 |
+| `village_green` | 136 |
 | `garages` | 124 |
 | `brownfield` | 115 |
 | `retail` | 100 |
