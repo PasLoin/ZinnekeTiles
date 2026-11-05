@@ -29,7 +29,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 
 | tag | valeur | features |
 | :--- | :--- | ---: |
-| `highway` | `street_lamp` | 10244 |
+| `highway` | `street_lamp` | 10246 |
 | `amenity` | `bench` | 7817 |
 | `barrier` | `bollard` | 7353 |
 | `amenity` | `waste_basket` | 6865 |
@@ -54,7 +54,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `amenity` | `bicycle_repair_station` | 131 |
 | `amenity` | `atm` | 112 |
 | `amenity` | `public_bookcase` | 108 |
-| `barrier` | `planter` | 73 |
+| `barrier` | `planter` | 75 |
 | `amenity` | `clock` | 51 |
 | `amenity` | `lounger` | 48 |
 | `emergency` | `life_ring` | 39 |
