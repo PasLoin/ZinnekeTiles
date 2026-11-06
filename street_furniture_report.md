@@ -34,7 +34,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `barrier` | `bollard` | 7353 |
 | `amenity` | `waste_basket` | 6865 |
 | `barrier` | `fence` | 4660 |
-| `barrier` | `gate` | 3524 |
+| `barrier` | `gate` | 3526 |
 | `amenity` | `vending_machine` | 1812 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
