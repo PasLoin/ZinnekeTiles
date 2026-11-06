@@ -287,3 +287,27 @@ def test_removed_variants_are_cleaned_up(tmp_path):
     assert (out.parent / "style.manuel.json").exists()
     manifest = json.loads((out.parent / "styles.json").read_text())
     assert [s["id"] for s in manifest["styles"]] == ["default", "garde"]
+
+
+def _interpolations(node):
+    if isinstance(node, list):
+        if node[:1] == ["interpolate"]:
+            yield node
+        for child in node:
+            yield from _interpolations(child)
+    elif isinstance(node, dict):
+        for child in node.values():
+            yield from _interpolations(child)
+
+
+@pytest.mark.parametrize("key,ap", [
+    ("tree_row", 16), ("tree_row", 17), ("tree_row", 18),
+    ("tree", 17), ("tree", 18), ("tree", 19),
+])
+def test_late_tree_appear_at_keeps_interpolations_ascending(key, ap):
+    raw = {"layers": {"trees": {"subtypes": {key: {"appear_at": ap}}}}}
+    style = build_style(CONFIG, variant(raw))
+    for layer in (by_id(style)["trees-row-symbols"], by_id(style)["trees-tree"]):
+        for expr in _interpolations(layer):
+            stops = expr[3::2]
+            assert stops == sorted(set(stops)), (layer["id"], stops)

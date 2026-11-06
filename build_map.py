@@ -316,9 +316,8 @@ def _tree_symbol_layout(z0, sizes):
         field += [k, TREE_SYMBOLS[k]]
     field.append(TREE_SYMBOL_DEFAULT)
     (a_known, a_other), (b_known, b_other) = sizes
-    size = ["interpolate", ["linear"], ["zoom"],
-            z0, ["case", known, a_known, a_other],
-            18, ["case", known, b_known, b_other]]
+    size = zoom([(z0, ["case", known, a_known, a_other]),
+                 (18, ["case", known, b_known, b_other])])
     return {"text-field": field, "text-font": ["Noto Sans Regular"],
             "text-size": size, "text-allow-overlap": False}
 
