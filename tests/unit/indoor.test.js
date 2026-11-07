@@ -2,12 +2,27 @@ import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
-  levelValues, levelWindow, levelFilter, indoorPaint, buildingsState,
-  indoorNote, lazyLayersOf, ensureLazyGroup,
-  featureLevels, geometryBbox, bboxIntersects, visibleLevels, sameLevels,
-  panelLevels, levelLabel,
-  LEVEL_AWARE_SOURCES, poiLevelFilter, combineFilters, levelAwareFilter,
-  isIsolated, keepsInIsolation,
+  levelValues,
+  levelWindow,
+  levelFilter,
+  indoorPaint,
+  buildingsState,
+  indoorNote,
+  lazyLayersOf,
+  ensureLazyGroup,
+  featureLevels,
+  geometryBbox,
+  bboxIntersects,
+  visibleLevels,
+  sameLevels,
+  panelLevels,
+  levelLabel,
+  LEVEL_AWARE_SOURCES,
+  poiLevelFilter,
+  combineFilters,
+  levelAwareFilter,
+  isIsolated,
+  keepsInIsolation,
 } from '../../www/indoor.js';
 
 const style = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../www/style.json'), 'utf8'));
@@ -15,8 +30,9 @@ const lazy = style.metadata['brussels:lazy'];
 
 describe('levelValues', () => {
   it('trie et filtre les niveaux', () => {
-    expect(levelValues({ levels: [{ level: 1 }, { level: -2 }, { level: 'x' }, { level: 0.5 }] }))
-      .toEqual([-2, 0.5, 1]);
+    expect(
+      levelValues({ levels: [{ level: 1 }, { level: -2 }, { level: 'x' }, { level: 0.5 }] })
+    ).toEqual([-2, 0.5, 1]);
     expect(levelValues(null)).toEqual([]);
   });
 });
@@ -36,7 +52,11 @@ describe('levelWindow', () => {
   it('sélection : le niveau le plus bas choisi est posé au sol', () => {
     expect(levelWindow('select', new Set([1, 2]), available)).toEqual({ lo: 1, hi: 2, offset: 1 });
     expect(levelWindow('select', new Set([0, 2]), available)).toEqual({ lo: 0, hi: 2, offset: 0 });
-    expect(levelWindow('select', new Set([-2, 1]), available)).toEqual({ lo: -2, hi: 1, offset: -2 });
+    expect(levelWindow('select', new Set([-2, 1]), available)).toEqual({
+      lo: -2,
+      hi: 1,
+      offset: -2,
+    });
     expect(levelWindow('select', new Set(), available)).toBeNull();
   });
 
@@ -70,7 +90,7 @@ describe('cohérence avec build_map.py', () => {
   });
 
   it('les couches différées sont insérées sous les étiquettes', () => {
-    const ids = style.layers.map(l => l.id);
+    const ids = style.layers.map((l) => l.id);
     expect(ids).toContain(lazy.before);
     expect(ids.indexOf('buildings-3d')).toBeLessThan(ids.indexOf(lazy.before));
     for (const id of ['road-labels', 'poi-icon', 'public_transport-label']) {
@@ -82,7 +102,7 @@ describe('cohérence avec build_map.py', () => {
   });
 
   it('aucune couche 3D différée dans le style de base', () => {
-    const ids = style.layers.map(l => l.id);
+    const ids = style.layers.map((l) => l.id);
     expect(ids).not.toContain('building-parts-3d');
     expect(ids).not.toContain('indoor-3d-floor');
     expect(Object.keys(style.sources)).not.toContain('indoor');
@@ -105,17 +125,25 @@ describe('buildingsState', () => {
 
   it('3D + légende décochée : tout est masqué', () => {
     const { visibility } = buildingsState({ is3d: true, buildingsOn: false, window: null });
-    expect(Object.values(visibility).every(v => v === 'none')).toBe(true);
+    expect(Object.values(visibility).every((v) => v === 'none')).toBe(true);
   });
 
   it('vue éclatée souterraine : bâtiments 3D masqués', () => {
-    const { visibility, dimmed } = buildingsState({ is3d: true, buildingsOn: true, window: { lo: -3, hi: -1, offset: -3 } });
+    const { visibility, dimmed } = buildingsState({
+      is3d: true,
+      buildingsOn: true,
+      window: { lo: -3, hi: -1, offset: -3 },
+    });
     expect(visibility['buildings-3d']).toBe('none');
     expect(dimmed).toBe(false);
   });
 
   it('intérieur au-dessus du sol : bâtiments 3D atténués', () => {
-    const { visibility, dimmed } = buildingsState({ is3d: true, buildingsOn: true, window: { lo: 0, hi: 99, offset: 0 } });
+    const { visibility, dimmed } = buildingsState({
+      is3d: true,
+      buildingsOn: true,
+      window: { lo: 0, hi: 99, offset: 0 },
+    });
     expect(visibility['building-parts-3d']).toBe('visible');
     expect(dimmed).toBe(true);
   });
@@ -134,27 +162,53 @@ describe('ensureLazyGroup', () => {
     const sources = {};
     const layers = { [lazy.before]: {} };
     const map = {
-      getSource: id => sources[id],
-      getLayer: id => layers[id],
-      addSource: vi.fn((id, src) => { sources[id] = src; }),
-      addLayer: vi.fn((layer) => { layers[layer.id] = layer; }),
+      getSource: (id) => sources[id],
+      getLayer: (id) => layers[id],
+      addSource: vi.fn((id, src) => {
+        sources[id] = src;
+      }),
+      addLayer: vi.fn((layer) => {
+        layers[layer.id] = layer;
+      }),
     };
     expect(ensureLazyGroup(map, lazy, 'indoor', 'https://example.org/map/')).toBe(true);
     expect(ensureLazyGroup(map, lazy, 'indoor', 'https://example.org/map/')).toBe(false);
     expect(map.addSource).toHaveBeenCalledTimes(1);
     expect(sources.indoor.url).toBe('pmtiles://https://example.org/map/indoor.pmtiles');
-    expect(map.addLayer.mock.calls.map(c => c[0].id)).toEqual(['indoor-3d-floor', 'indoor-3d-volume', 'indoor-3d-arrows']);
-    expect(map.addLayer.mock.calls.every(c => c[1] === lazy.before)).toBe(true);
+    expect(map.addLayer.mock.calls.map((c) => c[0].id)).toEqual([
+      'indoor-3d-floor',
+      'indoor-3d-volume',
+      'indoor-3d-arrows',
+    ]);
+    expect(map.addLayer.mock.calls.every((c) => c[1] === lazy.before)).toBe(true);
   });
 });
 
 describe('niveaux dynamiques (issue #67)', () => {
-  const square = (x, y) => ({ type: 'Polygon', coordinates: [[[x, y], [x + 0.001, y], [x + 0.001, y + 0.001], [x, y + 0.001], [x, y]]] });
-  const feat = (x, y, lo, hi) => ({ geometry: square(x, y), properties: { level_min: lo, level_max: hi } });
+  const square = (x, y) => ({
+    type: 'Polygon',
+    coordinates: [
+      [
+        [x, y],
+        [x + 0.001, y],
+        [x + 0.001, y + 0.001],
+        [x, y + 0.001],
+        [x, y],
+      ],
+    ],
+  });
+  const feat = (x, y, lo, hi) => ({
+    geometry: square(x, y),
+    properties: { level_min: lo, level_max: hi },
+  });
 
   it('featureLevels inclut les bornes et les entiers intermédiaires', () => {
-    expect(featureLevels({ level_min: -2, level_max: 1 }).sort((a, b) => a - b)).toEqual([-2, -1, 0, 1]);
-    expect(featureLevels({ level_min: -0.5, level_max: 0.5 }).sort((a, b) => a - b)).toEqual([-0.5, 0, 0.5]);
+    expect(featureLevels({ level_min: -2, level_max: 1 }).sort((a, b) => a - b)).toEqual([
+      -2, -1, 0, 1,
+    ]);
+    expect(featureLevels({ level_min: -0.5, level_max: 0.5 }).sort((a, b) => a - b)).toEqual([
+      -0.5, 0, 0.5,
+    ]);
     expect(featureLevels({ level_min: 2 })).toEqual([2]);
     expect(featureLevels({})).toEqual([]);
   });
@@ -167,7 +221,12 @@ describe('niveaux dynamiques (issue #67)', () => {
   });
 
   it('visibleLevels ne garde que les éléments dans la vue', () => {
-    const features = [feat(4.35, 50.85, -2, -1), feat(4.35, 50.85, -2, -1), feat(5, 51, 3, 3), feat(4.351, 50.851, 0, 0)];
+    const features = [
+      feat(4.35, 50.85, -2, -1),
+      feat(4.35, 50.85, -2, -1),
+      feat(5, 51, 3, 3),
+      feat(4.351, 50.851, 0, 0),
+    ];
     expect(visibleLevels(features, [4.34, 50.84, 4.36, 50.86])).toEqual([-2, -1, 0]);
     expect(visibleLevels(features, null)).toEqual([-2, -1, 0, 3]);
     expect(visibleLevels([], [0, 0, 1, 1])).toEqual([]);
@@ -181,11 +240,16 @@ describe('niveaux dynamiques (issue #67)', () => {
 
   it('panelLevels trie du plus haut au plus bas et garde les niveaux cochés hors vue', () => {
     expect(panelLevels([-2, -1, 0, 1, 2], new Set())).toEqual([
-      { level: 2, present: true }, { level: 1, present: true }, { level: 0, present: true },
-      { level: -1, present: true }, { level: -2, present: true },
+      { level: 2, present: true },
+      { level: 1, present: true },
+      { level: 0, present: true },
+      { level: -1, present: true },
+      { level: -2, present: true },
     ]);
     expect(panelLevels([0, 1], new Set([-3]))).toEqual([
-      { level: 1, present: true }, { level: 0, present: true }, { level: -3, present: false },
+      { level: 1, present: true },
+      { level: 0, present: true },
+      { level: -3, present: false },
     ]);
   });
 
@@ -201,30 +265,48 @@ function evaluate(expr, props) {
   const [op, ...args] = expr;
   const ev = (e) => evaluate(e, props);
   switch (op) {
-    case 'all': return args.every((a) => ev(a));
-    case 'any': return args.some((a) => ev(a));
-    case 'get': return props[args[0]] ?? null;
+    case 'all':
+      return args.every((a) => ev(a));
+    case 'any':
+      return args.some((a) => ev(a));
+    case 'get':
+      return props[args[0]] ?? null;
     case 'coalesce': {
-      for (const a of args) { const v = ev(a); if (v !== null && v !== undefined) return v; }
+      for (const a of args) {
+        const v = ev(a);
+        if (v !== null && v !== undefined) return v;
+      }
       return null;
     }
-    case '+': return args.reduce((acc, a) => acc + ev(a), 0);
-    case '*': return args.reduce((acc, a) => acc * ev(a), 1);
-    case '-': return ev(args[0]) - ev(args[1]);
-    case 'max': return Math.max(...args.map(ev));
-    case 'min': return Math.min(...args.map(ev));
+    case '+':
+      return args.reduce((acc, a) => acc + ev(a), 0);
+    case '*':
+      return args.reduce((acc, a) => acc * ev(a), 1);
+    case '-':
+      return ev(args[0]) - ev(args[1]);
+    case 'max':
+      return Math.max(...args.map(ev));
+    case 'min':
+      return Math.min(...args.map(ev));
     case 'to-number': {
       const v = ev(args[0]);
       const n = Number(v);
       return v === null || v === undefined || !Number.isFinite(n) ? ev(args[1]) : n;
     }
-    case '==': return ev(args[0]) === ev(args[1]);
-    case '!=': return ev(args[0]) !== ev(args[1]);
-    case '<': return ev(args[0]) < ev(args[1]);
-    case '<=': return ev(args[0]) <= ev(args[1]);
-    case '>': return ev(args[0]) > ev(args[1]);
-    case '>=': return ev(args[0]) >= ev(args[1]);
-    default: throw new Error(`opérateur non géré : ${op}`);
+    case '==':
+      return ev(args[0]) === ev(args[1]);
+    case '!=':
+      return ev(args[0]) !== ev(args[1]);
+    case '<':
+      return ev(args[0]) < ev(args[1]);
+    case '<=':
+      return ev(args[0]) <= ev(args[1]);
+    case '>':
+      return ev(args[0]) > ev(args[1]);
+    case '>=':
+      return ev(args[0]) >= ev(args[1]);
+    default:
+      throw new Error(`opérateur non géré : ${op}`);
   }
 }
 
@@ -288,7 +370,10 @@ describe('niveaux des POI et du mobilier urbain', () => {
     const again = levelAwareFilter(first.applied, first, null);
     expect(again).toEqual({ base, applied: base });
     const external = ['==', ['get', 'amenity'], 'cafe'];
-    expect(levelAwareFilter(external, again, extra)).toEqual({ base: external, applied: ['all', external, extra] });
+    expect(levelAwareFilter(external, again, extra)).toEqual({
+      base: external,
+      applied: ['all', external, extra],
+    });
   });
 });
 
@@ -312,7 +397,14 @@ describe('vue isolée (niveau 0 non affiché)', () => {
     expect(kept).toContain('buildings-outline');
     expect(kept).toContain('poi-icon');
     expect(kept).toContain('street-furniture-icon');
-    for (const id of ['trees-tree', 'green-park', 'pitch-sport-fill', 'roads-surface-fill-primary', 'road-labels', 'leisure-icon']) {
+    for (const id of [
+      'trees-tree',
+      'green-park',
+      'pitch-sport-fill',
+      'roads-surface-fill-primary',
+      'road-labels',
+      'leisure-icon',
+    ]) {
       expect(kept).not.toContain(id);
     }
     for (const layer of lazyLayersOf(lazy, 'indoor')) expect(keepsInIsolation(layer)).toBe(true);
@@ -320,13 +412,23 @@ describe('vue isolée (niveau 0 non affiché)', () => {
   });
 
   it('buildingsState : vue isolée = emprises au sol, sans 3D', () => {
-    const { visibility, dimmed } = buildingsState({ is3d: true, buildingsOn: true, window: { lo: 1, hi: 1, offset: 1 }, isolated: true });
+    const { visibility, dimmed } = buildingsState({
+      is3d: true,
+      buildingsOn: true,
+      window: { lo: 1, hi: 1, offset: 1 },
+      isolated: true,
+    });
     expect(visibility['buildings-fill']).toBe('visible');
     expect(visibility['buildings-outline']).toBe('visible');
     expect(visibility['buildings-3d']).toBe('none');
     expect(visibility['building-parts-3d']).toBe('none');
     expect(dimmed).toBe(false);
-    const off = buildingsState({ is3d: true, buildingsOn: false, window: { lo: 1, hi: 1, offset: 1 }, isolated: true });
+    const off = buildingsState({
+      is3d: true,
+      buildingsOn: false,
+      window: { lo: 1, hi: 1, offset: 1 },
+      isolated: true,
+    });
     expect(Object.values(off.visibility).every((v) => v === 'none')).toBe(true);
   });
 
@@ -345,7 +447,9 @@ describe('escaliers inclinés et flèches des escalators', () => {
     const height = (props) => evaluate(paint['fill-extrusion-height'], props);
     expect(height({ level_min: -2, level_max: 0 })).toBeCloseTo(6.3);
     expect(height({ level_min: -2, level_max: 0, z_top: -1.5 })).toBeCloseTo(1.8);
-    expect(evaluate(paint['fill-extrusion-base'], { level_min: -2, level_max: 0, z_top: -1.5 })).toBeCloseTo(0);
+    expect(
+      evaluate(paint['fill-extrusion-base'], { level_min: -2, level_max: 0, z_top: -1.5 })
+    ).toBeCloseTo(0);
   });
 
   it('les flèches sont posées juste au-dessus de la marche', () => {

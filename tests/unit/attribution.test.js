@@ -20,8 +20,9 @@ describe('formatUtcDate', () => {
 
 describe('buildAttribution', () => {
   it('affiche la date des données et la date de mise à jour', () => {
-    expect(buildAttribution(DATA))
-      .toBe('Données 01/09/2026 05:27 UTC · Mise à jour 01/09/2026 06:02 UTC');
+    expect(buildAttribution(DATA)).toBe(
+      'Données 01/09/2026 05:27 UTC · Mise à jour 01/09/2026 06:02 UTC'
+    );
   });
 
   it('n’affiche ni hash ni version de config', () => {
@@ -32,14 +33,21 @@ describe('buildAttribution', () => {
   });
 
   it('préfère le timestamp de réplication pour la date des données', () => {
-    const data = { ...DATA, replication_timestamp: '2026-09-02T00:00:00Z', replication_sequence: 4242 };
-    expect(buildAttribution(data))
-      .toBe('Données 02/09/2026 00:00 UTC · Mise à jour 01/09/2026 06:02 UTC');
+    const data = {
+      ...DATA,
+      replication_timestamp: '2026-09-02T00:00:00Z',
+      replication_sequence: 4242,
+    };
+    expect(buildAttribution(data)).toBe(
+      'Données 02/09/2026 00:00 UTC · Mise à jour 01/09/2026 06:02 UTC'
+    );
   });
 
   it('omet la partie dont la date est absente ou invalide', () => {
     expect(buildAttribution({ timestamp: DATA.timestamp })).toBe('Données 01/09/2026 05:27 UTC');
-    expect(buildAttribution({ generated_at: DATA.generated_at })).toBe('Mise à jour 01/09/2026 06:02 UTC');
+    expect(buildAttribution({ generated_at: DATA.generated_at })).toBe(
+      'Mise à jour 01/09/2026 06:02 UTC'
+    );
     expect(buildAttribution({ timestamp: 'x', generated_at: 'y' })).toBeNull();
   });
 

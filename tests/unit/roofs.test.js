@@ -2,7 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
-  ROOFS_LAYER_ID, eavesHeight, mercatorZScale, parseGlb, nodeMatrix, multiply, createRoofsLayer,
+  ROOFS_LAYER_ID,
+  eavesHeight,
+  mercatorZScale,
+  parseGlb,
+  nodeMatrix,
+  multiply,
+  createRoofsLayer,
 } from '../../www/roofs.js';
 
 function buildGlb({ extras = {}, translation = [10, 0, -20] } = {}) {
@@ -14,7 +20,10 @@ function buildGlb({ extras = {}, translation = [10, 0, -20] } = {}) {
   bin.set(colors, 36);
   bin.set(new Uint8Array(indices.buffer), 48);
   const doc = {
-    asset: { version: '2.0', extras: { mercator: [0.5, 0.33], metersPerUnit: 25000000, ...extras } },
+    asset: {
+      version: '2.0',
+      extras: { mercator: [0.5, 0.33], metersPerUnit: 25000000, ...extras },
+    },
     nodes: [{ mesh: 0, translation }],
     meshes: [{ primitives: [{ attributes: { POSITION: 0, COLOR_0: 1 }, indices: 2 }] }],
     accessors: [
@@ -57,19 +66,22 @@ function transform(m, p) {
 
 function mockGl() {
   const calls = [];
-  const gl = new Proxy({}, {
-    get(target, prop) {
-      if (prop in target) return target[prop];
-      if (typeof prop === 'string' && /^[A-Z_0-9]+$/.test(prop)) return prop;
-      return (...args) => {
-        calls.push([prop, ...args]);
-        if (prop === 'getShaderParameter') return true;
-        if (prop === 'getAttribLocation') return args[1] === 'a_pos' ? 0 : 1;
-        if (prop.startsWith('create')) return { kind: prop };
-        return undefined;
-      };
-    },
-  });
+  const gl = new Proxy(
+    {},
+    {
+      get(target, prop) {
+        if (prop in target) return target[prop];
+        if (typeof prop === 'string' && /^[A-Z_0-9]+$/.test(prop)) return prop;
+        return (...args) => {
+          calls.push([prop, ...args]);
+          if (prop === 'getShaderParameter') return true;
+          if (prop === 'getAttribLocation') return args[1] === 'a_pos' ? 0 : 1;
+          if (prop.startsWith('create')) return { kind: prop };
+          return undefined;
+        };
+      },
+    }
+  );
   return { gl, calls };
 }
 
@@ -83,9 +95,12 @@ const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 describe('eavesHeight', () => {
   it('coupe à roof_eaves quand la propriété existe, sinon garde l’expression', () => {
     const original = ['get', 'height'];
-    expect(eavesHeight(original)).toEqual(
-      ['case', ['has', 'roof_eaves'], ['to-number', ['get', 'roof_eaves'], 0], original],
-    );
+    expect(eavesHeight(original)).toEqual([
+      'case',
+      ['has', 'roof_eaves'],
+      ['to-number', ['get', 'roof_eaves'], 0],
+      original,
+    ]);
   });
 });
 
@@ -117,7 +132,9 @@ describe('parseGlb', () => {
     const file = path.resolve(__dirname, '../../www/roofs.glb');
     if (!fs.existsSync(file)) return;
     const bytes = fs.readFileSync(file);
-    const data = parseGlb(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    const data = parseGlb(
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+    );
     expect(data.meshes.length).toBeGreaterThan(0);
     for (const mesh of data.meshes) {
       expect(mesh.positions.length % 3).toBe(0);
@@ -168,15 +185,15 @@ describe('createRoofsLayer', () => {
     expect(layer.loaded).toBe(true);
 
     layer.render(gl, identity);
-    expect(calls.filter(c => c[0] === 'drawElements')).toHaveLength(0);
+    expect(calls.filter((c) => c[0] === 'drawElements')).toHaveLength(0);
 
     layer.setEnabled(true);
     expect(map.triggerRepaint).toHaveBeenCalled();
     layer.render(gl, identity);
-    const draws = calls.filter(c => c[0] === 'drawElements');
+    const draws = calls.filter((c) => c[0] === 'drawElements');
     expect(draws).toHaveLength(2);
     expect(draws[0].slice(1)).toEqual(['TRIANGLES', 3, 'UNSIGNED_SHORT', 0]);
-    expect(calls.some(c => c[0] === 'depthFunc' && c[1] === 'EQUAL')).toBe(true);
+    expect(calls.some((c) => c[0] === 'depthFunc' && c[1] === 'EQUAL')).toBe(true);
     expect(calls.at(-1)[0]).toBe('bindBuffer');
   });
 
@@ -188,7 +205,7 @@ describe('createRoofsLayer', () => {
     await flush();
     layer.setEnabled(true);
     layer.render(gl, { defaultProjectionData: { mainMatrix: identity } });
-    expect(calls.filter(c => c[0] === 'drawElements')).toHaveLength(2);
+    expect(calls.filter((c) => c[0] === 'drawElements')).toHaveLength(2);
   });
 
   it('ne dessine rien sous le zoom minimal', async () => {
@@ -199,7 +216,7 @@ describe('createRoofsLayer', () => {
     await flush();
     layer.setEnabled(true);
     layer.render(gl, identity);
-    expect(calls.filter(c => c[0] === 'drawElements')).toHaveLength(0);
+    expect(calls.filter((c) => c[0] === 'drawElements')).toHaveLength(0);
   });
 
   it('appelle onError si le fichier est absent', async () => {
@@ -221,8 +238,8 @@ describe('createRoofsLayer', () => {
     layer.onAdd(mockMap(), gl);
     await flush();
     layer.onRemove(mockMap(), gl);
-    expect(calls.filter(c => c[0] === 'deleteBuffer')).toHaveLength(3);
-    expect(calls.some(c => c[0] === 'deleteProgram')).toBe(true);
+    expect(calls.filter((c) => c[0] === 'deleteBuffer')).toHaveLength(3);
+    expect(calls.some((c) => c[0] === 'deleteProgram')).toBe(true);
     expect(layer.loaded).toBe(false);
   });
 });
