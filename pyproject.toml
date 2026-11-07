@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zinneke"
+version = "0.1.0"
+description = "Compilation de map.config.yaml en style MapLibre, granulométrie et paramètres PMTiles pour ZinnekeTiles"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.6", "shapely>=2.1"]
+
+[project.scripts]
+zinneke-build = "zinneke.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["zinneke*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+include = ["zinneke/**/*.py", "build_map.py", "tests/test_package.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["zinneke"]

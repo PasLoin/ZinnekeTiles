@@ -11,10 +11,10 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from build_map import (
-    PALETTE_DEFAULTS, VariantError, apply_variant, build_manifest, build_pmtiles_params,
-    build_style, build_variants, deep_merge, load_variant, variant_errors, variant_style_path,
-)
+from zinneke import build_pmtiles_params, build_style, build_variants
+from zinneke.catalog import build_manifest, variant_style_path
+from zinneke.palette import PALETTE_DEFAULTS
+from zinneke.variants import VariantError, apply_variant, deep_merge, load_variant, variant_errors
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 VARIANT_FILES = sorted((ROOT / "styles").glob("*.y*ml"))

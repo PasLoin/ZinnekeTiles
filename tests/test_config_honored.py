@@ -10,7 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from build_map import build_granulometry, build_pmtiles_params, build_style
+from zinneke import build_granulometry, build_pmtiles_params, build_style
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 PROBE_COLOR = "#123456"

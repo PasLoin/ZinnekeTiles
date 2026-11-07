@@ -11,7 +11,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import build_map as bm
+import zinneke as bm
+from zinneke.palette import PALETTE_DEFAULTS
 
 BASE = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 
@@ -48,7 +49,7 @@ CASES = {
 }
 CASES.update({
     f"palette {group}.{key}": (["palette", group, key], "#123456")
-    for group, keys in bm.PALETTE_DEFAULTS.items() for key in keys
+    for group, keys in PALETTE_DEFAULTS.items() for key in keys
 })
 
 
