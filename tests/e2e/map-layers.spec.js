@@ -11,10 +11,7 @@ test.describe('Couches de la carte', () => {
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
     // Attendre que le style soit chargé
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
   });
 
   test('le style contient les couches essentielles', async ({ page }) => {
@@ -22,14 +19,7 @@ test.describe('Couches de la carte', () => {
       return window.map.getStyle().layers.map((l) => l.id);
     });
 
-    const expectedPatterns = [
-      'landuse-',
-      'water-',
-      'green-',
-      'buildings',
-      'roads-',
-      'poi-',
-    ];
+    const expectedPatterns = ['landuse-', 'water-', 'green-', 'buildings', 'roads-', 'poi-'];
 
     for (const pattern of expectedPatterns) {
       const found = layerIds.some((id) => id.startsWith(pattern) || id.includes(pattern));
@@ -67,10 +57,7 @@ test.describe('Interaction légende ↔ couches', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
     // Attendre que la légende soit remplie
     await page.waitForSelector('#legend-content .legend-row', { timeout: 10_000 });
   });
@@ -141,20 +128,14 @@ test.describe('Mode 3D et couches bâtiments', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
   });
 
   test('activer le 3D masque buildings-fill et montre buildings-3d', async ({ page }) => {
     await page.locator('#toggle-3d').click();
 
     // Attendre que l'animation easeTo soit terminée (pitch > 0)
-    await page.waitForFunction(
-      () => window.map && window.map.getPitch() > 10,
-      { timeout: 5_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.getPitch() > 10, { timeout: 5_000 });
 
     const result = await page.evaluate(() => {
       const fillVis = window.map.getLayer('buildings-fill')
@@ -175,17 +156,11 @@ test.describe('Mode 3D et couches bâtiments', () => {
   test('désactiver le 3D restaure les bâtiments 2D', async ({ page }) => {
     // Activer 3D
     await page.locator('#toggle-3d').click();
-    await page.waitForFunction(
-      () => window.map && window.map.getPitch() > 10,
-      { timeout: 5_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.getPitch() > 10, { timeout: 5_000 });
 
     // Désactiver 3D
     await page.locator('#toggle-3d').click();
-    await page.waitForFunction(
-      () => window.map && window.map.getPitch() < 1,
-      { timeout: 5_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.getPitch() < 1, { timeout: 5_000 });
 
     const result = await page.evaluate(() => {
       const fillVis = window.map.getLayer('buildings-fill')
@@ -204,10 +179,7 @@ test.describe('Terrains de sport (pitch)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
   });
 
   test('les couches pitch-sport existent dans le style', async ({ page }) => {

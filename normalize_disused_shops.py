@@ -2,9 +2,18 @@ import argparse
 import json
 import sys
 
-DISUSED_KEY = 'disused:shop'
-VACANT = 'vacant'
-ACTIVE_KEYS = ('shop', 'amenity', 'tourism', 'craft', 'office', 'healthcare', 'leisure', 'emergency')
+DISUSED_KEY = "disused:shop"
+VACANT = "vacant"
+ACTIVE_KEYS = (
+    "shop",
+    "amenity",
+    "tourism",
+    "craft",
+    "office",
+    "healthcare",
+    "leisure",
+    "emergency",
+)
 
 
 def normalize_properties(props):
@@ -12,14 +21,14 @@ def normalize_properties(props):
         return False
     if any(props.get(key) for key in ACTIVE_KEYS):
         return False
-    props['shop'] = VACANT
+    props["shop"] = VACANT
     return True
 
 
 def normalize_collection(collection):
     changed = 0
-    for feat in collection.get('features', []):
-        props = feat.get('properties')
+    for feat in collection.get("features", []):
+        props = feat.get("properties")
         if isinstance(props, dict) and normalize_properties(props):
             changed += 1
     return changed
@@ -30,14 +39,14 @@ def normalize_file(path):
         collection = json.load(f)
     changed = normalize_collection(collection)
     if changed:
-        with open(path, 'w') as out:
+        with open(path, "w") as out:
             json.dump(collection, out, ensure_ascii=False)
     return changed
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('paths', nargs='+')
+    parser.add_argument("paths", nargs="+")
     args = parser.parse_args(argv)
     for path in args.paths:
         changed = normalize_file(path)
@@ -45,5 +54,5 @@ def main(argv=None):
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

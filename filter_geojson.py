@@ -21,18 +21,18 @@ KINDS = {
 }
 
 POLICIES = {
-    "roads":            [("highway", "line"), ("man_made", "area_or_line")],
-    "water":            [("waterway", "line"), ("*", "area")],
-    "green":            [("*", "area")],
-    "trees":            [("natural=tree", "point"), ("*", "line_or_area")],
-    "landuse":          [("*", "area")],
-    "boundaries":       [("*", "line_or_area")],
-    "leisure":          [("*", "area_or_point")],
-    "pedestrian":       [("area=yes", "area_or_line"), ("*", "line_or_area")],
-    "cycleway":         [("*", "line")],
-    "railway":          [("*", "line")],
+    "roads": [("highway", "line"), ("man_made", "area_or_line")],
+    "water": [("waterway", "line"), ("*", "area")],
+    "green": [("*", "area")],
+    "trees": [("natural=tree", "point"), ("*", "line_or_area")],
+    "landuse": [("*", "area")],
+    "boundaries": [("*", "line_or_area")],
+    "leisure": [("*", "area_or_point")],
+    "pedestrian": [("area=yes", "area_or_line"), ("*", "line_or_area")],
+    "cycleway": [("*", "line")],
+    "railway": [("*", "line")],
     "street_furniture": [("barrier=fence", "line_or_area"), ("*", "to_point")],
-    "poi":              [("*", "area_or_point")],
+    "poi": [("*", "area_or_point")],
 }
 
 OSM_TYPES = {"n": "node", "w": "way", "r": "relation"}
@@ -81,6 +81,7 @@ def kind_for(props, policy):
 
 def representative_point(geometry):
     from shapely.geometry import mapping, shape
+
     geom = shape(geometry)
     if geom.is_empty:
         return None
@@ -171,9 +172,11 @@ def main():
         strip_attributes(kept)
     data["features"] = kept
     path.write_text(json.dumps(data, ensure_ascii=False))
-    print(f"  filtre {args.layer} : {len(features)} → {len(kept)} "
-          f"(tags hors filtre {stats['tags']}, géométrie {stats['geometry']}, "
-          f"doublons ligne/surface {stats['duplicate']}, convertis en point {stats['converted']})")
+    print(
+        f"  filtre {args.layer} : {len(features)} → {len(kept)} "
+        f"(tags hors filtre {stats['tags']}, géométrie {stats['geometry']}, "
+        f"doublons ligne/surface {stats['duplicate']}, convertis en point {stats['converted']})"
+    )
 
 
 if __name__ == "__main__":

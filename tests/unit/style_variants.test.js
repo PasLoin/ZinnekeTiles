@@ -35,7 +35,9 @@ describe('requestedStyleId', () => {
 
 describe('manifestStyles / defaultStyleId', () => {
   it('ignore les entrées incomplètes', () => {
-    const styles = manifestStyles({ styles: [null, { id: 'a' }, { url: 'x' }, { id: 'b', url: 'b.json' }] });
+    const styles = manifestStyles({
+      styles: [null, { id: 'a' }, { url: 'x' }, { id: 'b', url: 'b.json' }],
+    });
     expect(styles.map((s) => s.id)).toEqual(['b']);
   });
 
@@ -62,7 +64,12 @@ describe('resolveStyle', () => {
   });
 
   it('normalise les URL relatives', () => {
-    const m = { styles: [{ id: 'default', url: './style.json' }, { id: 'x', url: '/style.x.json' }] };
+    const m = {
+      styles: [
+        { id: 'default', url: './style.json' },
+        { id: 'x', url: '/style.x.json' },
+      ],
+    };
     expect(resolveStyle(m, 'default').url).toBe('./style.json');
     expect(resolveStyle(m, 'x').url).toBe('./style.x.json');
   });
@@ -75,8 +82,9 @@ describe('styleHref', () => {
   });
 
   it('retire le paramètre pour le style par défaut', () => {
-    expect(styleHref('https://ex.org/map/?style=nb#14/50.85/4.35', 'default'))
-      .toBe('https://ex.org/map/#14/50.85/4.35');
+    expect(styleHref('https://ex.org/map/?style=nb#14/50.85/4.35', 'default')).toBe(
+      'https://ex.org/map/#14/50.85/4.35'
+    );
   });
 
   it('conserve les autres paramètres', () => {
@@ -97,7 +105,12 @@ describe('loadManifest', () => {
 
   it('renvoie null en cas d’erreur réseau ou de JSON invalide', async () => {
     expect(await loadManifest(vi.fn().mockRejectedValue(new Error('offline')))).toBeNull();
-    const bad = { ok: true, json: async () => { throw new SyntaxError('bad'); } };
+    const bad = {
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('bad');
+      },
+    };
     expect(await loadManifest(vi.fn().mockResolvedValue(bad))).toBeNull();
   });
 });
@@ -126,7 +139,9 @@ describe('initStyleSelect', () => {
 
   it('reste masqué avec un seul style ou sans manifeste', () => {
     const select = document.createElement('select');
-    expect(initStyleSelect(select, { styles: [MANIFEST.styles[0]] }, 'default', () => {})).toBe(false);
+    expect(initStyleSelect(select, { styles: [MANIFEST.styles[0]] }, 'default', () => {})).toBe(
+      false
+    );
     expect(select.hidden).toBe(true);
     expect(initStyleSelect(select, null, 'default', () => {})).toBe(false);
     expect(initStyleSelect(null, MANIFEST, 'default', () => {})).toBe(false);
@@ -136,7 +151,9 @@ describe('initStyleSelect', () => {
 describe('Variantes générées', () => {
   const www = path.resolve(__dirname, '../../www');
   const manifestPath = path.join(www, 'styles.json');
-  const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null;
+  const manifest = fs.existsSync(manifestPath)
+    ? JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+    : null;
 
   it.skipIf(!manifest)('chaque entrée du manifeste pointe vers un style existant', () => {
     for (const entry of manifestStyles(manifest)) {

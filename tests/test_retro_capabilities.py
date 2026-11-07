@@ -8,11 +8,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 import zinneke as bm
 from zinneke.palette import PALETTE_DEFAULTS
+
+ROOT = Path(__file__).resolve().parent.parent
+
 
 BASE = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 
@@ -47,16 +47,25 @@ CASES = {
     "indoor appear_at": (["layers", "indoor", "appear_at"], 16),
     "osm_colour false": (["layers", "buildings", "osm_colour"], False),
 }
-CASES.update({
-    f"palette {group}.{key}": (["palette", group, key], "#123456")
-    for group, keys in PALETTE_DEFAULTS.items() for key in keys
-})
+CASES.update(
+    {
+        f"palette {group}.{key}": (["palette", group, key], "#123456")
+        for group, keys in PALETTE_DEFAULTS.items()
+        for key in keys
+    }
+)
 
 
 def signature(style):
     meta = style["metadata"]
-    keys = ("brussels:lazy", "brussels:patterns", "brussels:legend", "brussels:tiles",
-            "brussels:poi_density", "brussels:map")
+    keys = (
+        "brussels:lazy",
+        "brussels:patterns",
+        "brussels:legend",
+        "brussels:tiles",
+        "brussels:poi_density",
+        "brussels:map",
+    )
     return json.dumps([style["layers"]] + [meta.get(k) for k in keys], sort_keys=True)
 
 
@@ -64,8 +73,12 @@ def retro(style):
     with tempfile.TemporaryDirectory() as tmp:
         src, out = Path(tmp) / "style.json", Path(tmp) / "config.yaml"
         src.write_text(json.dumps(style))
-        subprocess.run([sys.executable, str(ROOT / "retro_style.py"), "--style", str(src), "--out", str(out)],
-                       cwd=ROOT, check=True, capture_output=True)
+        subprocess.run(
+            [sys.executable, str(ROOT / "retro_style.py"), "--style", str(src), "--out", str(out)],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        )
         return yaml.safe_load(out.read_text())
 
 
@@ -87,7 +100,9 @@ def test_retro_recovers_each_capability(name):
 
 
 def test_indoor_section_is_style_only():
-    cfg = with_value(["layers", "indoor"], {"level_height": 3.5, "subtypes": {"room": {"color": "#123456"}}})
+    cfg = with_value(
+        ["layers", "indoor"], {"level_height": 3.5, "subtypes": {"room": {"color": "#123456"}}}
+    )
     assert bm.build_granulometry(cfg) == bm.build_granulometry(BASE)
     assert bm.build_pmtiles_params(cfg) == bm.build_pmtiles_params(BASE)
 

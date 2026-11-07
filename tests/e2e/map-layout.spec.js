@@ -23,9 +23,15 @@ async function uiBoxes(page) {
       const el = document.querySelector(sel);
       if (visible(el)) boxes.push({ name, ...el.getBoundingClientRect().toJSON() });
     }
-    document.querySelectorAll('.maplibregl-ctrl-bottom-right > .maplibregl-ctrl').forEach((el, i) => {
-      if (visible(el)) boxes.push({ name: `contrôle ${i} (${el.className})`, ...el.getBoundingClientRect().toJSON() });
-    });
+    document
+      .querySelectorAll('.maplibregl-ctrl-bottom-right > .maplibregl-ctrl')
+      .forEach((el, i) => {
+        if (visible(el))
+          boxes.push({
+            name: `contrôle ${i} (${el.className})`,
+            ...el.getBoundingClientRect().toJSON(),
+          });
+      });
     return boxes;
   });
 }
@@ -66,7 +72,10 @@ async function expand(page, id) {
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Mise en page — ${viewport.name} ${viewport.width}×${viewport.height}`, () => {
-    test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
+    test.use({
+      viewport: { width: viewport.width, height: viewport.height },
+      deviceScaleFactor: 1,
+    });
 
     test.beforeEach(async ({ page }) => {
       await page.goto('/');

@@ -37,9 +37,10 @@ const WWW = wwwIdx >= 0 ? args[wwwIdx + 1] : './www';
 const styleIdx = args.indexOf('--style');
 const STYLE_PATH = styleIdx >= 0 ? args[styleIdx + 1] : path.join(WWW, 'style.json');
 const STYLE_NAME = path.basename(STYLE_PATH);
-const JUNIT_NAME = STYLE_NAME === 'style.json'
-  ? 'validate-results.xml'
-  : `validate-results-${STYLE_NAME.replace(/\.json$/, '')}.xml`;
+const JUNIT_NAME =
+  STYLE_NAME === 'style.json'
+    ? 'validate-results.xml'
+    : `validate-results-${STYLE_NAME.replace(/\.json$/, '')}.xml`;
 const POI_ICONS_PATH = path.join(WWW, 'poi-icons.json');
 const ICONS_DIR = path.join(WWW, 'assets', 'icons');
 
@@ -48,10 +49,24 @@ let warnings = 0;
 let checks = 0;
 const testCases = []; // pour le JUnit XML
 
-function error(msg) { errors++; checks++; console.error(`  ❌ ${msg}`); testCases.push({ name: msg, status: 'error' }); }
-function warn(msg) { warnings++; console.warn(`  ⚠️  ${msg}`); }
-function ok(msg) { checks++; console.log(`  ✅ ${msg}`); testCases.push({ name: msg, status: 'ok' }); }
-function section(title) { console.log(`\n── ${title} ──`); }
+function error(msg) {
+  errors++;
+  checks++;
+  console.error(`  ❌ ${msg}`);
+  testCases.push({ name: msg, status: 'error' });
+}
+function warn(msg) {
+  warnings++;
+  console.warn(`  ⚠️  ${msg}`);
+}
+function ok(msg) {
+  checks++;
+  console.log(`  ✅ ${msg}`);
+  testCases.push({ name: msg, status: 'ok' });
+}
+function section(title) {
+  console.log(`\n── ${title} ──`);
+}
 
 // ══════════════════════════════════════════════════════════
 // 1. Lecture et validation JSON
@@ -78,7 +93,7 @@ try {
   if (fs.existsSync(POI_ICONS_PATH)) {
     const raw = fs.readFileSync(POI_ICONS_PATH, 'utf-8');
     poiIcons = JSON.parse(raw);
-    const typeCount = Object.keys(poiIcons).filter(k => k !== '_meta').length;
+    const typeCount = Object.keys(poiIcons).filter((k) => k !== '_meta').length;
     ok(`poi-icons.json valide (${typeCount} types)`);
   } else {
     warn('poi-icons.json absent');
@@ -196,7 +211,7 @@ for (const [name, src] of Object.entries(sources)) {
   try {
     const meta = readPMTilesMetadata(filePath);
     const vectorLayers = meta.vector_layers || [];
-    const layerIds = new Set(vectorLayers.map(vl => vl.id));
+    const layerIds = new Set(vectorLayers.map((vl) => vl.id));
     sourceVectorLayers[name] = layerIds;
 
     const sizeKo = (stat.size / 1024).toFixed(0);
@@ -243,7 +258,9 @@ for (const layer of layers) {
   if (knownLayers === null || knownLayers === undefined) continue;
 
   if (!knownLayers.has(sl)) {
-    error(`layer "${layer.id}" : source-layer "${sl}" absent du PMTiles "${layer.source}" (disponibles: ${[...knownLayers].join(', ')})`);
+    error(
+      `layer "${layer.id}" : source-layer "${sl}" absent du PMTiles "${layer.source}" (disponibles: ${[...knownLayers].join(', ')})`
+    );
   } else {
     layerOk++;
   }
@@ -257,7 +274,7 @@ ok(`${layerOk}/${layerChecked} source-layers vérifiés`);
 
 section('Sources orphelines');
 
-const orphans = [...sourceNames].filter(s => !usedSources.has(s));
+const orphans = [...sourceNames].filter((s) => !usedSources.has(s));
 if (orphans.length === 0) {
   ok('Aucune source orpheline');
 } else {
@@ -292,14 +309,16 @@ if (poiIcons) {
     } else {
       missing++;
       // Ne warn que les plus importants — les icônes CDN font le fallback
-      const hasCdn = srcs.slice(1).some(s => s !== null);
+      const hasCdn = srcs.slice(1).some((s) => s !== null);
       if (!hasCdn) {
         warn(`"${localName}.svg" absent et aucun fallback CDN`);
       }
     }
   }
 
-  ok(`${found}/${checked} icônes locales présentes${missing > 0 ? ` (${missing} manquantes, CDN en fallback)` : ''}`);
+  ok(
+    `${found}/${checked} icônes locales présentes${missing > 0 ? ` (${missing} manquantes, CDN en fallback)` : ''}`
+  );
 }
 
 // ══════════════════════════════════════════════════════════
@@ -330,7 +349,7 @@ for (const name of SPORT_MARKINGS) {
 
 section('Unicité des IDs');
 
-const layerIds = layers.map(l => l.id);
+const layerIds = layers.map((l) => l.id);
 const duplicates = layerIds.filter((id, i) => layerIds.indexOf(id) !== i);
 if (duplicates.length === 0) {
   ok(`${layerIds.length} layers, IDs uniques`);
@@ -345,13 +364,16 @@ if (duplicates.length === 0) {
 // ══════════════════════════════════════════════════════════
 
 section('Résumé');
-console.log(`  ${checks} vérifications, ${errors} erreur${errors !== 1 ? 's' : ''}, ${warnings} warning${warnings !== 1 ? 's' : ''}`);
+console.log(
+  `  ${checks} vérifications, ${errors} erreur${errors !== 1 ? 's' : ''}, ${warnings} warning${warnings !== 1 ? 's' : ''}`
+);
 
 // ── JUnit XML pour le rapport CI ──
 const RESULTS_DIR = path.join('test-results');
 try {
   fs.mkdirSync(RESULTS_DIR, { recursive: true });
-  const escXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const escXml = (s) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<testsuites tests="${checks}" failures="${errors}">\n`;
   xml += `  <testsuite name="validate-style ${escXml(STYLE_NAME)}" tests="${checks}" failures="${errors}">\n`;

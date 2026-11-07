@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-import argparse, json, math, re, sys
+import argparse
+import json
+import math
+import re
+import sys
 from pathlib import Path
 
 from shapely.geometry import Point, shape
@@ -10,8 +14,21 @@ STREET = "addr:street"
 DIR = "label_dir"
 AREA_TYPES = ("Polygon", "MultiPolygon")
 LINE_TYPES = ("LineString", "MultiLineString")
-ICON_KEYS = ("entrance", "shop", "disused:shop", "amenity", "craft", "office", "tourism",
-             "healthcare", "leisure", "emergency", "historic", "barrier", "vending")
+ICON_KEYS = (
+    "entrance",
+    "shop",
+    "disused:shop",
+    "amenity",
+    "craft",
+    "office",
+    "tourism",
+    "healthcare",
+    "leisure",
+    "emergency",
+    "historic",
+    "barrier",
+    "vending",
+)
 NEAR = 1e-5
 STEP_M = 2.0
 DIRECTIONS = {"n": (0, 1), "s": (0, -1), "e": (1, 0), "w": (-1, 0)}
@@ -127,8 +144,17 @@ def load_buildings(path):
 
 
 def extract(features, buildings=None):
-    stats = {"in": len(features), "nodes": 0, "areas": 0, "other": 0, "skipped": 0,
-             "dup_in_area": 0, "icon_to_area": 0, "oriented": 0, "dup_same_spot": 0}
+    stats = {
+        "in": len(features),
+        "nodes": 0,
+        "areas": 0,
+        "other": 0,
+        "skipped": 0,
+        "dup_in_area": 0,
+        "icon_to_area": 0,
+        "oriented": 0,
+        "dup_same_spot": 0,
+    }
     candidates = [f for f in features if (f.get("properties") or {}).get(HN)]
     candidates = unique_by_osm_id(candidates)
 
@@ -143,8 +169,13 @@ def extract(features, buildings=None):
             stats["skipped"] += 1
             continue
         props = feat["properties"]
-        rec = {"pt": pt, "area": area, "hn": label(props[HN]), "street": props.get(STREET),
-               "icon": geom.get("type") == "Point" and has_icon(props)}
+        rec = {
+            "pt": pt,
+            "area": area,
+            "hn": label(props[HN]),
+            "street": props.get(STREET),
+            "icon": geom.get("type") == "Point" and has_icon(props),
+        }
         if not rec["hn"]:
             stats["skipped"] += 1
             continue
@@ -197,9 +228,13 @@ def extract(features, buildings=None):
             props[STREET] = rec["street"]
         if rec.get("dir"):
             props[DIR] = rec["dir"]
-        out.append({"type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [x, y]},
-                    "properties": props})
+        out.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [x, y]},
+                "properties": props,
+            }
+        )
 
     stats["nodes"] = len(nodes)
     stats["areas"] = len(areas)
@@ -224,12 +259,15 @@ def main():
     features, stats = extract(data.get("features") or [], load_buildings(args.buildings))
     Path(args.output).write_text(
         json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False),
-        encoding="utf-8")
-    print(f"  {stats['out']} adresses ({stats['nodes']} nodes, {stats['areas']} surfaces, "
-          f"{stats['other']} autres, {stats['dup_in_area']} surfaces doublées par un node, "
-          f"{stats['icon_to_area']} entrées/POI remplacés par leur bâtiment, "
-          f"{stats['oriented']} étiquettes orientées vers l'intérieur, "
-          f"{stats['dup_same_spot']} doublons même point, {stats['skipped']} ignorées)")
+        encoding="utf-8",
+    )
+    print(
+        f"  {stats['out']} adresses ({stats['nodes']} nodes, {stats['areas']} surfaces, "
+        f"{stats['other']} autres, {stats['dup_in_area']} surfaces doublées par un node, "
+        f"{stats['icon_to_area']} entrées/POI remplacés par leur bâtiment, "
+        f"{stats['oriented']} étiquettes orientées vers l'intérieur, "
+        f"{stats['dup_same_spot']} doublons même point, {stats['skipped']} ignorées)"
+    )
 
 
 if __name__ == "__main__":

@@ -12,10 +12,7 @@ import { test, expect } from '@playwright/test';
 async function waitForMap(page) {
   await page.goto('/');
   await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-  await page.waitForFunction(
-    () => window.map && window.map.isStyleLoaded(),
-    { timeout: 20_000 }
-  );
+  await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
 }
 
 test.describe('Lien édition OSM', () => {
@@ -31,7 +28,7 @@ test.describe('Lien édition OSM', () => {
     expect(href).toBe('#');
   });
 
-  test('s\'active quand on zoome à 16', async ({ page }) => {
+  test("s'active quand on zoome à 16", async ({ page }) => {
     // Zoomer programmatiquement
     await page.evaluate(() => window.map.setZoom(16));
     // Déclencher moveend/zoomend pour que updateOsmLink s'exécute
@@ -45,7 +42,7 @@ test.describe('Lien édition OSM', () => {
     expect(href).toContain('openstreetmap.org/edit');
   });
 
-  test('l\'URL contient le zoom arrondi et les coordonnées', async ({ page }) => {
+  test("l'URL contient le zoom arrondi et les coordonnées", async ({ page }) => {
     await page.evaluate(() => {
       window.map.setZoom(17.4);
       window.map.setCenter([4.3517, 50.8503]);
@@ -96,7 +93,7 @@ test.describe('Lien édition OSM', () => {
 
     // Déplacer la carte vers un autre point
     await page.evaluate(() => {
-      window.map.setCenter([4.3700, 50.8400]);
+      window.map.setCenter([4.37, 50.84]);
       window.map.fire('moveend');
     });
     await page.waitForTimeout(300);
@@ -109,7 +106,7 @@ test.describe('Lien édition OSM', () => {
     expect(href2).toMatch(/4\.370/);
   });
 
-  test('le lien s\'ouvre dans un nouvel onglet', async ({ page }) => {
+  test("le lien s'ouvre dans un nouvel onglet", async ({ page }) => {
     const target = await page.locator('#osm-edit').getAttribute('target');
     expect(target).toBe('_blank');
   });

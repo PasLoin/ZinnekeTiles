@@ -6,11 +6,11 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 from zinneke import build_style
 from zinneke.legend import LEGEND_FALLBACK_COLOR, SWATCH_TYPES, paint_color
+
+ROOT = Path(__file__).resolve().parent.parent
+
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 
@@ -30,7 +30,7 @@ def ids_of(g):
 def test_every_sourced_layer_is_in_exactly_one_entry():
     style = build_style(CONFIG)
     seen = [i for g in style["metadata"]["brussels:legend"] for i in ids_of(g)]
-    sourced = [l["id"] for l in style["layers"] if l.get("source")]
+    sourced = [layer["id"] for layer in style["layers"] if layer.get("source")]
     assert sorted(seen) == sorted(sourced)
 
 
@@ -119,17 +119,27 @@ def test_retro_preserves_custom_legend(tmp_path):
     src = tmp_path / "style.json"
     src.write_text(json.dumps(style, ensure_ascii=False))
     out = tmp_path / "config.yaml"
-    subprocess.run([sys.executable, "retro_style.py", "--style", str(src), "--out", str(out)],
-                   cwd=ROOT, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, "retro_style.py", "--style", str(src), "--out", str(out)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )
     back = build_style(yaml.safe_load(out.read_text()))
     assert back["metadata"]["brussels:legend"] == style["metadata"]["brussels:legend"]
 
 
 def test_every_configured_subtype_is_listed():
     legend = {g["id"]: g for g in legend_of(CONFIG)}
-    missing = {name: [k for k in (layer.get("subtypes") or {})
-                      if k not in [i["id"] for i in legend[name]["items"]]]
-               for name, layer in CONFIG["layers"].items() if name in legend}
+    missing = {
+        name: [
+            k
+            for k in (layer.get("subtypes") or {})
+            if k not in [i["id"] for i in legend[name]["items"]]
+        ]
+        for name, layer in CONFIG["layers"].items()
+        if name in legend
+    }
     assert {k: v for k, v in missing.items() if v} == {}
 
 
@@ -140,7 +150,9 @@ def test_shared_layer_subtypes_are_filters():
     assert bench["filter"] == ["==", ["get", "amenity"], "bench"]
     entrance = next(i for i in furniture["items"] if i["id"] == "entrance")
     assert entrance["filter"] == ["has", "entrance"]
-    playground = next(i for i in group(legend_of(CONFIG), "leisure")["items"] if i["id"] == "playground")
+    playground = next(
+        i for i in group(legend_of(CONFIG), "leisure")["items"] if i["id"] == "playground"
+    )
     assert playground["filter"] == ["==", ["get", "leisure"], "playground"]
 
 

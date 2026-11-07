@@ -6,11 +6,12 @@ import re
 import struct
 import sys
 from collections import Counter
+from itertools import pairwise
 from pathlib import Path
 
 try:
     import shapely
-    from shapely.geometry import Polygon, MultiPolygon, GeometryCollection, Point, shape
+    from shapely.geometry import GeometryCollection, MultiPolygon, Point, Polygon, shape
     from shapely.geometry.polygon import orient
 except ImportError:
     print("✗  pip install 'shapely>=2.1'", file=sys.stderr)
@@ -34,21 +35,50 @@ DEFAULT_WALL = "#fce1c5"
 DEFAULT_ROOF = "#8c5a46"
 
 ROOF_MATERIALS = {
-    "roof_tiles": "#a4553b", "tile": "#a4553b", "tiles": "#a4553b",
-    "slate": "#4b5059", "metal": "#8b9096", "metal_sheet": "#8b9096",
-    "zinc": "#8f969c", "copper": "#5f9c87", "lead": "#7d8288",
-    "concrete": "#9b9a96", "glass": "#a9c4d1", "asphalt_shingle": "#5a5652",
-    "tar_paper": "#4a4846", "eternit": "#8d8d88", "thatch": "#b39a62",
-    "wood": "#8a6a48", "stone": "#9a958b", "gravel": "#a39f96",
-    "plants": "#7c9a5a", "grass": "#7c9a5a", "plastic": "#c9c9c4",
+    "roof_tiles": "#a4553b",
+    "tile": "#a4553b",
+    "tiles": "#a4553b",
+    "slate": "#4b5059",
+    "metal": "#8b9096",
+    "metal_sheet": "#8b9096",
+    "zinc": "#8f969c",
+    "copper": "#5f9c87",
+    "lead": "#7d8288",
+    "concrete": "#9b9a96",
+    "glass": "#a9c4d1",
+    "asphalt_shingle": "#5a5652",
+    "tar_paper": "#4a4846",
+    "eternit": "#8d8d88",
+    "thatch": "#b39a62",
+    "wood": "#8a6a48",
+    "stone": "#9a958b",
+    "gravel": "#a39f96",
+    "plants": "#7c9a5a",
+    "grass": "#7c9a5a",
+    "plastic": "#c9c9c4",
 }
 
 ROOF_NAMED = {
-    "red": "#b04a36", "darkred": "#7f2f24", "brown": "#7a4a32", "darkbrown": "#5a3524",
-    "maroon": "#6e2a22", "orange": "#c9763f", "black": "#2e2e30", "grey": "#8a8a8a",
-    "gray": "#8a8a8a", "darkgrey": "#5c5f63", "darkgray": "#5c5f63", "lightgrey": "#c4c4c4",
-    "lightgray": "#c4c4c4", "white": "#efefea", "green": "#4f7a52", "darkgreen": "#3b5a3d",
-    "blue": "#50627a", "darkblue": "#3a4760", "yellow": "#d4bd70", "beige": "#d8c9a8",
+    "red": "#b04a36",
+    "darkred": "#7f2f24",
+    "brown": "#7a4a32",
+    "darkbrown": "#5a3524",
+    "maroon": "#6e2a22",
+    "orange": "#c9763f",
+    "black": "#2e2e30",
+    "grey": "#8a8a8a",
+    "gray": "#8a8a8a",
+    "darkgrey": "#5c5f63",
+    "darkgray": "#5c5f63",
+    "lightgrey": "#c4c4c4",
+    "lightgray": "#c4c4c4",
+    "white": "#efefea",
+    "green": "#4f7a52",
+    "darkgreen": "#3b5a3d",
+    "blue": "#50627a",
+    "darkblue": "#3a4760",
+    "yellow": "#d4bd70",
+    "beige": "#d8c9a8",
 }
 
 CSS_TABLE = """
@@ -86,16 +116,40 @@ yellowgreen:9acd32
 CSS_NAMED = {k: "#" + v for k, v in (item.split(":") for item in CSS_TABLE.split())}
 
 COMPASS = {
-    "N": 0, "NNE": 22.5, "NE": 45, "ENE": 67.5, "E": 90, "ESE": 112.5, "SE": 135, "SSE": 157.5,
-    "S": 180, "SSW": 202.5, "SW": 225, "WSW": 247.5, "W": 270, "WNW": 292.5, "NW": 315, "NNW": 337.5,
+    "N": 0,
+    "NNE": 22.5,
+    "NE": 45,
+    "ENE": 67.5,
+    "E": 90,
+    "ESE": 112.5,
+    "SE": 135,
+    "SSE": 157.5,
+    "S": 180,
+    "SSW": 202.5,
+    "SW": 225,
+    "WSW": 247.5,
+    "W": 270,
+    "WNW": 292.5,
+    "NW": 315,
+    "NNW": 337.5,
 }
 
 SHAPE_ALIASES = {
-    "gabled": "gabled", "hipped": "hipped", "side_hipped": "side_hipped",
-    "half-hipped": "half_hipped", "half_hipped": "half_hipped",
-    "pyramidal": "pyramidal", "cone": "pyramidal", "skillion": "skillion",
-    "round": "round", "gambrel": "gambrel", "mansard": "mansard", "saltbox": "saltbox",
-    "dome": "dome", "domed": "dome", "onion": "dome",
+    "gabled": "gabled",
+    "hipped": "hipped",
+    "side_hipped": "side_hipped",
+    "half-hipped": "half_hipped",
+    "half_hipped": "half_hipped",
+    "pyramidal": "pyramidal",
+    "cone": "pyramidal",
+    "skillion": "skillion",
+    "round": "round",
+    "gambrel": "gambrel",
+    "mansard": "mansard",
+    "saltbox": "saltbox",
+    "dome": "dome",
+    "domed": "dome",
+    "onion": "dome",
 }
 
 _light = (-0.35, 0.45, 0.82)
@@ -140,7 +194,7 @@ def parse_color(value, named, strict=False):
         text = named[text]
     if re.fullmatch(r"#[0-9a-f]{6}" if strict else r"#?[0-9a-f]{6}", text):
         text = text.lstrip("#")
-        return tuple(int(text[i:i + 2], 16) for i in (0, 2, 4))
+        return tuple(int(text[i : i + 2], 16) for i in (0, 2, 4))
     if re.fullmatch(r"#[0-9a-f]{3}", text):
         return tuple(int(c * 2, 16) for c in text[1:])
     return None
@@ -152,9 +206,11 @@ def material_key(value):
 
 def explicit_roof_color(props):
     colour = props.get("roof:colour")
-    return (parse_color(colour, {**CSS_NAMED, **ROOF_NAMED})
-            or parse_color(ROOF_MATERIALS.get(material_key(colour)), {})
-            or parse_color(ROOF_MATERIALS.get(material_key(props.get("roof:material"))), {}))
+    return (
+        parse_color(colour, {**CSS_NAMED, **ROOF_NAMED})
+        or parse_color(ROOF_MATERIALS.get(material_key(colour)), {})
+        or parse_color(ROOF_MATERIALS.get(material_key(props.get("roof:material"))), {})
+    )
 
 
 def roof_color(props):
@@ -168,9 +224,11 @@ class Palette:
 
 
 def wall_color(props, palette):
-    return (parse_color(props.get("building:colour"), CSS_NAMED, strict=True)
-            or palette.materials.get(material_key(props.get("building:material")))
-            or palette.default)
+    return (
+        parse_color(props.get("building:colour"), CSS_NAMED, strict=True)
+        or palette.materials.get(material_key(props.get("building:material")))
+        or palette.default
+    )
 
 
 def roof_kind(props):
@@ -234,7 +292,9 @@ class Projector:
     @staticmethod
     def mercator(lon, lat):
         x = (180.0 + lon) / 360.0
-        y = (180.0 - (180.0 / math.pi) * math.log(math.tan(math.pi / 4 + lat * math.pi / 360.0))) / 360.0
+        y = (
+            180.0 - (180.0 / math.pi) * math.log(math.tan(math.pi / 4 + lat * math.pi / 360.0))
+        ) / 360.0
         return x, y
 
     def local(self, lon, lat):
@@ -244,6 +304,7 @@ class Projector:
     def polygon(self, geom):
         def ring(coords):
             return [self.local(c[0], c[1]) for c in coords]
+
         return Polygon(ring(geom.exterior.coords), [ring(r.coords) for r in geom.interiors])
 
 
@@ -259,7 +320,11 @@ class Frame:
             e1 = (rect[1][0] - rect[0][0], rect[1][1] - rect[0][1])
             e2 = (rect[2][0] - rect[1][0], rect[2][1] - rect[1][1])
             longer, shorter = (e1, e2) if math.hypot(*e1) >= math.hypot(*e2) else (e2, e1)
-            ridge = shorter if str(props.get("roof:orientation", "")).strip().lower() == "across" else longer
+            ridge = (
+                shorter
+                if str(props.get("roof:orientation", "")).strip().lower() == "across"
+                else longer
+            )
             n = math.hypot(*ridge)
             a = (ridge[0] / n, ridge[1] / n)
             b = (-a[1], a[0])
@@ -280,7 +345,7 @@ class Frame:
 
 def profile_planes(frame, points, axis, sign, extent, scale):
     planes = []
-    for (x0, h0), (x1, h1) in zip(points, points[1:]):
+    for (x0, h0), (x1, h1) in pairwise(points):
         m = (h1 - h0) / (x1 - x0)
         d = -m * sign / scale
         const = h0 + m * (extent / scale - x0)
@@ -288,23 +353,26 @@ def profile_planes(frame, points, axis, sign, extent, scale):
     return planes
 
 
-ROUND_PROFILE = [(e, math.sqrt(max(0.0, 1 - (1 - e) ** 2))) for e in (0.0, 0.1, 0.25, 0.45, 0.7, 1.0)]
+ROUND_PROFILE = [
+    (e, math.sqrt(max(0.0, 1 - (1 - e) ** 2))) for e in (0.0, 0.1, 0.25, 0.45, 0.7, 1.0)
+]
 GABLE_PROFILE = [(0.0, 0.0), (1.0, 1.0)]
 GAMBREL_PROFILE = [(0.0, 0.0), (0.4, 0.75), (1.0, 1.0)]
 MANSARD_PROFILE = [(0.0, 0.0), (0.2, 0.8), (1.0, 1.0)]
 
 
 def frame_planes(kind, frame):
-    l, w = frame.half_length, frame.half_width
+    half_len, w = frame.half_length, frame.half_width
 
     def sides(points):
-        return (profile_planes(frame, points, "v", 1, w, w)
-                + profile_planes(frame, points, "v", -1, w, w))
+        return profile_planes(frame, points, "v", 1, w, w) + profile_planes(
+            frame, points, "v", -1, w, w
+        )
 
     def ends(points, signs=(1, -1)):
         out = []
         for s in signs:
-            out += profile_planes(frame, points, "u", s, l, w)
+            out += profile_planes(frame, points, "u", s, half_len, w)
         return out
 
     if kind == "gabled":
@@ -325,16 +393,18 @@ def frame_planes(kind, frame):
         return [frame.plane(0.0, -1.0 / (2 * w), 0.5)]
     if kind == "saltbox":
         r = -0.3
-        return [frame.plane(0.0, -1.0 / (w * (1 - r)), 1.0 / (1 - r)),
-                frame.plane(0.0, 1.0 / (w * (1 + r)), 1.0 / (1 + r))]
+        return [
+            frame.plane(0.0, -1.0 / (w * (1 - r)), 1.0 / (1 - r)),
+            frame.plane(0.0, 1.0 / (w * (1 + r)), 1.0 / (1 + r)),
+        ]
     if kind == "dome":
         planes = [frame.plane(0.0, 0.0, 1.0)]
         for rho in (0.4, 0.65, 0.82, 0.93):
             for k in range(16):
                 t = 2 * math.pi * k / 16
-                u0, v0 = rho * l * math.cos(t), rho * w * math.sin(t)
+                u0, v0 = rho * half_len * math.cos(t), rho * w * math.sin(t)
                 h0 = math.sqrt(1 - rho * rho)
-                du, dv = -u0 / (l * l * h0), -v0 / (w * w * h0)
+                du, dv = -u0 / (half_len * half_len * h0), -v0 / (w * w * h0)
                 planes.append(frame.plane(du, dv, h0 - du * u0 - dv * v0))
         return planes
     return []
@@ -345,7 +415,7 @@ def pyramid_planes(poly):
     cx, cy = hull.centroid.x, hull.centroid.y
     pts = list(hull.exterior.coords)
     planes = []
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+    for (x0, y0), (x1, y1) in pairwise(pts):
         nx, ny = -(y1 - y0), x1 - x0
         dc = (cx - x0) * nx + (cy - y0) * ny
         if dc <= EPS:
@@ -376,7 +446,12 @@ def clip(polygon, g):
 def regions(planes, bounds):
     minx, miny, maxx, maxy = bounds
     pad = 1.0
-    rect = [(minx - pad, miny - pad), (maxx + pad, miny - pad), (maxx + pad, maxy + pad), (minx - pad, maxy + pad)]
+    rect = [
+        (minx - pad, miny - pad),
+        (maxx + pad, miny - pad),
+        (maxx + pad, maxy + pad),
+        (minx - pad, maxy + pad),
+    ]
     for i, pi in enumerate(planes):
         poly = clip(rect, lambda p, pi=pi: -evaluate(pi, *p))
         for j, pj in enumerate(planes):
@@ -450,7 +525,9 @@ def build_roof(poly, kind, frame, eaves, roof_height, roof_rgb, wall_rgb):
         index, vertices, triangles = {}, [], []
         for tri in polygons_of(shapely.constrained_delaunay_triangles(piece)):
             pts = list(tri.exterior.coords)[:3]
-            area2 = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) - (pts[2][0] - pts[0][0]) * (pts[1][1] - pts[0][1])
+            area2 = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) - (pts[2][0] - pts[0][0]) * (
+                pts[1][1] - pts[0][1]
+            )
             if abs(area2) < 1e-9:
                 continue
             if area2 < 0:
@@ -469,12 +546,16 @@ def build_roof(poly, kind, frame, eaves, roof_height, roof_rgb, wall_rgb):
 
         for ring in [piece.exterior, *piece.interiors]:
             pts = list(ring.coords)
-            for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            for (x0, y0), (x1, y1) in pairwise(pts):
                 length = math.hypot(x1 - x0, y1 - y0)
                 if length < 1e-3:
                     continue
                 mid = Point((x0 + x1) / 2, (y0 + y1) / 2)
-                if mid.distance(boundary) > 1e-3 or Point(x0, y0).distance(boundary) > 1e-3 or Point(x1, y1).distance(boundary) > 1e-3:
+                if (
+                    mid.distance(boundary) > 1e-3
+                    or Point(x0, y0).distance(boundary) > 1e-3
+                    or Point(x1, y1).distance(boundary) > 1e-3
+                ):
                     continue
                 h0, h1 = z(plane, x0, y0), z(plane, x1, y1)
                 if h0 - eaves < 0.02 and h1 - eaves < 0.02:
@@ -495,7 +576,9 @@ def build_flat(poly, height, roof_rgb):
     index, vertices, triangles = {}, [], []
     for tri in polygons_of(shapely.constrained_delaunay_triangles(poly)):
         pts = list(tri.exterior.coords)[:3]
-        area2 = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) - (pts[2][0] - pts[0][0]) * (pts[1][1] - pts[0][1])
+        area2 = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) - (pts[2][0] - pts[0][0]) * (
+            pts[1][1] - pts[0][1]
+        )
         if abs(area2) < 1e-9:
             continue
         if area2 < 0:
@@ -550,7 +633,9 @@ def eligible(props, is_part):
             return False
         if props.get("lod", "detail") != "detail":
             return False
-        has_info = any(k in props for k in ("height", "min_height", "building:levels", "building:min_level"))
+        has_info = any(
+            k in props for k in ("height", "min_height", "building:levels", "building:min_level")
+        )
         if props.get("building") == "roof" and not has_info:
             return False
     return True
@@ -602,7 +687,9 @@ def write_glb(path, meshes, projector, lon0, lat0):
     def view(data, target):
         while len(binary) % 4:
             binary.append(0)
-        views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(data), "target": target})
+        views.append(
+            {"buffer": 0, "byteOffset": len(binary), "byteLength": len(data), "target": target}
+        )
         binary.extend(data)
         return len(views) - 1
 
@@ -610,32 +697,80 @@ def write_glb(path, meshes, projector, lon0, lat0):
         pos = struct.pack(f"<{3 * mesh.count()}f", *[c for p in mesh.positions for c in p])
         col = bytes(c for rgb in mesh.colors for c in (*rgb, 255))
         idx = struct.pack(f"<{3 * len(mesh.indices)}H", *[i for t in mesh.indices for i in t])
-        xs, ys, zs = zip(*mesh.positions)
-        accessors.append({"bufferView": view(pos, 34962), "componentType": 5126, "count": mesh.count(),
-                          "type": "VEC3", "min": [min(xs), min(ys), min(zs)], "max": [max(xs), max(ys), max(zs)]})
-        accessors.append({"bufferView": view(col, 34962), "componentType": 5121, "normalized": True,
-                          "count": mesh.count(), "type": "VEC4"})
-        accessors.append({"bufferView": view(idx, 34963), "componentType": 5123,
-                          "count": 3 * len(mesh.indices), "type": "SCALAR"})
+        xs, ys, zs = zip(*mesh.positions, strict=True)
+        accessors.append(
+            {
+                "bufferView": view(pos, 34962),
+                "componentType": 5126,
+                "count": mesh.count(),
+                "type": "VEC3",
+                "min": [min(xs), min(ys), min(zs)],
+                "max": [max(xs), max(ys), max(zs)],
+            }
+        )
+        accessors.append(
+            {
+                "bufferView": view(col, 34962),
+                "componentType": 5121,
+                "normalized": True,
+                "count": mesh.count(),
+                "type": "VEC4",
+            }
+        )
+        accessors.append(
+            {
+                "bufferView": view(idx, 34963),
+                "componentType": 5123,
+                "count": 3 * len(mesh.indices),
+                "type": "SCALAR",
+            }
+        )
         n = len(accessors)
-        gl_meshes.append({"primitives": [{"attributes": {"POSITION": n - 3, "COLOR_0": n - 2},
-                                          "indices": n - 1, "material": 0, "mode": 4}]})
-        nodes.append({"mesh": len(gl_meshes) - 1, "translation": [mesh.origin[0], 0.0, -mesh.origin[1]]})
+        gl_meshes.append(
+            {
+                "primitives": [
+                    {
+                        "attributes": {"POSITION": n - 3, "COLOR_0": n - 2},
+                        "indices": n - 1,
+                        "material": 0,
+                        "mode": 4,
+                    }
+                ]
+            }
+        )
+        nodes.append(
+            {"mesh": len(gl_meshes) - 1, "translation": [mesh.origin[0], 0.0, -mesh.origin[1]]}
+        )
 
     while len(binary) % 4:
         binary.append(0)
     doc = {
-        "asset": {"version": "2.0", "generator": "ZinnekeTiles generate_roofs.py",
-                  "extras": {"origin": [lon0, lat0], "mercator": [projector.mx0, projector.my0],
-                             "metersPerUnit": projector.scale, "axes": "x=east y=up z=south"}},
+        "asset": {
+            "version": "2.0",
+            "generator": "ZinnekeTiles generate_roofs.py",
+            "extras": {
+                "origin": [lon0, lat0],
+                "mercator": [projector.mx0, projector.my0],
+                "metersPerUnit": projector.scale,
+                "axes": "x=east y=up z=south",
+            },
+        },
         "extensionsUsed": ["KHR_materials_unlit"],
         "scene": 0,
         "scenes": [{"nodes": list(range(len(nodes)))}],
         "nodes": nodes,
         "meshes": gl_meshes,
-        "materials": [{"pbrMetallicRoughness": {"baseColorFactor": [1, 1, 1, 1], "metallicFactor": 0,
-                                                "roughnessFactor": 1},
-                       "doubleSided": True, "extensions": {"KHR_materials_unlit": {}}}],
+        "materials": [
+            {
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": [1, 1, 1, 1],
+                    "metallicFactor": 0,
+                    "roughnessFactor": 1,
+                },
+                "doubleSided": True,
+                "extensions": {"KHR_materials_unlit": {}},
+            }
+        ],
         "accessors": accessors,
         "bufferViews": views,
         "buffers": [{"byteLength": len(binary)}],
@@ -684,7 +819,15 @@ def process(features, defaults, is_part, projector, chunks, palette, stats):
             if kind == "flat":
                 roof = build_flat(poly, eaves, roof_color(props))
             else:
-                roof = build_roof(poly, kind, frame, eaves, roof_height, roof_color(props), wall_color(props, palette))
+                roof = build_roof(
+                    poly,
+                    kind,
+                    frame,
+                    eaves,
+                    roof_height,
+                    roof_color(props),
+                    wall_color(props, palette),
+                )
             if roof is None:
                 stats["empty"] += 1
                 roofs = []
@@ -704,11 +847,14 @@ def process(features, defaults, is_part, projector, chunks, palette, stats):
 def load_palette(config_path):
     try:
         import yaml
+
         cfg = yaml.safe_load(Path(config_path).read_text()) or {}
         layer = (cfg.get("layers") or {}).get("buildings") or {}
     except Exception:
         layer = {}
-    default = parse_color(layer.get("color") or DEFAULT_WALL, CSS_NAMED) or parse_color(DEFAULT_WALL, {})
+    default = parse_color(layer.get("color") or DEFAULT_WALL, CSS_NAMED) or parse_color(
+        DEFAULT_WALL, {}
+    )
     materials = {}
     for key, value in (layer.get("materials") or {}).items():
         rgb = parse_color(value, CSS_NAMED)
@@ -731,7 +877,10 @@ def main(argv=None):
     stats = Counter()
     palette = load_palette(args.config)
 
-    for path, defaults, is_part in ((args.buildings, BUILDING_DEFAULTS, False), (args.parts, PART_DEFAULTS, True)):
+    for path, defaults, is_part in (
+        (args.buildings, BUILDING_DEFAULTS, False),
+        (args.parts, PART_DEFAULTS, True),
+    ):
         if not Path(path).exists():
             print(f"⚠  {path} absent", file=sys.stderr)
             continue
@@ -747,8 +896,10 @@ def main(argv=None):
     ok = {k[3:]: v for k, v in stats.items() if k.startswith("ok:")}
     skipped = {k: v for k, v in stats.items() if not k.startswith("ok:")}
     triangles = sum(len(m.indices) for m in meshes)
-    print(f"✓  {args.out} : {sum(ok.values())} toits, {len(meshes)} maillages, "
-          f"{triangles} triangles, {size / 1024:.0f} Ko")
+    print(
+        f"✓  {args.out} : {sum(ok.values())} toits, {len(meshes)} maillages, "
+        f"{triangles} triangles, {size / 1024:.0f} Ko"
+    )
     print(f"   formes : {dict(sorted(ok.items(), key=lambda kv: -kv[1]))}")
     print(f"   ignorés : {dict(skipped)}")
 

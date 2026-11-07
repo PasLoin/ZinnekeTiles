@@ -17,8 +17,9 @@ afterEach(() => {
 describe('prepareSvg', () => {
   it('remplace toutes les occurrences de chaque couleur', () => {
     const svg = '<svg><path fill="#bd4a72"/><path stroke="#bd4a72"/></svg>';
-    expect(prepareSvg(svg, { '#bd4a72': '#a9ccac' }))
-      .toBe('<svg><path fill="#a9ccac"/><path stroke="#a9ccac"/></svg>');
+    expect(prepareSvg(svg, { '#bd4a72': '#a9ccac' })).toBe(
+      '<svg><path fill="#a9ccac"/><path stroke="#a9ccac"/></svg>'
+    );
   });
 
   it('laisse le SVG intact sans remplacement', () => {
@@ -45,9 +46,13 @@ describe('loadPattern', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('survit à un 404 sans lever d\'erreur', async () => {
+  it("survit à un 404 sans lever d'erreur", async () => {
     const map = fakeMap();
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false, status: 404, text: async () => '' });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => '',
+    });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(await loadPattern(map, 'grave_yard_generic', { file: 'x.svg', size: 32 })).toBe(false);
     expect(map.addImage).not.toHaveBeenCalled();

@@ -1,21 +1,20 @@
 import copy
-import sys
 from pathlib import Path
 
 import yaml
-
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
 
 from apply_granulometry import assign_ranks, grid_cell, tier_of
 from zinneke import build_granulometry, build_style
 from zinneke.expressions import zoom
 
+ROOT = Path(__file__).resolve().parent.parent
+
+
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 
 
 def layer(style, lid):
-    return next(l for l in style["layers"] if l["id"] == lid)
+    return next(item for item in style["layers"] if item["id"] == lid)
 
 
 def without_density(cfg):
@@ -25,13 +24,22 @@ def without_density(cfg):
 
 
 def point(fid, lon, lat, **props):
-    return {"type": "Feature", "id": fid,
-            "geometry": {"type": "Point", "coordinates": [lon, lat]},
-            "properties": props, "tippecanoe": {"minzoom": 15, "maxzoom": 18}}
+    return {
+        "type": "Feature",
+        "id": fid,
+        "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        "properties": props,
+        "tippecanoe": {"minzoom": 15, "maxzoom": 18},
+    }
 
 
-RANK_CFG = {"grid": 128, "zoom": 15, "rank_field": "poi_rank", "tier_field": "poi_tier",
-            "tiers": [{"amenity": ["hospital"]}, {"amenity": ["pharmacy"]}]}
+RANK_CFG = {
+    "grid": 128,
+    "zoom": 15,
+    "rank_field": "poi_rank",
+    "tier_field": "poi_tier",
+    "tiers": [{"amenity": ["hospital"]}, {"amenity": ["pharmacy"]}],
+}
 
 
 def test_poi_zooms_follow_config():
@@ -56,9 +64,11 @@ def test_collision_until_overlap_at():
 
 def test_rank_filter_per_zoom():
     icon = layer(build_style(CONFIG), "poi-icon")
-    assert icon["filter"] == ["any", [">=", ["zoom"], 17],
-                              ["<=", ["coalesce", ["get", "poi_rank"], 0],
-                               ["step", ["zoom"], 1, 16, 3]]]
+    assert icon["filter"] == [
+        "any",
+        [">=", ["zoom"], 17],
+        ["<=", ["coalesce", ["get", "poi_rank"], 0], ["step", ["zoom"], 1, 16, 3]],
+    ]
 
 
 def test_without_density_keeps_previous_behaviour():
@@ -81,7 +91,7 @@ def test_density_published_in_metadata_and_granulometry():
 
 
 def test_zoom_collapses_duplicate_stops():
-    assert zoom([(18, .5), (18, 1.5)]) == 1.5
+    assert zoom([(18, 0.5), (18, 1.5)]) == 1.5
     assert zoom([(15, 2), (18, 4)]) == ["interpolate", ["linear"], ["zoom"], 15, 2, 18, 4]
 
 
@@ -93,9 +103,11 @@ def test_tier_of():
 
 
 def test_rank_orders_by_tier_inside_a_cell():
-    feats = [point("a", 4.35, 50.85, amenity="pharmacy", name="P"),
-             point("b", 4.35001, 50.85001, amenity="hospital", name="H"),
-             point("c", 4.35002, 50.85002, shop="vacant", name="V")]
+    feats = [
+        point("a", 4.35, 50.85, amenity="pharmacy", name="P"),
+        point("b", 4.35001, 50.85001, amenity="hospital", name="H"),
+        point("c", 4.35002, 50.85002, shop="vacant", name="V"),
+    ]
     assert grid_cell(4.35, 50.85, 15, 128) == grid_cell(4.35002, 50.85002, 15, 128)
     assign_ranks(feats, RANK_CFG)
     ranks = {f["id"]: f["properties"]["poi_rank"] for f in feats}
@@ -104,9 +116,11 @@ def test_rank_orders_by_tier_inside_a_cell():
 
 
 def test_unnamed_and_late_features_rank_last():
-    feats = [point("a", 4.35, 50.85, amenity="hospital"),
-             point("b", 4.35001, 50.85001, amenity="pharmacy", name="P"),
-             point("c", 4.35002, 50.85002, amenity="hospital", name="H")]
+    feats = [
+        point("a", 4.35, 50.85, amenity="hospital"),
+        point("b", 4.35001, 50.85001, amenity="pharmacy", name="P"),
+        point("c", 4.35002, 50.85002, amenity="hospital", name="H"),
+    ]
     feats[2]["tippecanoe"]["minzoom"] = 16
     assign_ranks(feats, RANK_CFG)
     ranks = {f["id"]: f["properties"]["poi_rank"] for f in feats}
@@ -114,8 +128,10 @@ def test_unnamed_and_late_features_rank_last():
 
 
 def test_each_cell_has_its_own_rank_one():
-    feats = [point("a", 4.35, 50.85, amenity="pharmacy", name="P"),
-             point("b", 4.40, 50.80, shop="vacant", name="V")]
+    feats = [
+        point("a", 4.35, 50.85, amenity="pharmacy", name="P"),
+        point("b", 4.40, 50.80, shop="vacant", name="V"),
+    ]
     assert assign_ranks(feats, RANK_CFG) == 2
     assert [f["properties"]["poi_rank"] for f in feats] == [1, 1]
 

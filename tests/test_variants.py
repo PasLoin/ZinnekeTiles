@@ -8,13 +8,13 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 from zinneke import build_pmtiles_params, build_style, build_variants
 from zinneke.catalog import build_manifest, variant_style_path
 from zinneke.palette import PALETTE_DEFAULTS
 from zinneke.variants import VariantError, apply_variant, deep_merge, load_variant, variant_errors
+
+ROOT = Path(__file__).resolve().parent.parent
+
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 VARIANT_FILES = sorted((ROOT / "styles").glob("*.y*ml"))
@@ -26,11 +26,11 @@ def variant(raw, vid="essai"):
 
 
 def layer_ids(style):
-    return [l["id"] for l in style["layers"]]
+    return [layer["id"] for layer in style["layers"]]
 
 
 def by_id(style):
-    return {l["id"]: l for l in style["layers"]}
+    return {layer["id"]: layer for layer in style["layers"]}
 
 
 def is_gray(color):
@@ -89,11 +89,15 @@ def test_road_subtype_override():
     raw = {"layers": {"roads": {"subtypes": {"primary": {"outline_color": "#010101"}}}}}
     style = build_style(CONFIG, variant(raw))
     assert by_id(style)["roads-surface-casing-primary"]["paint"]["line-color"] == "#010101"
-    assert by_id(style)["roads-surface-fill-primary"]["paint"]["line-color"] \
+    assert (
+        by_id(style)["roads-surface-fill-primary"]["paint"]["line-color"]
         == CONFIG["layers"]["roads"]["subtypes"]["primary"]["color"]
+    )
 
 
-@pytest.mark.parametrize("group,key", [(g, k) for g, keys in PALETTE_DEFAULTS.items() for k in keys])
+@pytest.mark.parametrize(
+    "group,key", [(g, k) for g, keys in PALETTE_DEFAULTS.items() for k in keys]
+)
 def test_every_palette_key_reaches_the_style(group, key):
     probe = "#123456"
     style = build_style(CONFIG, variant({"palette": {group: {key: probe}}}))
@@ -109,7 +113,7 @@ def test_palette_in_base_config_is_honored():
 
 def test_exclude_removes_layers_sources_and_legend():
     style = build_style(CONFIG, variant({"exclude": ["poi", "trees"]}))
-    assert not any(l.get("source") in ("poi", "trees") for l in style["layers"])
+    assert not any(layer.get("source") in ("poi", "trees") for layer in style["layers"])
     assert "poi" not in style["sources"] and "trees" not in style["sources"]
     assert {g["id"] for g in style["metadata"]["brussels:legend"]}.isdisjoint({"poi", "trees"})
     assert "brussels:poi_density" not in style["metadata"]
@@ -123,14 +127,16 @@ def test_exclude_leisure_drops_its_icon_and_pitch_markings():
 
 def test_exclude_prunes_unused_patterns():
     style = build_style(CONFIG, variant({"exclude": ["landuse"]}))
-    assert not any(p.startswith(("grave_yard", "military")) for p in style["metadata"]["brussels:patterns"])
+    assert not any(
+        p.startswith(("grave_yard", "military")) for p in style["metadata"]["brussels:patterns"]
+    )
     assert "green-hatch" in style["metadata"]["brussels:patterns"]
 
 
 def test_exclude_lazy_groups():
     lazy = build_style(CONFIG, variant({"exclude": ["indoor"]}))["metadata"]["brussels:lazy"]
     assert list(lazy["sources"]) == ["building_parts"]
-    assert all(l["source"] == "building_parts" for l in lazy["layers"])
+    assert all(layer["source"] == "building_parts" for layer in lazy["layers"])
     style = build_style(CONFIG, variant({"exclude": ["buildings"]}))
     assert "brussels:lazy" not in style["metadata"]
 
@@ -160,21 +166,24 @@ def test_raising_appear_at_is_allowed():
     assert by_id(build_style(CONFIG, variant(raw)))["roads-surface-fill-service"]["minzoom"] == 16
 
 
-@pytest.mark.parametrize("raw,needle", [
-    ({"layers": {"roads": {"tiles": {"max_zoom": 16}}}}, "layers.roads.tiles"),
-    ({"layers": {"poi": {"density": {"grid": 64}}}}, "layers.poi.density"),
-    ({"layers": {"landuse": {"subtypes": {"retail": {"tag": "shop"}}}}}, "subtypes.retail.tag"),
-    ({"layers": {"roads": {"subtypes": {"service": {"appear_at": 12}}}}}, "service.appear_at"),
-    ({"layers": {"buildings": {"appear_at": 10}}}, "layers.buildings.appear_at"),
-    ({"layers": {"landuse": {"subtypes": {"vineyard": {"color": "#000"}}}}}, "vineyard"),
-    ({"layers": {"unicorns": {"color": "#000"}}}, "layers.unicorns"),
-    ({"layers": {"water": None}}, "exclude"),
-    ({"exclude": ["nope"]}, "nope"),
-    ({"palette": {"roads": {"nope": "#000"}}}, "palette.roads.nope"),
-    ({"palette": {"sky": {"a": "#000"}}}, "palette.sky"),
-    ({"patterns": {"new-hatch": {"size": 4}}}, "patterns.new-hatch"),
-    ({"exclud": ["poi"]}, "exclud"),
-])
+@pytest.mark.parametrize(
+    "raw,needle",
+    [
+        ({"layers": {"roads": {"tiles": {"max_zoom": 16}}}}, "layers.roads.tiles"),
+        ({"layers": {"poi": {"density": {"grid": 64}}}}, "layers.poi.density"),
+        ({"layers": {"landuse": {"subtypes": {"retail": {"tag": "shop"}}}}}, "subtypes.retail.tag"),
+        ({"layers": {"roads": {"subtypes": {"service": {"appear_at": 12}}}}}, "service.appear_at"),
+        ({"layers": {"buildings": {"appear_at": 10}}}, "layers.buildings.appear_at"),
+        ({"layers": {"landuse": {"subtypes": {"vineyard": {"color": "#000"}}}}}, "vineyard"),
+        ({"layers": {"unicorns": {"color": "#000"}}}, "layers.unicorns"),
+        ({"layers": {"water": None}}, "exclude"),
+        ({"exclude": ["nope"]}, "nope"),
+        ({"palette": {"roads": {"nope": "#000"}}}, "palette.roads.nope"),
+        ({"palette": {"sky": {"a": "#000"}}}, "palette.sky"),
+        ({"patterns": {"new-hatch": {"size": 4}}}, "patterns.new-hatch"),
+        ({"exclud": ["poi"]}, "exclud"),
+    ],
+)
 def test_invalid_variants_are_rejected(raw, needle):
     with pytest.raises(VariantError) as e:
         build_style(CONFIG, variant(raw))
@@ -200,10 +209,13 @@ def test_variant_never_changes_tile_inputs():
 def test_variant_style_path_and_manifest():
     assert variant_style_path("www/style.json", "nb") == Path("www/style.nb.json")
     manifest = build_manifest("www/style.json", [variant({}, "nb")])
-    assert manifest == {"default": "default", "styles": [
-        {"id": "default", "label": "Standard", "url": "style.json"},
-        {"id": "nb", "label": "Nb", "url": "style.nb.json"},
-    ]}
+    assert manifest == {
+        "default": "default",
+        "styles": [
+            {"id": "default", "label": "Standard", "url": "style.json"},
+            {"id": "nb", "label": "Nb", "url": "style.nb.json"},
+        ],
+    }
 
 
 def test_load_variant_uses_file_stem_and_label(tmp_path):
@@ -218,9 +230,22 @@ def test_cli_builds_variants_and_manifest(tmp_path):
     vdir.mkdir()
     (vdir / "sombre.yaml").write_text("variant: { label: Sombre }\nexclude: [poi]\n")
     out = tmp_path / "www" / "style.json"
-    subprocess.run([sys.executable, str(ROOT / "build_map.py"), "--config", str(ROOT / "map.config.yaml"),
-                    "--style-out", str(out), "--only", "style", "--variants", str(vdir)],
-                   check=True, capture_output=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "build_map.py"),
+            "--config",
+            str(ROOT / "map.config.yaml"),
+            "--style-out",
+            str(out),
+            "--only",
+            "style",
+            "--variants",
+            str(vdir),
+        ],
+        check=True,
+        capture_output=True,
+    )
     manifest = json.loads((out.parent / "styles.json").read_text())
     assert [s["id"] for s in manifest["styles"]] == ["default", "sombre"]
     style = json.loads((out.parent / "style.sombre.json").read_text())
@@ -231,9 +256,22 @@ def test_cli_fails_on_invalid_variant(tmp_path):
     vdir = tmp_path / "styles"
     vdir.mkdir()
     (vdir / "casse.yaml").write_text("layers: { roads: { tiles: { max_zoom: 12 } } }\n")
-    r = subprocess.run([sys.executable, str(ROOT / "build_map.py"), "--config", str(ROOT / "map.config.yaml"),
-                        "--style-out", str(tmp_path / "style.json"), "--only", "style",
-                        "--variants", str(vdir)], capture_output=True, text=True)
+    r = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "build_map.py"),
+            "--config",
+            str(ROOT / "map.config.yaml"),
+            "--style-out",
+            str(tmp_path / "style.json"),
+            "--only",
+            "style",
+            "--variants",
+            str(vdir),
+        ],
+        capture_output=True,
+        text=True,
+    )
     assert r.returncode == 1
     assert "layers.roads.tiles" in r.stderr
 
@@ -243,9 +281,22 @@ def test_cli_rejects_duplicate_ids(tmp_path):
     vdir.mkdir()
     (vdir / "nb.yaml").write_text("{}\n")
     (vdir / "nb.yml").write_text("{}\n")
-    r = subprocess.run([sys.executable, str(ROOT / "build_map.py"), "--config", str(ROOT / "map.config.yaml"),
-                        "--style-out", str(tmp_path / "style.json"), "--only", "style",
-                        "--variants", str(vdir)], capture_output=True, text=True)
+    r = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "build_map.py"),
+            "--config",
+            str(ROOT / "map.config.yaml"),
+            "--style-out",
+            str(tmp_path / "style.json"),
+            "--only",
+            "style",
+            "--variants",
+            str(vdir),
+        ],
+        capture_output=True,
+        text=True,
+    )
     assert r.returncode == 1 and "double" in r.stderr
 
 
@@ -254,7 +305,7 @@ def test_repository_variants_build(path):
     v = load_variant(path)
     style = build_style(CONFIG, v)
     assert style["metadata"]["brussels:variant"]["id"] == path.stem
-    used = {l["source"] for l in style["layers"] if l.get("source")}
+    used = {layer["source"] for layer in style["layers"] if layer.get("source")}
     assert used == set(style["sources"])
 
 
@@ -264,8 +315,11 @@ def test_nb_variant_is_grayscale():
         pytest.skip("styles/nb.yaml absent")
     style = build_style(CONFIG, load_variant(path))
     lazy = style["metadata"].get("brussels:lazy") or {}
-    text = json.dumps(style["layers"]) + json.dumps(lazy.get("layers", [])) \
+    text = (
+        json.dumps(style["layers"])
+        + json.dumps(lazy.get("layers", []))
         + json.dumps(style["metadata"]["brussels:patterns"])
+    )
     colors = set(HEX.findall(text)) - {"#bd4a72", "#88b78e"}
     assert sorted(c for c in colors if not is_gray(c)) == []
 
@@ -300,10 +354,17 @@ def _interpolations(node):
             yield from _interpolations(child)
 
 
-@pytest.mark.parametrize("key,ap", [
-    ("tree_row", 16), ("tree_row", 17), ("tree_row", 18),
-    ("tree", 17), ("tree", 18), ("tree", 19),
-])
+@pytest.mark.parametrize(
+    "key,ap",
+    [
+        ("tree_row", 16),
+        ("tree_row", 17),
+        ("tree_row", 18),
+        ("tree", 17),
+        ("tree", 18),
+        ("tree", 19),
+    ],
+)
 def test_late_tree_appear_at_keeps_interpolations_ascending(key, ap):
     raw = {"layers": {"trees": {"subtypes": {key: {"appear_at": ap}}}}}
     style = build_style(CONFIG, variant(raw))

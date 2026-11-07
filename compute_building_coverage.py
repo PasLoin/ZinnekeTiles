@@ -35,6 +35,7 @@ Usage :
       --relations _tmp_building_rel.osm \
       --threshold 0.90
 """
+
 import argparse
 import json
 import sys
@@ -71,8 +72,7 @@ def parse_relation_outline_way_ids(osm_xml_path):
     for relation in tree.getroot().findall("relation"):
         n_relations += 1
         is_building_type = any(
-            tag.get("k") == "type" and tag.get("v") == "building"
-            for tag in relation.findall("tag")
+            tag.get("k") == "type" and tag.get("v") == "building" for tag in relation.findall("tag")
         )
         if not is_building_type:
             continue
@@ -94,8 +94,10 @@ def parse_relation_outline_way_ids(osm_xml_path):
         if has_part:
             outline_ids.update(outline_refs)
 
-    print(f"  {n_relations} relations type=building lues, "
-          f"{len(outline_ids)} outlines couverts par relation")
+    print(
+        f"  {n_relations} relations type=building lues, "
+        f"{len(outline_ids)} outlines couverts par relation"
+    )
     return outline_ids
 
 
@@ -110,9 +112,10 @@ def load_features(path):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--buildings", default="buildings_detail.json")
-    p.add_argument("--parts",     default="building_parts.json")
-    p.add_argument("--relations", default=None,
-                    help=".osm XML filtré sur r/type=building (optionnel)")
+    p.add_argument("--parts", default="building_parts.json")
+    p.add_argument(
+        "--relations", default=None, help=".osm XML filtré sur r/type=building (optionnel)"
+    )
     p.add_argument("--threshold", type=float, default=0.90)
     args = p.parse_args()
 
@@ -174,8 +177,9 @@ def main():
                     bgeom = bgeom.buffer(0)
                 if not bgeom.is_empty and bgeom.area > 0:
                     candidates = tree.query(bgeom)
-                    relevant = [part_geoms[i] for i in candidates
-                                if part_geoms[i].intersects(bgeom)]
+                    relevant = [
+                        part_geoms[i] for i in candidates if part_geoms[i].intersects(bgeom)
+                    ]
                     if relevant:
                         union_parts = unary_union(relevant)
                         ratio = union_parts.intersection(bgeom).area / bgeom.area
@@ -195,9 +199,11 @@ def main():
 
     n_covered = n_relation + n_geometry
     pct = round(100 * n_covered / n_total) if n_total else 0
-    print(f"✓  {buildings_path} : {n_covered}/{n_total} bâtiments couverts "
-          f"({pct}%) — {n_relation} via relation, {n_geometry} via géométrie "
-          f"(seuil {args.threshold:.0%})")
+    print(
+        f"✓  {buildings_path} : {n_covered}/{n_total} bâtiments couverts "
+        f"({pct}%) — {n_relation} via relation, {n_geometry} via géométrie "
+        f"(seuil {args.threshold:.0%})"
+    )
 
 
 if __name__ == "__main__":

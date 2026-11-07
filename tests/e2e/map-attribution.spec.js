@@ -17,7 +17,11 @@ async function openMap(page) {
 test.describe('Attribution', () => {
   test('est dépliée et visible dès le démarrage', async ({ page }) => {
     await page.route('**/data-info.json', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(DATA_INFO) })
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(DATA_INFO),
+      })
     );
     await openMap(page);
     const attrib = page.locator('.maplibregl-ctrl-attrib');
@@ -26,7 +30,9 @@ test.describe('Attribution', () => {
     const inner = page.locator('.maplibregl-ctrl-attrib-inner');
     await expect(inner).toBeVisible();
     await expect(inner).toContainText('OpenStreetMap');
-    await expect(inner).toContainText('Données 01/09/2026 05:27 UTC · Mise à jour 01/09/2026 06:00 UTC');
+    await expect(inner).toContainText(
+      'Données 01/09/2026 05:27 UTC · Mise à jour 01/09/2026 06:00 UTC'
+    );
     await expect(inner).not.toContainText('a10eb5deacbf');
     await expect(inner).not.toContainText('Config');
   });

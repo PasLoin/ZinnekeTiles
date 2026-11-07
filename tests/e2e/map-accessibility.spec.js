@@ -69,10 +69,7 @@ test.describe('Hash URL', () => {
   test('le hash est mis à jour lors du déplacement', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
 
     // Simuler un pan via l'API map
     await page.evaluate(() => {

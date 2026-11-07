@@ -6,8 +6,10 @@ On garde les trous (cours intérieures, etc.).
 Sortie : buildings_merged.json (zoom bas z10-12)
 Le fichier buildings_detail.json (zoom haut z13-18) est préservé tel quel.
 """
+
 import json
-from shapely.geometry import shape, mapping
+
+from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
 
@@ -54,16 +56,19 @@ print("→ Recherche des composantes connexes...")
 n = len(geoms)
 parent = list(range(n))
 
+
 def find(x):
     while parent[x] != x:
         parent[x] = parent[parent[x]]
         x = parent[x]
     return x
 
+
 def union(a, b):
     ra, rb = find(a), find(b)
     if ra != rb:
         parent[ra] = rb
+
 
 # Pour chaque bâtiment, trouver ceux qui le touchent
 for i, geom in enumerate(geoms):
@@ -73,7 +78,7 @@ for i, geom in enumerate(geoms):
             if geoms[i].intersects(geoms[j]):
                 union(i, j)
     if (i + 1) % 50000 == 0:
-        print(f"  {i+1}/{n} traités...")
+        print(f"  {i + 1}/{n} traités...")
 
 # Regrouper par composante
 print("→ Fusion des groupes...")
@@ -86,7 +91,7 @@ for i in range(n):
 
 # Fusionner chaque groupe
 merged_features = []
-for root, indices in groups.items():
+for indices in groups.values():
     if len(indices) == 1:
         merged = geoms[indices[0]]
     else:
@@ -99,19 +104,19 @@ for root, indices in groups.items():
     # style (build_map.py, layer buildings-3d) de filtrer ces features
     # sans dépendre des tranches de zoom tippecanoe, qui peuvent
     # laisser fuiter une feature de ce palier au-delà de z12.
-    merged_features.append({
-        "type": "Feature",
-        "properties": {"building": "yes", "lod": "merged"},
-        "geometry": mapping(merged)
-    })
+    merged_features.append(
+        {
+            "type": "Feature",
+            "properties": {"building": "yes", "lod": "merged"},
+            "geometry": mapping(merged),
+        }
+    )
 
-print(f"  {len(features)} → {len(merged_features)} features ({100 - len(merged_features)*100//len(features)}% de réduction)")
+reduction = 100 - len(merged_features) * 100 // len(features)
+print(f"  {len(features)} → {len(merged_features)} features ({reduction}% de réduction)")
 
 # Écrire le résultat
-out = {
-    "type": "FeatureCollection",
-    "features": merged_features
-}
+out = {"type": "FeatureCollection", "features": merged_features}
 
 with open(OUTPUT, "w") as f:
     json.dump(out, f)

@@ -57,9 +57,7 @@ def main() -> int:
 
         source_url = source.get("url")
         if not isinstance(source_url, str) or not source_url.endswith(".pmtiles"):
-            raise ValueError(
-                f"Vector source {source_id!r} must use a local .pmtiles url"
-            )
+            raise ValueError(f"Vector source {source_id!r} must use a local .pmtiles url")
 
         metadata_path = metadata_path_for_source(args.style, args.metadata_dir, source_url)
         metadata = load_json(metadata_path)
@@ -117,4 +115,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
