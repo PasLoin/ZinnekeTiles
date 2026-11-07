@@ -10,6 +10,7 @@ Idempotent : détecte les couches déjà présentes et ne les ajoute pas.
 Peut tourner à chaque build sur le style.json propre du repo.
 Usage : python3 patch_style_pitches.py [www/style.json]
 """
+
 import json
 import sys
 
@@ -17,12 +18,12 @@ STYLE_PATH = sys.argv[1] if len(sys.argv) > 1 else "www/style.json"
 
 # ─── Couleurs de surface par sport ────────────────────────
 PITCH_FILLS = {
-    "soccer":     "#5a9e4b",
-    "tennis":     "#4a7c3f",
+    "soccer": "#5a9e4b",
+    "tennis": "#4a7c3f",
     "basketball": "#c47a4a",
-    "boules":     "#c4a86a",
+    "boules": "#c4a86a",
 }
-PITCH_FILL_DEFAULT = "#8ad3af"   # fallback (leisure-fill d'origine)
+PITCH_FILL_DEFAULT = "#8ad3af"  # fallback (leisure-fill d'origine)
 
 # ─── Nouvelles couches ────────────────────────────────────
 
@@ -40,11 +41,16 @@ PITCH_SPORT_FILL = {
     ],
     "paint": {
         "fill-color": [
-            "match", ["get", "sport_render"],
-            "soccer",     PITCH_FILLS["soccer"],
-            "tennis",     PITCH_FILLS["tennis"],
-            "basketball", PITCH_FILLS["basketball"],
-            "boules",     PITCH_FILLS["boules"],
+            "match",
+            ["get", "sport_render"],
+            "soccer",
+            PITCH_FILLS["soccer"],
+            "tennis",
+            PITCH_FILLS["tennis"],
+            "basketball",
+            PITCH_FILLS["basketball"],
+            "boules",
+            PITCH_FILLS["boules"],
             PITCH_FILL_DEFAULT,
         ],
         "fill-opacity": 1.0,
@@ -65,11 +71,16 @@ PITCH_SPORT_OUTLINE = {
     ],
     "paint": {
         "line-color": [
-            "match", ["get", "sport_render"],
-            "soccer",     "#3d7a32",
-            "tennis",     "#3a6530",
-            "basketball", "#9e5e33",
-            "boules",     "#9e8a4e",
+            "match",
+            ["get", "sport_render"],
+            "soccer",
+            "#3d7a32",
+            "tennis",
+            "#3a6530",
+            "basketball",
+            "#9e5e33",
+            "boules",
+            "#9e8a4e",
             "#6fb792",
         ],
         "line-width": 0.8,
@@ -108,30 +119,60 @@ PITCH_MARKINGS = {
     "layout": {
         "icon-image": [
             "case",
-            ["all",
-                ["==", ["get", "sport_render"], "basketball"],
-                ["==", ["get", "hoops"], "1"]],
+            ["all", ["==", ["get", "sport_render"], "basketball"], ["==", ["get", "hoops"], "1"]],
             "sport-markings-basketball-1hoop",
-            ["concat", "sport-markings-", ["get", "sport_render"]]
+            ["concat", "sport-markings-", ["get", "sport_render"]],
         ],
         "icon-rotation-alignment": "map",
         "icon-pitch-alignment": "map",
         "icon-rotate": ["coalesce", ["get", "bearing"], 0],
         "icon-size": [
-            "interpolate", ["exponential", 2], ["zoom"],
-            17, ["*",
-                ["case",
-                    ["has", "pitch_length"], ["get", "pitch_length"],
-                    ["match", ["get", "sport_render"],
-                        "tennis", 24, "soccer", 105, "basketball", 28, "boules", 15, 50],
+            "interpolate",
+            ["exponential", 2],
+            ["zoom"],
+            17,
+            [
+                "*",
+                [
+                    "case",
+                    ["has", "pitch_length"],
+                    ["get", "pitch_length"],
+                    [
+                        "match",
+                        ["get", "sport_render"],
+                        "tennis",
+                        24,
+                        "soccer",
+                        105,
+                        "basketball",
+                        28,
+                        "boules",
+                        15,
+                        50,
+                    ],
                 ],
                 0.01220,
             ],
-            18, ["*",
-                ["case",
-                    ["has", "pitch_length"], ["get", "pitch_length"],
-                    ["match", ["get", "sport_render"],
-                        "tennis", 24, "soccer", 105, "basketball", 28, "boules", 15, 50],
+            18,
+            [
+                "*",
+                [
+                    "case",
+                    ["has", "pitch_length"],
+                    ["get", "pitch_length"],
+                    [
+                        "match",
+                        ["get", "sport_render"],
+                        "tennis",
+                        24,
+                        "soccer",
+                        105,
+                        "basketball",
+                        28,
+                        "boules",
+                        15,
+                        50,
+                    ],
                 ],
                 0.02442,
             ],
@@ -142,21 +183,26 @@ PITCH_MARKINGS = {
     },
     "paint": {
         "icon-opacity": [
-            "interpolate", ["linear"], ["zoom"],
-            17, 0.7,
-            18, 0.95,
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            17,
+            0.7,
+            18,
+            0.95,
         ],
     },
 }
 
 # ─── Insertion dans le style ──────────────────────────────
 
+
 def patch_style(style):
     layers = style["layers"]
     PITCH_IDS = {"pitch-sport-fill", "pitch-sport-outline", "pitch-markings"}
 
     # Supprimer les couches pitch existantes pour les (ré)insérer au bon endroit
-    layers[:] = [l for l in layers if l["id"] not in PITCH_IDS]
+    layers[:] = [item for item in layers if item["id"] not in PITCH_IDS]
 
     # Trouver la position APRÈS "leisure-outline" pour dessiner par-dessus
     target_idx = None
@@ -206,7 +252,10 @@ def main():
     with open(STYLE_PATH, "w") as f:
         json.dump(style, f, indent=2, ensure_ascii=False)
 
-    print(f"✓ style.json patché : 3 couches ajoutées (pitch-sport-fill, pitch-sport-outline, pitch-markings)")
+    print(
+        "✓ style.json patché : 3 couches ajoutées "
+        "(pitch-sport-fill, pitch-sport-outline, pitch-markings)"
+    )
 
 
 if __name__ == "__main__":
