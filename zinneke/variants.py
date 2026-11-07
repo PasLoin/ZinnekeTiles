@@ -12,7 +12,6 @@ from .palette import palette_errors
 from .patterns import DEFAULT_PATTERNS
 from .sources import SOURCES
 
-
 VARIANT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -44,7 +43,7 @@ def deep_merge(base, over):
 
 
 def variant_layer_names(base):
-    return set((base.get("layers") or {})) | set(SOURCES) | {"indoor"}
+    return set(base.get("layers") or {}) | set(SOURCES) | {"indoor"}
 
 
 def _base_layer(base, name):
@@ -52,7 +51,7 @@ def _base_layer(base, name):
 
 
 def known_subtypes(base, name):
-    keys = set((_base_layer(base, name).get("subtypes") or {}))
+    keys = set(_base_layer(base, name).get("subtypes") or {})
     if name == "roads":
         keys |= set(ROAD_ORDER) | set(ROAD_LEGACY_GROUP.values())
     if name == "indoor":
@@ -85,8 +84,10 @@ def _data_key_paths(node, path):
 def variant_errors(base, raw, vid):
     errors = []
     if not VARIANT_ID_RE.match(vid) or vid == DEFAULT_VARIANT["id"]:
-        errors.append(f"identifiant « {vid} » invalide : minuscules, chiffres et tirets, "
-                      f"et différent de « {DEFAULT_VARIANT['id']} »")
+        errors.append(
+            f"identifiant « {vid} » invalide : minuscules, chiffres et tirets, "
+            f"et différent de « {DEFAULT_VARIANT['id']} »"
+        )
     if not isinstance(raw, dict):
         return errors + ["le fichier doit contenir un objet YAML"]
     for key in raw:
@@ -117,22 +118,31 @@ def variant_errors(base, raw, vid):
             errors.append(f"{where} : objet YAML attendu")
             continue
         for path in _data_key_paths(layer, where):
-            errors.append(f"{path} : clé de données interdite dans une variante "
-                          f"(les tuiles sont communes à tous les styles)")
+            errors.append(
+                f"{path} : clé de données interdite dans une variante "
+                f"(les tuiles sont communes à tous les styles)"
+            )
         if "appear_at" in layer and layer["appear_at"] < base_appear_at(base, name):
-            errors.append(f"{where}.appear_at : {layer['appear_at']} < {base_appear_at(base, name)} "
-                          f"(une variante ne peut pas afficher plus tôt que les tuiles)")
+            errors.append(
+                f"{where}.appear_at : {layer['appear_at']} < {base_appear_at(base, name)} "
+                f"(une variante ne peut pas afficher plus tôt que les tuiles)"
+            )
         known = known_subtypes(base, name)
         for key, scfg in (layer.get("subtypes") or {}).items():
             swhere = f"{where}.subtypes.{key}"
             if key not in known:
                 errors.append(f"{swhere} : sous-type absent de la base")
                 continue
-            if isinstance(scfg, dict) and "appear_at" in scfg \
-                    and scfg["appear_at"] < base_appear_at(base, name, key):
-                errors.append(f"{swhere}.appear_at : {scfg['appear_at']} < "
-                              f"{base_appear_at(base, name, key)} "
-                              f"(une variante ne peut pas afficher plus tôt que les tuiles)")
+            if (
+                isinstance(scfg, dict)
+                and "appear_at" in scfg
+                and scfg["appear_at"] < base_appear_at(base, name, key)
+            ):
+                errors.append(
+                    f"{swhere}.appear_at : {scfg['appear_at']} < "
+                    f"{base_appear_at(base, name, key)} "
+                    f"(une variante ne peut pas afficher plus tôt que les tuiles)"
+                )
     return errors
 
 
@@ -140,8 +150,12 @@ def load_variant(path):
     path = Path(path)
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     meta = (raw.get("variant") or {}) if isinstance(raw, dict) else {}
-    return {"id": path.stem, "label": str(meta.get("label") or path.stem),
-            "path": str(path), "raw": raw}
+    return {
+        "id": path.stem,
+        "label": str(meta.get("label") or path.stem),
+        "path": str(path),
+        "raw": raw,
+    }
 
 
 def apply_variant(base, variant):
@@ -154,6 +168,7 @@ def apply_variant(base, variant):
         if raw.get(key):
             merged[key] = deep_merge(base.get(key) or {}, raw[key])
     if raw.get("patterns"):
-        merged["patterns"] = deep_merge({**DEFAULT_PATTERNS, **(base.get("patterns") or {})},
-                                        raw["patterns"])
+        merged["patterns"] = deep_merge(
+            {**DEFAULT_PATTERNS, **(base.get("patterns") or {})}, raw["patterns"]
+        )
     return merged

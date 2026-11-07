@@ -1,3 +1,6 @@
+from itertools import pairwise
+
+
 def by_expr(s, field, default):
     values = s.get(field) or {}
     if not s.get("by") or not values:
@@ -16,9 +19,11 @@ def zoom(pairs):
             stops[-1] = (stops[-1][0], v)
         else:
             stops.append((z, v))
-    if len(stops) == 1: return stops[0][1]
-    e = ["interpolate",["linear"],["zoom"]]
-    for z,v in stops: e += [z,v]
+    if len(stops) == 1:
+        return stops[0][1]
+    e = ["interpolate", ["linear"], ["zoom"]]
+    for z, v in stops:
+        e += [z, v]
     return e
 
 
@@ -29,9 +34,11 @@ def color_or_case(col, col_private):
 
 
 def interp(stops, z):
-    if z <= stops[0][0]:  return stops[0][1]
-    if z >= stops[-1][0]: return stops[-1][1]
-    for (z0, v0), (z1, v1) in zip(stops, stops[1:]):
+    if z <= stops[0][0]:
+        return stops[0][1]
+    if z >= stops[-1][0]:
+        return stops[-1][1]
+    for (z0, v0), (z1, v1) in pairwise(stops):
         if z0 <= z <= z1:
             return round(v0 + (v1 - v0) * (z - z0) / (z1 - z0), 2)
 
