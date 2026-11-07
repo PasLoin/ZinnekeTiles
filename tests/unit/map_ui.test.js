@@ -70,7 +70,12 @@ describe('panneaux en mode compact', () => {
 
   it('utilise la requête compacte', () => {
     let seen = null;
-    isCompact({ matchMedia: (q) => { seen = q; return { matches: true }; } });
+    isCompact({
+      matchMedia: (q) => {
+        seen = q;
+        return { matches: true };
+      },
+    });
     expect(seen).toBe(COMPACT_QUERY);
   });
 
@@ -205,7 +210,7 @@ describe('updateOsmLink', () => {
     expect(link.href).toContain('#');
   });
 
-  it('arrondit le zoom dans l\'URL', () => {
+  it("arrondit le zoom dans l'URL", () => {
     const map = {
       getZoom: () => 17.6,
       getCenter: () => ({ lat: 50.0, lng: 4.0 }),
@@ -274,7 +279,7 @@ describe('buildDataPopupHtml', () => {
       properties: { z_index: '1', amenity: 'cafe', name: 'Chez Jo' },
     };
     const html = buildDataPopupHtml(feature);
-    const keys = [...html.matchAll(/<th>([^<]+)<\/th>/g)].map(m => m[1]);
+    const keys = [...html.matchAll(/<th>([^<]+)<\/th>/g)].map((m) => m[1]);
     expect(keys).toEqual(['amenity', 'name', 'z_index']);
   });
 

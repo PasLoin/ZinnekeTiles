@@ -13,8 +13,18 @@ import {
   swatchBackground,
 } from '../../www/legend.js';
 
-const line = (id, color, source = 'roads') => ({ id, type: 'line', source, paint: { 'line-color': color } });
-const fill = (id, color, source = 'landuse') => ({ id, type: 'fill', source, paint: { 'fill-color': color } });
+const line = (id, color, source = 'roads') => ({
+  id,
+  type: 'line',
+  source,
+  paint: { 'line-color': color },
+});
+const fill = (id, color, source = 'landuse') => ({
+  id,
+  type: 'fill',
+  source,
+  paint: { 'fill-color': color },
+});
 
 function sampleStyle(legend) {
   return {
@@ -26,31 +36,72 @@ function sampleStyle(legend) {
       line('roads-fill-primary', '#fcd6a4'),
       line('roads-fill-service', '#ffffff'),
       { id: 'road-labels', type: 'symbol', source: 'roads', paint: { 'text-color': '#333' } },
-      { id: 'buildings-fill', type: 'fill', source: 'buildings', paint: { 'fill-color': '#fce1c5' } },
+      {
+        id: 'buildings-fill',
+        type: 'fill',
+        source: 'buildings',
+        paint: { 'fill-color': '#fce1c5' },
+      },
     ],
     metadata: legend === undefined ? {} : { 'brussels:legend': legend },
   };
 }
 
-const sampleLegend = () => ([
+const sampleLegend = () => [
   {
-    id: 'landuse', label: 'Occupation du sol', color: '#e0dfdf', swatch: 'fill', visible: true, layers: [],
+    id: 'landuse',
+    label: 'Occupation du sol',
+    color: '#e0dfdf',
+    swatch: 'fill',
+    visible: true,
+    layers: [],
     items: [
-      { id: 'residential', label: 'Résidentiel', color: '#e0dfdf', swatch: 'fill', layers: ['landuse-residential'] },
-      { id: 'retail', label: 'Commerces', color: '#ffd6d1', swatch: 'fill', layers: ['landuse-retail'] },
+      {
+        id: 'residential',
+        label: 'Résidentiel',
+        color: '#e0dfdf',
+        swatch: 'fill',
+        layers: ['landuse-residential'],
+      },
+      {
+        id: 'retail',
+        label: 'Commerces',
+        color: '#ffd6d1',
+        swatch: 'fill',
+        layers: ['landuse-retail'],
+      },
     ],
   },
   {
-    id: 'roads', label: 'Routes', swatch: 'line', layers: ['road-labels'],
+    id: 'roads',
+    label: 'Routes',
+    swatch: 'line',
+    layers: ['road-labels'],
     items: [
-      { id: 'primary', label: 'Route principale', layers: ['roads-casing-primary', 'roads-fill-primary'] },
-      { id: 'service', label: 'Voie de service', color: 'pas-une-couleur', layers: ['roads-fill-service'] },
+      {
+        id: 'primary',
+        label: 'Route principale',
+        layers: ['roads-casing-primary', 'roads-fill-primary'],
+      },
+      {
+        id: 'service',
+        label: 'Voie de service',
+        color: 'pas-une-couleur',
+        layers: ['roads-fill-service'],
+      },
       { id: 'ghost', label: 'Absent', layers: ['roads-ghost'] },
     ],
   },
-  { id: 'buildings', label: 'Bâtiments', color: '#fce1c5', visible: false, layers: ['buildings-fill'], items: [] },
+  {
+    id: 'buildings',
+    label: 'Bâtiments',
+    color: '#fce1c5',
+    visible: false,
+    layers: ['buildings-fill'],
+    items: [],
+  },
   { id: 'empty', label: 'Vide', layers: ['nope'], items: [] },
-]);
+];
 
 describe('exprColor / paintColor', () => {
   it('retourne une couleur littérale', () => {
@@ -156,7 +207,8 @@ describe('createLegend', () => {
   });
 
   const groupRow = (id) => root.querySelector(`.legend-group[data-group="${id}"] > .legend-row`);
-  const itemRow = (gid, iid) => root.querySelector(`.legend-group[data-group="${gid}"] .legend-item[data-id="${iid}"]`);
+  const itemRow = (gid, iid) =>
+    root.querySelector(`.legend-group[data-group="${gid}"] .legend-item[data-id="${iid}"]`);
 
   it('crée une ligne par groupe et des sous-entrées repliées', () => {
     expect(root.querySelectorAll('.legend-row')).toHaveLength(3);
@@ -173,7 +225,10 @@ describe('createLegend', () => {
   it('un clic sur un groupe masque toutes ses couches', () => {
     onChange.mockClear();
     groupRow('roads').click();
-    expect(onChange).toHaveBeenCalledWith(['road-labels', 'roads-casing-primary', 'roads-fill-primary', 'roads-fill-service'], false);
+    expect(onChange).toHaveBeenCalledWith(
+      ['road-labels', 'roads-casing-primary', 'roads-fill-primary', 'roads-fill-service'],
+      false
+    );
     expect(groupRow('roads').getAttribute('aria-checked')).toBe('false');
   });
 
@@ -236,22 +291,42 @@ describe('createLegend', () => {
 
 const furnitureStyle = () => ({
   layers: [
-    { id: 'street-furniture-fence', type: 'line', source: 'street_furniture', paint: { 'line-color': '#9c9c9c' } },
+    {
+      id: 'street-furniture-fence',
+      type: 'line',
+      source: 'street_furniture',
+      paint: { 'line-color': '#9c9c9c' },
+    },
     { id: 'street-furniture-icon', type: 'symbol', source: 'street_furniture', paint: {} },
   ],
   metadata: {
     'brussels:legend': [
       {
-        id: 'street_furniture', label: 'Mobilier urbain', color: '#555555', swatch: 'dot',
+        id: 'street_furniture',
+        label: 'Mobilier urbain',
+        color: '#555555',
+        swatch: 'dot',
         layers: ['street-furniture-icon'],
         items: [
           { id: 'bench', label: 'Bancs', layers: [], filter: ['==', ['get', 'amenity'], 'bench'] },
-          { id: 'waste_basket', label: 'Poubelles', layers: [], filter: ['==', ['get', 'amenity'], 'waste_basket'] },
-          { id: 'fence', label: 'Clôtures', layers: ['street-furniture-fence'], filter: ['==', ['get', 'barrier'], 'fence'] },
+          {
+            id: 'waste_basket',
+            label: 'Poubelles',
+            layers: [],
+            filter: ['==', ['get', 'amenity'], 'waste_basket'],
+          },
+          {
+            id: 'fence',
+            label: 'Clôtures',
+            layers: ['street-furniture-fence'],
+            filter: ['==', ['get', 'barrier'], 'fence'],
+          },
         ],
       },
       {
-        id: 'orphan', label: 'Orphelin', layers: [],
+        id: 'orphan',
+        label: 'Orphelin',
+        layers: [],
         items: [{ id: 'x', label: 'X', layers: [], filter: ['has', 'x'] }],
       },
     ],
@@ -286,17 +361,20 @@ describe('sous-entrées par filtre', () => {
 
   it('masquer une sous-entrée exclut ses objets des couches communes', () => {
     item('bench').click();
-    expect(onFilter).toHaveBeenLastCalledWith('street-furniture-icon', ['!', ['==', ['get', 'amenity'], 'bench']]);
+    expect(onFilter).toHaveBeenLastCalledWith('street-furniture-icon', [
+      '!',
+      ['==', ['get', 'amenity'], 'bench'],
+    ]);
     expect(legend.isOn('street-furniture-icon')).toBe(true);
   });
 
   it('cumule les exclusions', () => {
     item('bench').click();
     item('fence').click();
-    expect(onFilter).toHaveBeenLastCalledWith('street-furniture-icon', ['!', ['any',
-      ['==', ['get', 'amenity'], 'bench'],
-      ['==', ['get', 'barrier'], 'fence'],
-    ]]);
+    expect(onFilter).toHaveBeenLastCalledWith('street-furniture-icon', [
+      '!',
+      ['any', ['==', ['get', 'amenity'], 'bench'], ['==', ['get', 'barrier'], 'fence']],
+    ]);
     expect(onChange).toHaveBeenCalledWith(['street-furniture-fence'], false);
   });
 
@@ -320,14 +398,27 @@ describe('pastille multicolore', () => {
   });
 
   it('découpe la pastille en bandes nettes', () => {
-    expect(swatchBackground({ color: '#007cc2', colors: ['#007cc2', '#ef3e42'] }))
-      .toBe('linear-gradient(170deg, #007cc2 0.00% 50.00%, #ef3e42 50.00% 100.00%)');
+    expect(swatchBackground({ color: '#007cc2', colors: ['#007cc2', '#ef3e42'] })).toBe(
+      'linear-gradient(170deg, #007cc2 0.00% 50.00%, #ef3e42 50.00% 100.00%)'
+    );
   });
 
   it('legendGroups transmet les couleurs valides', () => {
     const style = {
-      layers: [{ id: 'pt', type: 'line', source: 'public_transport', paint: { 'line-color': '#fff' } }],
-      metadata: { 'brussels:legend': [{ id: 'public_transport', label: 'STIB', layers: ['pt'], items: [], colors: ['#007cc2', 'nope', '#ef3e42'] }] },
+      layers: [
+        { id: 'pt', type: 'line', source: 'public_transport', paint: { 'line-color': '#fff' } },
+      ],
+      metadata: {
+        'brussels:legend': [
+          {
+            id: 'public_transport',
+            label: 'STIB',
+            layers: ['pt'],
+            items: [],
+            colors: ['#007cc2', 'nope', '#ef3e42'],
+          },
+        ],
+      },
     };
     expect(legendGroups(style)[0].colors).toEqual(['#007cc2', '#ef3e42']);
   });

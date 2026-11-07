@@ -8,7 +8,7 @@ const META = {
 };
 
 describe('buildNoIconFilter', () => {
-  it('nie la présence d\'une icône chargée', () => {
+  it("nie la présence d'une icône chargée", () => {
     const f = buildNoIconFilter(META, ['restaurant', 'bakery']);
     expect(f[0]).toBe('!');
     expect(f[1][0]).toBe('any');
@@ -22,17 +22,35 @@ describe('buildNoIconFilter', () => {
     }
   });
 
-  it('n\'inclut un cas spécial que si son icône est chargée', () => {
-    expect(buildNoIconFilter(META, ['bakery'])[1]).not.toContainEqual(['==', ['get', 'cuisine'], 'friture']);
-    expect(buildNoIconFilter(META, ['cuisine-friture'])[1]).toContainEqual(['==', ['get', 'cuisine'], 'friture']);
+  it("n'inclut un cas spécial que si son icône est chargée", () => {
+    expect(buildNoIconFilter(META, ['bakery'])[1]).not.toContainEqual([
+      '==',
+      ['get', 'cuisine'],
+      'friture',
+    ]);
+    expect(buildNoIconFilter(META, ['cuisine-friture'])[1]).toContainEqual([
+      '==',
+      ['get', 'cuisine'],
+      'friture',
+    ]);
   });
 
-  it('reprend les conditions multiples d\'un cas spécial chargé', () => {
+  it("reprend les conditions multiples d'un cas spécial chargé", () => {
     const meta = {
-      special_cases: [{ conditions: [['amenity', 'toilets'], ['toilets:position', 'urinal']], icon_key: 'toilets-urinal' }],
+      special_cases: [
+        {
+          conditions: [
+            ['amenity', 'toilets'],
+            ['toilets:position', 'urinal'],
+          ],
+          icon_key: 'toilets-urinal',
+        },
+      ],
     };
     expect(buildNoIconFilter(meta, ['toilets-urinal'])[1]).toContainEqual([
-      'all', ['==', ['get', 'amenity'], 'toilets'], ['==', ['get', 'toilets:position'], 'urinal'],
+      'all',
+      ['==', ['get', 'amenity'], 'toilets'],
+      ['==', ['get', 'toilets:position'], 'urinal'],
     ]);
   });
 
@@ -42,7 +60,7 @@ describe('buildNoIconFilter', () => {
     expect(f[1]).toContainEqual(['has', 'shop']);
   });
 
-  it('affiche tous les cercles si aucune icône n\'est chargée', () => {
+  it("affiche tous les cercles si aucune icône n'est chargée", () => {
     expect(buildNoIconFilter(META, [])).toEqual(['!', ['any']]);
     expect(buildNoIconFilter({}, undefined)).toEqual(['!', ['any']]);
   });

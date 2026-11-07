@@ -58,7 +58,7 @@ describe('setupSportMarkings', () => {
         listeners[event].push(cb);
       }),
       _emit: (event, data) => {
-        (listeners[event] || []).forEach(cb => cb(data));
+        (listeners[event] || []).forEach((cb) => cb(data));
       },
     };
   }
@@ -67,13 +67,10 @@ describe('setupSportMarkings', () => {
     const map = createMockMap(false);
     globalThis.setupSportMarkings(map);
 
-    expect(map.on).toHaveBeenCalledWith(
-      'styleimagemissing',
-      expect.any(Function)
-    );
+    expect(map.on).toHaveBeenCalledWith('styleimagemissing', expect.any(Function));
   });
 
-  it('enregistre un listener load si la carte n\'est pas prête', () => {
+  it("enregistre un listener load si la carte n'est pas prête", () => {
     const map = createMockMap(false);
     globalThis.setupSportMarkings(map);
 
@@ -97,8 +94,12 @@ describe('setupSportMarkings', () => {
     const srcs = [];
     const OrigImage = globalThis.Image;
     globalThis.Image = class {
-      set src(v) { srcs.push(v); }
-      get src() { return ''; }
+      set src(v) {
+        srcs.push(v);
+      }
+      get src() {
+        return '';
+      }
     };
 
     globalThis.setupSportMarkings(map);
@@ -115,8 +116,12 @@ describe('setupSportMarkings', () => {
     const srcs = [];
     const OrigImage = globalThis.Image;
     globalThis.Image = class {
-      set src(v) { srcs.push(v); }
-      get src() { return ''; }
+      set src(v) {
+        srcs.push(v);
+      }
+      get src() {
+        return '';
+      }
     };
 
     globalThis.setupSportMarkings(map, '/custom/path/');
@@ -130,7 +135,7 @@ describe('setupSportMarkings', () => {
 });
 
 describe('styleimagemissing handler', () => {
-  it('ne réagit qu\'aux IDs sport-markings-*', () => {
+  it("ne réagit qu'aux IDs sport-markings-*", () => {
     const listeners = {};
     const map = {
       loaded: () => false,
@@ -151,8 +156,12 @@ describe('styleimagemissing handler', () => {
     const OrigImage = globalThis.Image;
     const srcs = [];
     globalThis.Image = class {
-      set src(v) { srcs.push(v); }
-      get src() { return ''; }
+      set src(v) {
+        srcs.push(v);
+      }
+      get src() {
+        return '';
+      }
     };
 
     handler({ id: 'poi-restaurant' });
