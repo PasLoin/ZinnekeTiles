@@ -6,10 +6,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 import zinneke
+
+ROOT = Path(__file__).resolve().parent.parent
 
 MODULES = sorted(m.name for m in pkgutil.walk_packages(zinneke.__path__, "zinneke."))
 
@@ -30,8 +29,20 @@ def test_cli_entry_points_agree(tmp_path):
     outs = []
     for cmd in ([str(ROOT / "build_map.py")], ["-m", "zinneke"]):
         out = tmp_path / f"{len(outs)}.json"
-        subprocess.run([sys.executable, *cmd, "--config", str(ROOT / "map.config.yaml"),
-                        "--only", "pmtiles", "--pmtiles-out", str(out)],
-                       cwd=ROOT, check=True, capture_output=True)
+        subprocess.run(
+            [
+                sys.executable,
+                *cmd,
+                "--config",
+                str(ROOT / "map.config.yaml"),
+                "--only",
+                "pmtiles",
+                "--pmtiles-out",
+                str(out),
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        )
         outs.append(json.loads(out.read_text()))
     assert outs[0] == outs[1]
