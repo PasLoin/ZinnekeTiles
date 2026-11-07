@@ -1,16 +1,15 @@
 import copy
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 from zinneke import build_granulometry, build_pmtiles_params, build_style
+
+ROOT = Path(__file__).resolve().parent.parent
+
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 PROBE_COLOR = "#123456"
@@ -22,7 +21,7 @@ def style_of(config):
 
 
 def layers(style):
-    return {l["id"]: l for l in style["layers"]}
+    return {layer["id"]: layer for layer in style["layers"]}
 
 
 def mutated(path, value):
@@ -113,17 +112,28 @@ def test_cemetery_matches_osm_carto():
     hatch = ls["landuse-cemetery-hatch"]
     assert hatch["minzoom"] == 13
     assert hatch["paint"]["fill-pattern"] == [
-        "match", ["get", "religion"],
-        "christian", "grave_yard_christian",
-        "jewish", "grave_yard_jewish",
-        "muslim", "grave_yard_muslim",
-        "grave_yard_generic"]
+        "match",
+        ["get", "religion"],
+        "christian",
+        "grave_yard_christian",
+        "jewish",
+        "grave_yard_jewish",
+        "muslim",
+        "grave_yard_muslim",
+        "grave_yard_generic",
+    ]
 
 
 def test_pattern_metadata_lists_used_patterns_with_existing_files():
     patterns = style_of(CONFIG)["metadata"]["brussels:patterns"]
-    assert {"military-hatch", "green-hatch", "grave_yard_generic",
-            "grave_yard_christian", "grave_yard_jewish", "grave_yard_muslim"} <= set(patterns)
+    assert {
+        "military-hatch",
+        "green-hatch",
+        "grave_yard_generic",
+        "grave_yard_christian",
+        "grave_yard_jewish",
+        "grave_yard_muslim",
+    } <= set(patterns)
     for name, cfg in patterns.items():
         assert (ROOT / "www" / cfg["file"]).exists(), name
 
@@ -135,7 +145,7 @@ def test_unused_patterns_are_not_published():
 
 
 def test_pitch_layers_generated_from_config_in_right_place():
-    ids = [l["id"] for l in style_of(CONFIG)["layers"]]
+    ids = [layer["id"] for layer in style_of(CONFIG)["layers"]]
     assert ids.index("leisure-outline") + 1 == ids.index("pitch-sport-fill")
     assert ids.index("pitch-sport-fill") + 1 == ids.index("pitch-sport-outline")
     assert ids.index("pitch-markings") + 1 == ids.index("poi-circle")
@@ -146,7 +156,7 @@ def test_pitch_layers_generated_from_config_in_right_place():
 def test_no_pitch_layers_without_sports():
     cfg = copy.deepcopy(CONFIG)
     del cfg["layers"]["leisure"]["sports"]
-    ids = [l["id"] for l in style_of(cfg)["layers"]]
+    ids = [layer["id"] for layer in style_of(cfg)["layers"]]
     assert not [i for i in ids if i.startswith("pitch-")]
 
 
@@ -158,37 +168,53 @@ def test_buildings_tiles_follow_appear_at():
     params = build_pmtiles_params(cfg)["layers"]["buildings"]
     assert params["inputs"] == [
         {"file": "buildings_merged.json", "min_zoom": 10, "max_zoom": 12},
-        {"file": "buildings_detail.json", "min_zoom": 13, "max_zoom": 18}]
+        {"file": "buildings_detail.json", "min_zoom": 13, "max_zoom": 18},
+    ]
 
 
 def test_buildings_granulometry_targets_tile_inputs():
     cfg = mutated(["layers", "buildings", "appear_at"], 10)
     files = build_granulometry(cfg)["layers"]["buildings"]["files"]
-    assert files["buildings_merged.json"] == [{"zoom_min": 10, "zoom_max": 12, "keep_properties": "ALL"}]
-    assert files["buildings_detail.json"] == [{"zoom_min": 13, "zoom_max": 18, "keep_properties": "ALL"}]
+    assert files["buildings_merged.json"] == [
+        {"zoom_min": 10, "zoom_max": 12, "keep_properties": "ALL"}
+    ]
+    assert files["buildings_detail.json"] == [
+        {"zoom_min": 13, "zoom_max": 18, "keep_properties": "ALL"}
+    ]
 
 
 def test_tiles_override_from_config():
     cfg = mutated(["layers", "poi", "tiles"], {"max_zoom": 17, "simplification": 4})
     poi = build_pmtiles_params(cfg)["layers"]["poi"]
     assert (poi["max_zoom"], poi["simplification"]) == (17, 4)
-    assert style_of(cfg)["metadata"]["brussels:tiles"] == {"poi": {"max_zoom": 17, "simplification": 4}}
+    assert style_of(cfg)["metadata"]["brussels:tiles"] == {
+        "poi": {"max_zoom": 17, "simplification": 4}
+    }
 
 
 def test_generate_pmtiles_reads_params(tmp_path):
     params = tmp_path / "p.json"
     params.write_text(json.dumps(build_pmtiles_params(CONFIG)))
-    script = ('source <(sed -n "/^param() {/,/^}/p" generate_pmtiles.bash); '
-              f'PARAMS="{params}"; param layers; param settings poi; param inputs buildings')
-    out = subprocess.run(["bash", "-c", script], cwd=ROOT, capture_output=True,
-                         text=True, check=True).stdout.splitlines()
+    script = (
+        'source <(sed -n "/^param() {/,/^}/p" generate_pmtiles.bash); '
+        f'PARAMS="{params}"; param layers; param settings poi; param inputs buildings'
+    )
+    out = subprocess.run(
+        ["bash", "-c", script], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
     assert "buildings" in out and "building_parts" in out
     assert "10 16 10" in out
     assert "buildings_detail.json\t13\t18" in out
 
 
-@pytest.mark.parametrize("name", [n for n, l in CONFIG["layers"].items()
-                                  if "color" in (l or {}) and (l or {}).get("subtypes")])
+@pytest.mark.parametrize(
+    "name",
+    [
+        n
+        for n, layer in CONFIG["layers"].items()
+        if "color" in (layer or {}) and (layer or {}).get("subtypes")
+    ],
+)
 def test_layer_color_is_fallback_for_subtypes(name):
     cfg = copy.deepcopy(CONFIG)
     cfg["layers"][name]["color"] = PROBE_COLOR
@@ -203,9 +229,15 @@ def test_roads_have_no_layer_color():
 
 
 def _extrusion_colors(style):
-    parts = [l for l in style["metadata"]["brussels:lazy"]["layers"] if l["id"] == "building-parts-3d"]
-    return [layers(style)["buildings-3d"]["paint"]["fill-extrusion-color"],
-            parts[0]["paint"]["fill-extrusion-color"]]
+    parts = [
+        layer
+        for layer in style["metadata"]["brussels:lazy"]["layers"]
+        if layer["id"] == "building-parts-3d"
+    ]
+    return [
+        layers(style)["buildings-3d"]["paint"]["fill-extrusion-color"],
+        parts[0]["paint"]["fill-extrusion-color"],
+    ]
 
 
 def test_building_materials_color_both_3d_layers():
@@ -213,7 +245,7 @@ def test_building_materials_color_both_3d_layers():
     for expr in _extrusion_colors(style_of(cfg)):
         text = json.dumps(expr)
         assert '["get", "building:colour"]' in text
-        assert '["match", ["get", "building:material"], "brick", "%s"' % PROBE_COLOR in text
+        assert f'["match", ["get", "building:material"], "brick", "{PROBE_COLOR}"' in text
 
 
 def test_building_colour_without_materials():

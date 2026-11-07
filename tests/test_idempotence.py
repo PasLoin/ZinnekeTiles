@@ -6,12 +6,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 import apply_granulometry
 from zinneke.config import config_hash
 from zinneke.layers.roads import ROAD_ORDER
+
+ROOT = Path(__file__).resolve().parent.parent
+
 
 CONFIG = ROOT / "map.config.yaml"
 EXTERNAL_STYLES = [ROOT / "www" / "style.json", ROOT / "www" / "bright-test.json"]
@@ -19,8 +19,9 @@ ZOOMS = [(z, z) for z in range(10, 19)]
 
 
 def run(*args):
-    result = subprocess.run([sys.executable, *map(str, args)], cwd=ROOT,
-                            capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, *map(str, args)], cwd=ROOT, capture_output=True, text=True
+    )
     assert result.returncode == 0, result.stdout + result.stderr
     return result
 
@@ -29,8 +30,17 @@ def build(config_path, out_dir, tag):
     style = out_dir / f"style_{tag}.json"
     gran = out_dir / f"gran_{tag}.json"
     params = out_dir / f"pmtiles_{tag}.json"
-    run("build_map.py", "--config", config_path, "--style-out", style,
-        "--gran-out", gran, "--pmtiles-out", params)
+    run(
+        "build_map.py",
+        "--config",
+        config_path,
+        "--style-out",
+        style,
+        "--gran-out",
+        gran,
+        "--pmtiles-out",
+        params,
+    )
     return json.loads(style.read_text()), json.loads(gran.read_text())
 
 
@@ -47,20 +57,26 @@ def load_yaml(path):
 
 
 def layers_by_id(style):
-    return {l["id"]: l for l in style["layers"]}
+    return {layer["id"]: layer for layer in style["layers"]}
 
 
 def comparable(style):
     meta = dict(style.get("metadata") or {})
     meta.pop("brussels:config_hash", None)
-    return {"layers": style["layers"], "sources": style["sources"],
-            "glyphs": style.get("glyphs"), "metadata": meta}
+    return {
+        "layers": style["layers"],
+        "sources": style["sources"],
+        "glyphs": style.get("glyphs"),
+        "metadata": meta,
+    }
 
 
 def assert_same_style(a, b):
     la, lb = layers_by_id(a), layers_by_id(b)
-    assert [l["id"] for l in a["layers"]] == [l["id"] for l in b["layers"]], \
-        f"ordre/ids différents : manquants={sorted(set(la) - set(lb))} nouveaux={sorted(set(lb) - set(la))}"
+    assert [layer["id"] for layer in a["layers"]] == [layer["id"] for layer in b["layers"]], (
+        f"ordre/ids différents : manquants={sorted(set(la) - set(lb))} "
+        f"nouveaux={sorted(set(lb) - set(la))}"
+    )
     diff = [k for k in la if la[k] != lb[k]]
     assert not diff, f"layers modifiés par le round-trip : {diff}"
     assert comparable(a) == comparable(b)
@@ -85,10 +101,15 @@ def effective(gran, layer_name, samples):
     rules = gran["layers"][layer_name].get("rules", [])
     out = []
     for props in samples:
-        feats = apply_granulometry.process({"type": "Feature", "geometry": None,
-                                            "properties": dict(props)}, rules)
-        out.append([(f["tippecanoe"]["minzoom"], f["tippecanoe"]["maxzoom"],
-                     sorted(f["properties"])) for f in feats])
+        feats = apply_granulometry.process(
+            {"type": "Feature", "geometry": None, "properties": dict(props)}, rules
+        )
+        out.append(
+            [
+                (f["tippecanoe"]["minzoom"], f["tippecanoe"]["maxzoom"], sorted(f["properties"]))
+                for f in feats
+            ]
+        )
     return out
 
 
@@ -101,8 +122,17 @@ def chain(tmp_path_factory):
     s2, g2 = build(y1, tmp, "2")
     y2 = retro(s2, tmp, "2")
     s3, g3 = build(y2, tmp, "3")
-    return {"original": original, "s1": s1, "g1": g1, "y1": load_yaml(y1),
-            "s2": s2, "g2": g2, "y2": load_yaml(y2), "s3": s3, "g3": g3}
+    return {
+        "original": original,
+        "s1": s1,
+        "g1": g1,
+        "y1": load_yaml(y1),
+        "s2": s2,
+        "g2": g2,
+        "y2": load_yaml(y2),
+        "s3": s3,
+        "g3": g3,
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -131,8 +161,8 @@ def test_granulometry_equivalent_after_retro(chain):
 def test_no_subtype_lost(chain):
     lost = []
     for name, layer in chain["original"]["layers"].items():
-        before = set(((layer or {}).get("subtypes") or {}))
-        after = set(((chain["y1"]["layers"].get(name) or {}).get("subtypes") or {}))
+        before = set((layer or {}).get("subtypes") or {})
+        after = set((chain["y1"]["layers"].get(name) or {}).get("subtypes") or {})
         lost += [f"{name}.{k}" for k in sorted(before - after)]
     assert not lost, f"sous-types perdus par retro_style.py : {lost}"
 

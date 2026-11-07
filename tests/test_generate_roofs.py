@@ -1,16 +1,14 @@
 import json
 import struct
-import sys
 from pathlib import Path
 
 import pytest
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import orient
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
 import generate_roofs as gr
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def rect(w, h):
@@ -22,8 +20,11 @@ def roof_vertices(roof):
 
 
 def walls(roof):
-    return [g for g in roof.groups
-            if len(g[0]) == 4 and g[0][0][:2] == g[0][3][:2] and g[0][1][:2] == g[0][2][:2]]
+    return [
+        g
+        for g in roof.groups
+        if len(g[0]) == 4 and g[0][0][:2] == g[0][3][:2] and g[0][1][:2] == g[0][2][:2]
+    ]
 
 
 def build(kind, poly, props=None, defaults=gr.BUILDING_DEFAULTS):
@@ -40,7 +41,11 @@ def test_wall_profile_matches_style_expressions():
     assert gr.wall_profile({"height": "12"}, gr.BUILDING_DEFAULTS) == (0.0, 12.0, True)
     assert gr.wall_profile({"height": "12 m"}, gr.BUILDING_DEFAULTS) == (0.0, 6.0, True)
     assert gr.wall_profile({"building:levels": "4"}, gr.BUILDING_DEFAULTS) == (0.0, 12.0, False)
-    assert gr.wall_profile({"min_height": "5", "height": "5.5"}, gr.BUILDING_DEFAULTS) == (5.0, 6.0, True)
+    assert gr.wall_profile({"min_height": "5", "height": "5.5"}, gr.BUILDING_DEFAULTS) == (
+        5.0,
+        6.0,
+        True,
+    )
     assert gr.wall_profile({}, gr.PART_DEFAULTS) == (0.0, 9.0, False)
 
 
@@ -73,8 +78,12 @@ def test_parsers():
     assert gr.parse_direction(None) is None
     assert gr.parse_color("#abc", {}) == (170, 187, 204)
     assert gr.parse_color("darkgrey", gr.CSS_NAMED) == (169, 169, 169)
-    assert gr.roof_color({"roof:colour": "darkgrey"}) == gr.parse_color(gr.ROOF_NAMED["darkgrey"], {})
-    assert gr.roof_color({"roof:material": "slate"}) == gr.parse_color(gr.ROOF_MATERIALS["slate"], {})
+    assert gr.roof_color({"roof:colour": "darkgrey"}) == gr.parse_color(
+        gr.ROOF_NAMED["darkgrey"], {}
+    )
+    assert gr.roof_color({"roof:material": "slate"}) == gr.parse_color(
+        gr.ROOF_MATERIALS["slate"], {}
+    )
 
 
 def test_shape_aliases():
@@ -92,16 +101,26 @@ def test_flat_roofs_only_when_coloured():
 
 
 def test_roof_colour_falls_back_to_material_name():
-    assert gr.explicit_roof_color({"roof:colour": "zinc"}) == gr.parse_color(gr.ROOF_MATERIALS["zinc"], {})
-    assert gr.explicit_roof_color({"roof:colour": "light_grey"}) == gr.parse_color(gr.ROOF_NAMED["lightgrey"], {})
+    assert gr.explicit_roof_color({"roof:colour": "zinc"}) == gr.parse_color(
+        gr.ROOF_MATERIALS["zinc"], {}
+    )
+    assert gr.explicit_roof_color({"roof:colour": "light_grey"}) == gr.parse_color(
+        gr.ROOF_NAMED["lightgrey"], {}
+    )
     assert gr.explicit_roof_color({}) is None
 
 
 def test_wall_colour_follows_style_priority():
     palette = gr.Palette((1, 2, 3), {"brick": (200, 100, 50)})
-    assert gr.wall_color({"building:colour": "Bisque", "building:material": "brick"}, palette) == (255, 228, 196)
+    assert gr.wall_color({"building:colour": "Bisque", "building:material": "brick"}, palette) == (
+        255,
+        228,
+        196,
+    )
     assert gr.wall_color({"building:colour": "#C0c0c0"}, palette) == (192, 192, 192)
-    assert gr.wall_color({"building:colour": "light grey", "building:material": "Brick"}, palette) == (200, 100, 50)
+    assert gr.wall_color(
+        {"building:colour": "light grey", "building:material": "Brick"}, palette
+    ) == (200, 100, 50)
     assert gr.wall_color({"building:colour": "c0c0c0"}, palette) == (1, 2, 3)
     assert gr.wall_color({}, palette) == (1, 2, 3)
 
@@ -114,7 +133,10 @@ def test_css_table_is_complete():
 
 def test_palette_reads_config(tmp_path):
     cfg = tmp_path / "c.yaml"
-    cfg.write_text('layers:\n  buildings:\n    color: "#101010"\n    materials: { Brick: "#200000", glass: lightblue }\n')
+    cfg.write_text(
+        'layers:\n  buildings:\n    color: "#101010"\n'
+        '    materials: { Brick: "#200000", glass: lightblue }\n'
+    )
     palette = gr.load_palette(cfg)
     assert palette.default == (16, 16, 16)
     assert palette.materials == {"brick": (32, 0, 0), "glass": (173, 216, 230)}
@@ -123,6 +145,7 @@ def test_palette_reads_config(tmp_path):
 
 def test_project_config_materials_match_style():
     import yaml
+
     cfg = yaml.safe_load((ROOT / "map.config.yaml").read_text())
     materials = cfg["layers"]["buildings"].get("materials") or {}
     palette = gr.load_palette(ROOT / "map.config.yaml")
@@ -131,7 +154,9 @@ def test_project_config_materials_match_style():
 
 def test_flat_roof_sits_on_top_without_cut():
     poly = rect(10, 10)
-    params, reason = gr.plan({"roof:colour": "grey", "height": "12"}, gr.BUILDING_DEFAULTS, poly, "flat")
+    params, reason = gr.plan(
+        {"roof:colour": "grey", "height": "12"}, gr.BUILDING_DEFAULTS, poly, "flat"
+    )
     assert reason is None
     _, z, _ = params
     assert z == pytest.approx(12.0 + gr.FLAT_OFFSET)
@@ -151,7 +176,9 @@ def test_frame_follows_long_side_and_orientation():
 
 
 def test_gabled_roof_peak_and_gables():
-    roof, eaves, height = build("gabled", rect(20, 8), {"roof:shape": "gabled", "height": "12", "roof:height": "4"})
+    roof, eaves, height = build(
+        "gabled", rect(20, 8), {"roof:shape": "gabled", "height": "12", "roof:height": "4"}
+    )
     zs = [z for _, _, z in roof_vertices(roof)]
     assert eaves == pytest.approx(8.0)
     assert max(zs) == pytest.approx(12.0)
@@ -163,8 +190,21 @@ def test_gabled_roof_peak_and_gables():
     assert all(max(v[2] for v in g[0]) == pytest.approx(12.0) for g in gables)
 
 
-@pytest.mark.parametrize("kind", ["hipped", "side_hipped", "half_hipped", "gambrel", "mansard",
-                                  "round", "saltbox", "skillion", "dome", "pyramidal"])
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "hipped",
+        "side_hipped",
+        "half_hipped",
+        "gambrel",
+        "mansard",
+        "round",
+        "saltbox",
+        "skillion",
+        "dome",
+        "pyramidal",
+    ],
+)
 def test_every_shape_reaches_full_height(kind):
     roof, eaves, height = build(kind, rect(16, 10))
     zs = [z for _, _, z in roof_vertices(roof)]
@@ -201,23 +241,65 @@ def write_fc(path, features):
 def test_main_writes_eaves_and_valid_glb(tmp_path):
     buildings = tmp_path / "buildings_detail.json"
     parts = tmp_path / "building_parts.json"
-    write_fc(buildings, [
-        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.35, 50.85)},
-         "properties": {"building": "yes", "lod": "detail", "roof:shape": "gabled", "height": "12", "roof:height": "4"}},
-        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.36, 50.85)},
-         "properties": {"building": "yes", "lod": "detail", "roof:shape": "flat"}},
-        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.37, 50.85)},
-         "properties": {"building": "yes", "lod": "detail", "roof:shape": "hipped", "covered_by_parts": "yes"}},
-        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.39, 50.85)},
-         "properties": {"building": "yes", "lod": "detail", "roof:colour": "black"}},
-    ])
-    write_fc(parts, [
-        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.38, 50.85)},
-         "properties": {"building:part": "yes", "roof:shape": "dome", "roof_eaves": 99}},
-    ])
+    write_fc(
+        buildings,
+        [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.35, 50.85)},
+                "properties": {
+                    "building": "yes",
+                    "lod": "detail",
+                    "roof:shape": "gabled",
+                    "height": "12",
+                    "roof:height": "4",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.36, 50.85)},
+                "properties": {"building": "yes", "lod": "detail", "roof:shape": "flat"},
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.37, 50.85)},
+                "properties": {
+                    "building": "yes",
+                    "lod": "detail",
+                    "roof:shape": "hipped",
+                    "covered_by_parts": "yes",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.39, 50.85)},
+                "properties": {"building": "yes", "lod": "detail", "roof:colour": "black"},
+            },
+        ],
+    )
+    write_fc(
+        parts,
+        [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.38, 50.85)},
+                "properties": {"building:part": "yes", "roof:shape": "dome", "roof_eaves": 99},
+            },
+        ],
+    )
     out = tmp_path / "roofs.glb"
-    gr.main(["--buildings", str(buildings), "--parts", str(parts), "--out", str(out),
-             "--config", str(tmp_path / "missing.yaml")])
+    gr.main(
+        [
+            "--buildings",
+            str(buildings),
+            "--parts",
+            str(parts),
+            "--out",
+            str(out),
+            "--config",
+            str(tmp_path / "missing.yaml"),
+        ]
+    )
 
     props = [f["properties"] for f in json.loads(buildings.read_text())["features"]]
     assert props[0]["roof_eaves"] == 8.0
@@ -232,7 +314,7 @@ def test_main_writes_eaves_and_valid_glb(tmp_path):
     assert (magic, version, total) == (0x46546C67, 2, len(data))
     json_len, json_type = struct.unpack_from("<II", data, 12)
     assert json_type == 0x4E4F534A
-    doc = json.loads(data[20:20 + json_len])
+    doc = json.loads(data[20 : 20 + json_len])
     assert doc["asset"]["extras"]["origin"] == list(gr.ORIGIN)
     assert len(doc["nodes"]) == len(doc["meshes"]) >= 1
     vertices = sum(acc["count"] for acc in doc["accessors"] if acc["type"] == "VEC3")
@@ -243,10 +325,26 @@ def test_main_writes_eaves_and_valid_glb(tmp_path):
 
 def test_main_is_idempotent(tmp_path):
     buildings = tmp_path / "b.json"
-    write_fc(buildings, [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.35, 50.85)},
-                          "properties": {"building": "yes", "roof:shape": "gabled"}}])
-    args = ["--buildings", str(buildings), "--parts", str(tmp_path / "none.json"),
-            "--out", str(tmp_path / "r.glb"), "--config", str(tmp_path / "none.yaml")]
+    write_fc(
+        buildings,
+        [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": lonlat_rect(4.35, 50.85)},
+                "properties": {"building": "yes", "roof:shape": "gabled"},
+            }
+        ],
+    )
+    args = [
+        "--buildings",
+        str(buildings),
+        "--parts",
+        str(tmp_path / "none.json"),
+        "--out",
+        str(tmp_path / "r.glb"),
+        "--config",
+        str(tmp_path / "none.yaml"),
+    ]
     gr.main(args)
     first = (tmp_path / "r.glb").read_bytes()
     gr.main(args)
