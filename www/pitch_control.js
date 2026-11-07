@@ -1,14 +1,17 @@
 export const PITCH_STEP = 15;
 const EPSILON = 1e-6;
 
-const ICON_TILT = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 19h8l-1.6-7H9.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9V3M9.5 5.5 12 3l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const ICON_FLAT = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="7" y="12" width="10" height="7" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v6M9.5 6.5 12 9l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_TILT =
+  '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 19h8l-1.6-7H9.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9V3M9.5 5.5 12 3l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_FLAT =
+  '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="7" y="12" width="10" height="7" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v6M9.5 6.5 12 9l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 export function stepPitch(current, direction, max, step = PITCH_STEP) {
   const ratio = current / step;
-  const next = direction > 0
-    ? (Math.floor(ratio + EPSILON) + 1) * step
-    : (Math.ceil(ratio - EPSILON) - 1) * step;
+  const next =
+    direction > 0
+      ? (Math.floor(ratio + EPSILON) + 1) * step
+      : (Math.ceil(ratio - EPSILON) - 1) * step;
   return Math.min(max, Math.max(0, next));
 }
 

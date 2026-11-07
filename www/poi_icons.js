@@ -10,10 +10,11 @@ export const ICON_COLOR = '#734a08';
 export const ICON_SIZE = 20;
 
 // CDN bases
-export const LOCAL   = './assets/icons/';
-export const TEMAKI  = 'https://cdn.jsdelivr.net/npm/@ideditor/temaki@5/icons/';
-export const LIBERTY = 'https://raw.githubusercontent.com/maputnik/osm-liberty/gh-pages/svgs/svgs_iconset/';
-export const MAKI    = 'https://cdn.jsdelivr.net/npm/@mapbox/maki/icons/';
+export const LOCAL = './assets/icons/';
+export const TEMAKI = 'https://cdn.jsdelivr.net/npm/@ideditor/temaki@5/icons/';
+export const LIBERTY =
+  'https://raw.githubusercontent.com/maputnik/osm-liberty/gh-pages/svgs/svgs_iconset/';
+export const MAKI = 'https://cdn.jsdelivr.net/npm/@mapbox/maki/icons/';
 
 /**
  * Normalise un SVG pour qu'il s'affiche avec ICON_COLOR,
@@ -42,7 +43,7 @@ export function recolorSvg(svg, color) {
   // 4. style inline : fill: ... et stroke: ... (avec ou sans espace, hex/named/rgb)
   //    Préserver fill: none et stroke: none
   svg = svg.replace(/(fill\s*:\s*)(?!none|transparent|url\()([^;}"']+)/g, `$1${color}`);
-  svg = svg.replace(/(stroke\s*:\s*)(?!none|url\()([^;}"']+)/g,           `$1${color}`);
+  svg = svg.replace(/(stroke\s*:\s*)(?!none|url\()([^;}"']+)/g, `$1${color}`);
 
   // 5. Si aucun fill n'est présent sur <svg>, en ajouter un comme filet de sécurité
   if (!/<svg[^>]+\bfill=/.test(svg)) {
@@ -66,9 +67,9 @@ export function recolorSvg(svg, color) {
  */
 export async function loadPoiIcon(map, poiType, localName, temakiName, makiName, libertyName) {
   const urls = [];
-  if (localName)   urls.push(LOCAL + localName + '.svg');
-  if (temakiName)  urls.push(TEMAKI + temakiName + '.svg');
-  if (makiName)    urls.push(MAKI + makiName + '.svg');
+  if (localName) urls.push(LOCAL + localName + '.svg');
+  if (temakiName) urls.push(TEMAKI + temakiName + '.svg');
+  if (makiName) urls.push(MAKI + makiName + '.svg');
   if (libertyName) urls.push(LIBERTY + libertyName + '.svg');
 
   for (const url of urls) {
@@ -100,8 +101,7 @@ export async function loadPoiIcon(map, poiType, localName, temakiName, makiName,
       const imageData = ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE);
       map.addImage('poi-' + poiType, imageData, { pixelRatio: 1 });
       return true;
-
-    } catch (e) {
+    } catch {
       continue;
     }
   }
@@ -139,39 +139,24 @@ export function buildIconImageExpression(meta) {
   const expr = ['coalesce'];
 
   // 1. Special cases (cuisine=friture, vending=parking_tickets, door=hinged, etc.)
-  for (const sc of (meta.special_cases || [])) {
-    expr.push([
-      'case',
-      specialCaseCondition(sc),
-      ['image', 'poi-' + sc.icon_key],
-      ['image', '']
-    ]);
+  for (const sc of meta.special_cases || []) {
+    expr.push(['case', specialCaseCondition(sc), ['image', 'poi-' + sc.icon_key], ['image', '']]);
   }
 
   // 2. Chaque type_key détecté dans les données (icône nommée par la VALEUR)
-  for (const key of (meta.type_keys || [])) {
+  for (const key of meta.type_keys || []) {
     expr.push(['image', ['concat', 'poi-', ['get', key]]]);
   }
 
   // 3. Chaque presence_key détectée (icône nommée par la CLÉ elle-même,
   //    issue #51 — entrance=* a des valeurs trop hétérogènes pour mériter
   //    une icône par valeur).
-  for (const key of (meta.presence_keys || [])) {
-    expr.push([
-      'case',
-      ['has', key],
-      ['image', 'poi-' + key],
-      ['image', '']
-    ]);
+  for (const key of meta.presence_keys || []) {
+    expr.push(['case', ['has', key], ['image', 'poi-' + key], ['image', '']]);
   }
 
   // 4. Fallback : icône générique "shop"
-  expr.push([
-    'case',
-    ['has', 'shop'],
-    ['image', 'poi-shop'],
-    ['image', '']
-  ]);
+  expr.push(['case', ['has', 'shop'], ['image', 'poi-shop'], ['image', '']]);
 
   return expr;
 }
@@ -179,16 +164,16 @@ export function buildIconImageExpression(meta) {
 export function buildNoIconFilter(meta, loadedTypes) {
   const loaded = new Set(loadedTypes || []);
   const hasIcon = ['any'];
-  for (const sc of (meta.special_cases || [])) {
+  for (const sc of meta.special_cases || []) {
     if (loaded.has(sc.icon_key)) hasIcon.push(specialCaseCondition(sc));
   }
   const values = [...loaded].sort();
   if (values.length) {
-    for (const key of (meta.type_keys || [])) {
+    for (const key of meta.type_keys || []) {
       hasIcon.push(['in', ['get', key], ['literal', values]]);
     }
   }
-  for (const key of (meta.presence_keys || [])) {
+  for (const key of meta.presence_keys || []) {
     if (loaded.has(key)) hasIcon.push(['has', key]);
   }
   if (loaded.has('shop')) hasIcon.push(['has', 'shop']);
@@ -228,9 +213,7 @@ export async function loadAllPoiIcons(map) {
   // Charger les icônes SVG
   const entries = Object.entries(data);
   const results = await Promise.allSettled(
-    entries.map(([type, sources]) =>
-      loadPoiIcon(map, type, ...sources)
-    )
+    entries.map(([type, sources]) => loadPoiIcon(map, type, ...sources))
   );
   const loadedTypes = entries
     .filter((_, i) => results[i].status === 'fulfilled' && results[i].value)

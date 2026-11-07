@@ -53,7 +53,8 @@ export function parseGlb(buffer) {
     const length = view.getUint32(offset, true);
     const type = view.getUint32(offset + 4, true);
     const start = offset + 8;
-    if (type === CHUNK_JSON) json = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, start, length)));
+    if (type === CHUNK_JSON)
+      json = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, start, length)));
     else if (type === CHUNK_BIN) bin = { start, length };
     offset = start + length;
   }
@@ -70,12 +71,14 @@ export function parseGlb(buffer) {
   const extras = (json.asset && json.asset.extras) || {};
   const meshes = (json.nodes || [])
     .filter((node) => Number.isInteger(node.mesh))
-    .flatMap((node) => json.meshes[node.mesh].primitives.map((prim) => ({
-      translation: node.translation || [0, 0, 0],
-      positions: accessor(prim.attributes.POSITION),
-      colors: accessor(prim.attributes.COLOR_0),
-      indices: accessor(prim.indices),
-    })));
+    .flatMap((node) =>
+      json.meshes[node.mesh].primitives.map((prim) => ({
+        translation: node.translation || [0, 0, 0],
+        positions: accessor(prim.attributes.POSITION),
+        colors: accessor(prim.attributes.COLOR_0),
+        indices: accessor(prim.indices),
+      }))
+    );
   return {
     mercator: extras.mercator || [0, 0],
     metersPerUnit: extras.metersPerUnit || 1,
@@ -86,10 +89,22 @@ export function parseGlb(buffer) {
 export function nodeMatrix(mercator, metersPerUnit, translation, zScale) {
   const k = 1 / metersPerUnit;
   return [
-    k, 0, 0, 0,
-    0, 0, zScale, 0,
-    0, k, 0, 0,
-    mercator[0] + translation[0] * k, mercator[1] + translation[2] * k, translation[1] * zScale, 1,
+    k,
+    0,
+    0,
+    0,
+    0,
+    0,
+    zScale,
+    0,
+    0,
+    k,
+    0,
+    0,
+    mercator[0] + translation[0] * k,
+    mercator[1] + translation[2] * k,
+    translation[1] * zScale,
+    1,
   ];
 }
 
@@ -148,7 +163,14 @@ export function createRoofsLayer({
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
       const indexType = mesh.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
-      return { position, color, index, count: mesh.indices.length, indexType, translation: mesh.translation };
+      return {
+        position,
+        color,
+        index,
+        count: mesh.indices.length,
+        indexType,
+        translation: mesh.translation,
+      };
     });
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -156,7 +178,10 @@ export function createRoofsLayer({
 
   function drawAll(gl, matrix, zScale) {
     for (const mesh of buffers) {
-      const m = multiply(matrix, nodeMatrix(data.mercator, data.metersPerUnit, mesh.translation, zScale));
+      const m = multiply(
+        matrix,
+        nodeMatrix(data.mercator, data.metersPerUnit, mesh.translation, zScale)
+      );
       gl.uniformMatrix4fv(locations.matrix, false, new Float32Array(m));
       gl.bindBuffer(gl.ARRAY_BUFFER, mesh.position);
       gl.vertexAttribPointer(locations.pos, 3, gl.FLOAT, false, 0, 0);

@@ -52,7 +52,9 @@ export async function loadPattern(map, name, cfg, base = './') {
 
 export async function loadPatterns(map, patterns, base = './') {
   const entries = Object.entries(patterns || {});
-  const results = await Promise.all(entries.map(([name, cfg]) => loadPattern(map, name, cfg, base)));
+  const results = await Promise.all(
+    entries.map(([name, cfg]) => loadPattern(map, name, cfg, base))
+  );
   const loaded = results.filter(Boolean).length;
   console.log(`Motifs : ${loaded}/${entries.length} chargés`);
   map.triggerRepaint();

@@ -11,12 +11,13 @@ const NUM = (field) => ['to-number', ['get', field], 0];
 
 export const ARROW_THICKNESS = 0.12;
 
-const VALUE = (field) => (field === 'top'
-  ? ['to-number', ['coalesce', ['get', 'z_top'], ['get', 'level_max']], 0]
-  : NUM(field));
+const VALUE = (field) =>
+  field === 'top'
+    ? ['to-number', ['coalesce', ['get', 'z_top'], ['get', 'level_max']], 0]
+    : NUM(field);
 
 export function levelValues(levelsDoc) {
-  const levels = (levelsDoc && Array.isArray(levelsDoc.levels)) ? levelsDoc.levels : [];
+  const levels = levelsDoc && Array.isArray(levelsDoc.levels) ? levelsDoc.levels : [];
   return levels
     .map((entry) => Number(typeof entry === 'object' ? entry.level : entry))
     .filter((v) => Number.isFinite(v))
@@ -44,9 +45,15 @@ export function levelFilter(mode, selected) {
   if (mode === 'above') return ['>=', NUM('level_max'), 0];
   if (mode === 'below') return ['<', NUM('level_min'), 0];
   if (mode === 'select') {
-    const values = [...(selected || [])].map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+    const values = [...(selected || [])]
+      .map(Number)
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
     if (!values.length) return ['==', 1, 0];
-    return ['any', ...values.map((v) => ['all', ['<=', NUM('level_min'), v], ['>=', NUM('level_max'), v]])];
+    return [
+      'any',
+      ...values.map((v) => ['all', ['<=', NUM('level_min'), v], ['>=', NUM('level_max'), v]]),
+    ];
   }
   return ['==', 1, 0];
 }
@@ -66,9 +73,8 @@ export function indoorPaint(extrusion, win, settings) {
       'fill-extrusion-height': ['+', lifted, ARROW_THICKNESS],
     };
   }
-  const extra = extrusion === 'slab'
-    ? settings.slab
-    : Math.round(h * settings.volume_ratio * 1000) / 1000;
+  const extra =
+    extrusion === 'slab' ? settings.slab : Math.round(h * settings.volume_ratio * 1000) / 1000;
   return {
     'fill-extrusion-base': levelExpr('level_min', win, h),
     'fill-extrusion-height': ['+', top, extra],
@@ -87,15 +93,18 @@ export function buildingsState({ is3d, buildingsOn, window: win, isolated = fals
 
 export function indoorNote(mode, win, isolated = false) {
   if (mode === 'off') return '';
-  if (!win) return mode === 'select' ? 'Cochez un ou plusieurs niveaux.' : 'Aucun niveau dans cette vue.';
-  if (isolated) return `Vue isolée : le niveau ${win.lo} est posé au sol, seule l\u2019emprise des bâtiments reste affichée.`;
-  if (win.offset !== 0) return `Vue éclatée : le niveau ${win.lo} est posé au sol, bâtiments 3D masqués.`;
+  if (!win)
+    return mode === 'select' ? 'Cochez un ou plusieurs niveaux.' : 'Aucun niveau dans cette vue.';
+  if (isolated)
+    return `Vue isolée : le niveau ${win.lo} est posé au sol, seule l\u2019emprise des bâtiments reste affichée.`;
+  if (win.offset !== 0)
+    return `Vue éclatée : le niveau ${win.lo} est posé au sol, bâtiments 3D masqués.`;
   return 'Bâtiments 3D atténués pour voir l\u2019intérieur.';
 }
 
 export function lazyLayersOf(lazy, group) {
   return ((lazy && lazy.layers) || []).filter(
-    (layer) => ((layer.metadata || {})['brussels:group']) === group,
+    (layer) => (layer.metadata || {})['brussels:group'] === group
   );
 }
 
@@ -127,12 +136,18 @@ export function featureLevels(props) {
 
 function eachCoord(coords, fn) {
   if (!Array.isArray(coords)) return;
-  if (typeof coords[0] === 'number') { fn(coords); return; }
+  if (typeof coords[0] === 'number') {
+    fn(coords);
+    return;
+  }
   for (const c of coords) eachCoord(c, fn);
 }
 
 export function geometryBbox(geometry) {
-  let w = Infinity; let s = Infinity; let e = -Infinity; let n = -Infinity;
+  let w = Infinity;
+  let s = Infinity;
+  let e = -Infinity;
+  let n = -Infinity;
   eachCoord(geometry && geometry.coordinates, ([x, y]) => {
     if (x < w) w = x;
     if (x > e) e = x;
@@ -163,9 +178,7 @@ export function sameLevels(a, b) {
 export function panelLevels(available, selected) {
   const present = new Set(available || []);
   const all = new Set([...present, ...[...(selected || [])].map(Number).filter(Number.isFinite)]);
-  return [...all]
-    .sort((a, b) => b - a)
-    .map((level) => ({ level, present: present.has(level) }));
+  return [...all].sort((a, b) => b - a).map((level) => ({ level, present: present.has(level) }));
 }
 
 export function levelLabel(value) {
@@ -193,12 +206,17 @@ export function combineFilters(base, extra) {
 }
 
 export function levelAwareFilter(current, memo, extra) {
-  const unchanged = memo && JSON.stringify(current ?? null) === JSON.stringify(memo.applied ?? null);
+  const unchanged =
+    memo && JSON.stringify(current ?? null) === JSON.stringify(memo.applied ?? null);
   const base = unchanged ? memo.base : (current ?? null);
   return { base, applied: combineFilters(base, extra) };
 }
 
-export const ISOLATION_KEEP = new Set(['background', ...BUILDING_LAYERS.flat, ...BUILDING_LAYERS.extruded]);
+export const ISOLATION_KEEP = new Set([
+  'background',
+  ...BUILDING_LAYERS.flat,
+  ...BUILDING_LAYERS.extruded,
+]);
 
 export function isIsolated(mode, selected, win) {
   if (!win) return false;
