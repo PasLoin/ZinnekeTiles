@@ -25,8 +25,9 @@ def variant_style_path(style_out, vid):
 def build_manifest(style_out, variants):
     entries = [{**DEFAULT_VARIANT, "url": Path(style_out).name}]
     for v in variants:
-        entries.append({"id": v["id"], "label": v["label"],
-                        "url": variant_style_path(style_out, v["id"]).name})
+        entries.append(
+            {"id": v["id"], "label": v["label"], "url": variant_style_path(style_out, v["id"]).name}
+        )
     return {"default": DEFAULT_VARIANT["id"], "styles": entries}
 
 
@@ -43,7 +44,9 @@ def build_variants(config, directory, style_out):
         outputs.append((out, len(style["layers"])))
     remove_stale_variants(style_out, {v["id"] for v in variants})
     manifest = Path(style_out).with_name("styles.json")
-    manifest.write_text(json.dumps(build_manifest(style_out, variants), indent=2, ensure_ascii=False))
+    manifest.write_text(
+        json.dumps(build_manifest(style_out, variants), indent=2, ensure_ascii=False)
+    )
     return outputs, manifest
 
 
@@ -51,7 +54,7 @@ def remove_stale_variants(style_out, keep):
     style_out = Path(style_out)
     removed = []
     for f in style_out.parent.glob(f"{style_out.stem}.*{style_out.suffix}"):
-        vid = f.name[len(style_out.stem) + 1:-len(style_out.suffix)]
+        vid = f.name[len(style_out.stem) + 1 : -len(style_out.suffix)]
         if vid in keep:
             continue
         try:

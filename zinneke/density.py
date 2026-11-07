@@ -10,11 +10,17 @@ def poi_density(raw):
         return None
     tiers = []
     for t in d.get("tiers") or []:
-        tiers.append({str(k): [str(x) for x in (v if isinstance(v, list) else [v])]
-                      for k, v in (t or {}).items()})
-    out = {"grid": int(d.get("grid", 128)),
-           "show": {int(k): int(v) for k, v in (d.get("show") or {}).items()},
-           "tiers": tiers}
+        tiers.append(
+            {
+                str(k): [str(x) for x in (v if isinstance(v, list) else [v])]
+                for k, v in (t or {}).items()
+            }
+        )
+    out = {
+        "grid": int(d.get("grid", 128)),
+        "show": {int(k): int(v) for k, v in (d.get("show") or {}).items()},
+        "tiers": tiers,
+    }
     for k in ("dots_at", "overlap_at"):
         if d.get(k) is not None:
             out[k] = int(d[k])
@@ -34,10 +40,16 @@ def poi_rank_filter(d):
     step = ["step", ["zoom"], show[0][1]]
     for z, n in show[1:]:
         step += [z, n]
-    return ["any", [">=", ["zoom"], show[-1][0] + 1],
-            ["<=", ["coalesce", ["get", POI_RANK_FIELD], 0], step]]
+    return [
+        "any",
+        [">=", ["zoom"], show[-1][0] + 1],
+        ["<=", ["coalesce", ["get", POI_RANK_FIELD], 0], step],
+    ]
 
 
 def poi_sort_key(d):
-    return ["+", ["*", ["coalesce", ["get", POI_TIER_FIELD], len(d["tiers"]) + 1], 1000],
-            ["coalesce", ["get", POI_RANK_FIELD], 0]]
+    return [
+        "+",
+        ["*", ["coalesce", ["get", POI_TIER_FIELD], len(d["tiers"]) + 1], 1000],
+        ["coalesce", ["get", POI_RANK_FIELD], 0],
+    ]
