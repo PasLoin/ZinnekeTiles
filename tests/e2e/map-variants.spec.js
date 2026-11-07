@@ -50,7 +50,9 @@ test.describe('Variantes de style', () => {
   });
 
   test('sans manifeste, le sélecteur reste masqué et style.json est chargé', async ({ page }) => {
-    await page.route('**/styles.json', (route) => route.fulfill({ status: 404, body: 'Not Found' }));
+    await page.route('**/styles.json', (route) =>
+      route.fulfill({ status: 404, body: 'Not Found' })
+    );
     await page.goto('/?style=nb');
     await waitForStyle(page);
     await expect(page.locator('#style-select')).toBeHidden();

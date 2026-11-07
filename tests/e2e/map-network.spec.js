@@ -30,9 +30,15 @@ function setupErrorCollector(page, blockedPatterns = []) {
 // CDN d'icônes indisponibles
 // ══════════════════════════════════════════════════════════
 
-test.describe('Réseau : CDN d\'icônes down', () => {
+test.describe("Réseau : CDN d'icônes down", () => {
   test('la carte reste fonctionnelle sans les CDN Temaki, Maki, Liberty', async ({ page }) => {
-    const errors = setupErrorCollector(page, ['temaki', 'maki', 'liberty', 'jsdelivr', 'githubusercontent']);
+    const errors = setupErrorCollector(page, [
+      'temaki',
+      'maki',
+      'liberty',
+      'jsdelivr',
+      'githubusercontent',
+    ]);
 
     // Bloquer tous les CDN d'icônes
     await page.route('**/*jsdelivr.net/**', (route) => route.abort());
@@ -64,10 +70,7 @@ test.describe('Réseau : CDN d\'icônes down', () => {
 
     await page.goto('/');
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-    await page.waitForFunction(
-      () => window.map && window.map.isStyleLoaded(),
-      { timeout: 20_000 }
-    );
+    await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
 
     // Zoom fonctionne
     const zoomBefore = await page.evaluate(() => window.map.getZoom());
@@ -107,7 +110,7 @@ test.describe('Réseau : poi-icons.json indisponible', () => {
   });
 
   test('la carte ne plante pas si poi-icons.json retourne du JSON invalide', async ({ page }) => {
-    const errors = setupErrorCollector(page, ['poi-icons', 'JSON']);
+    setupErrorCollector(page, ['poi-icons', 'JSON']);
 
     await page.route('**/poi-icons.json', (route) =>
       route.fulfill({
@@ -129,9 +132,9 @@ test.describe('Réseau : poi-icons.json indisponible', () => {
   });
 
   test('la carte ne plante pas si poi-icons.json timeout', async ({ page }) => {
-    const errors = setupErrorCollector(page, ['poi-icons', 'abort']);
+    setupErrorCollector(page, ['poi-icons', 'abort']);
 
-    await page.route('**/poi-icons.json', (route) => {
+    await page.route('**/poi-icons.json', () => {
       // Ne jamais répondre → timeout côté fetch
       // Playwright va abort la requête à la fin du test
     });
@@ -149,10 +152,8 @@ test.describe('Réseau : poi-icons.json indisponible', () => {
 // ══════════════════════════════════════════════════════════
 
 test.describe('Réseau : style.json indisponible', () => {
-  test('un message d\'erreur s\'affiche si style.json retourne 404', async ({ page }) => {
-    await page.route('**/style.json', (route) =>
-      route.fulfill({ status: 404, body: 'Not Found' })
-    );
+  test("un message d'erreur s'affiche si style.json retourne 404", async ({ page }) => {
+    await page.route('**/style.json', (route) => route.fulfill({ status: 404, body: 'Not Found' }));
 
     await page.goto('/');
 
@@ -161,7 +162,9 @@ test.describe('Réseau : style.json indisponible', () => {
     await expect(subtitle).toContainText('Erreur', { timeout: 10_000 });
   });
 
-  test('un message d\'erreur s\'affiche si style.json retourne du JSON invalide', async ({ page }) => {
+  test("un message d'erreur s'affiche si style.json retourne du JSON invalide", async ({
+    page,
+  }) => {
     await page.route('**/style.json', (route) =>
       route.fulfill({
         status: 200,
@@ -182,7 +185,7 @@ test.describe('Réseau : style.json indisponible', () => {
 // ══════════════════════════════════════════════════════════
 
 test.describe('Réseau : MapLibre CDN down', () => {
-  test('la page ne produit pas d\'erreur non gérée si unpkg est lent', async ({ page }) => {
+  test("la page ne produit pas d'erreur non gérée si unpkg est lent", async ({ page }) => {
     // Simuler un CDN lent (délai 3s) plutôt que bloqué
     await page.route('**/*unpkg.com/**maplibre*', async (route) => {
       await new Promise((r) => setTimeout(r, 3000));

@@ -3,10 +3,7 @@ import { test, expect } from '@playwright/test';
 async function waitForMapAndLegend(page) {
   await page.goto('/');
   await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-  await page.waitForFunction(
-    () => window.map && window.map.isStyleLoaded(),
-    { timeout: 20_000 }
-  );
+  await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
   await page.waitForSelector('#legend-content .legend-row', { timeout: 10_000 });
 }
 
@@ -24,8 +21,8 @@ async function findLegendItem(page, groupLabel, label) {
   const row = await findLegendRow(page, groupLabel);
   if (!row) return null;
   const expand = row.locator('.legend-expand');
-  if (await expand.count() === 0) return null;
-  if (await expand.getAttribute('aria-expanded') !== 'true') await expand.click();
+  if ((await expand.count()) === 0) return null;
+  if ((await expand.getAttribute('aria-expanded')) !== 'true') await expand.click();
   const group = row.locator('xpath=..');
   const items = group.locator('.legend-item');
   const count = await items.count();
@@ -47,7 +44,8 @@ async function getLayerVisibility(page, layerId) {
 async function legendLayerIds(page) {
   return page.evaluate(() => {
     const groups = window.map.getStyle().metadata['brussels:legend'] || [];
-    return groups.flatMap((g) => [...g.layers, ...g.items.flatMap((i) => i.layers)])
+    return groups
+      .flatMap((g) => [...g.layers, ...g.items.flatMap((i) => i.layers)])
       .filter((id) => window.map.getLayer(id));
   });
 }
@@ -60,7 +58,7 @@ test.describe('Légende : Routes masque road-labels', () => {
   test('cliquer Routes masque aussi le layer road-labels', async ({ page }) => {
     const row = await findLegendRow(page, 'Routes');
     test.skip(!row, 'Pas de ligne Routes dans la légende');
-    if (await getLayerVisibility(page, 'road-labels') === 'not-found') {
+    if ((await getLayerVisibility(page, 'road-labels')) === 'not-found') {
       test.skip(true, 'Layer road-labels absent du style');
       return;
     }
@@ -71,7 +69,7 @@ test.describe('Légende : Routes masque road-labels', () => {
   test('re-cliquer Routes réaffiche road-labels', async ({ page }) => {
     const row = await findLegendRow(page, 'Routes');
     test.skip(!row, 'Pas de ligne Routes');
-    if (await getLayerVisibility(page, 'road-labels') === 'not-found') {
+    if ((await getLayerVisibility(page, 'road-labels')) === 'not-found') {
       test.skip(true, 'Layer road-labels absent');
       return;
     }
@@ -89,7 +87,7 @@ test.describe('Légende : couches communes du ferroviaire', () => {
   test('masquer Ferroviaire masque railway-bridge-casing', async ({ page }) => {
     const row = await findLegendRow(page, 'Ferroviaire');
     test.skip(!row, 'Pas de ligne Ferroviaire');
-    if (await getLayerVisibility(page, 'railway-bridge-casing') === 'not-found') {
+    if ((await getLayerVisibility(page, 'railway-bridge-casing')) === 'not-found') {
       test.skip(true, 'Layer railway-bridge-casing absent');
       return;
     }
@@ -97,10 +95,12 @@ test.describe('Légende : couches communes du ferroviaire', () => {
     expect(await getLayerVisibility(page, 'railway-bridge-casing')).toBe('none');
   });
 
-  test('masquer Rail seul conserve railway-bridge-casing pour les autres modes', async ({ page }) => {
+  test('masquer Rail seul conserve railway-bridge-casing pour les autres modes', async ({
+    page,
+  }) => {
     const item = await findLegendItem(page, 'Ferroviaire', 'Rail');
     test.skip(!item, 'Pas de sous-entrée Rail');
-    if (await getLayerVisibility(page, 'railway-bridge-casing') === 'not-found') {
+    if ((await getLayerVisibility(page, 'railway-bridge-casing')) === 'not-found') {
       test.skip(true, 'Layer railway-bridge-casing absent');
       return;
     }
@@ -117,7 +117,14 @@ test.describe('Légende : sous-entrées (tunnels et ponts)', () => {
   });
 
   const cases = [
-    { label: 'Rail', extras: ['railway-tunnel-rail-casing', 'railway-tunnel-rail-core', 'railway-rail-bridge-core'] },
+    {
+      label: 'Rail',
+      extras: [
+        'railway-tunnel-rail-casing',
+        'railway-tunnel-rail-core',
+        'railway-rail-bridge-core',
+      ],
+    },
     { label: 'Tram', extras: ['railway-tunnel-tram', 'railway-tram-bridge'] },
     { label: 'Métro', extras: ['railway-tunnel-subway', 'railway-subway-bridge'] },
   ];
@@ -128,7 +135,7 @@ test.describe('Légende : sous-entrées (tunnels et ponts)', () => {
       test.skip(!item, `Pas de sous-entrée ${label}`);
       const existing = [];
       for (const id of extras) {
-        if (await getLayerVisibility(page, id) !== 'not-found') existing.push(id);
+        if ((await getLayerVisibility(page, id)) !== 'not-found') existing.push(id);
       }
       if (existing.length === 0) {
         test.skip(true, `Aucun layer tunnel/bridge pour ${label}`);
@@ -146,7 +153,7 @@ test.describe('Légende : sous-entrées (tunnels et ponts)', () => {
       test.skip(!item, `Pas de sous-entrée ${label}`);
       const existing = [];
       for (const id of extras) {
-        if (await getLayerVisibility(page, id) !== 'not-found') existing.push(id);
+        if ((await getLayerVisibility(page, id)) !== 'not-found') existing.push(id);
       }
       if (existing.length === 0) {
         test.skip(true, `Aucun layer tunnel/bridge pour ${label}`);
@@ -166,10 +173,12 @@ test.describe('Légende Bâtiments ↔ mode 3D', () => {
     await waitForMapAndLegend(page);
   });
 
-  test('masquer Bâtiments via légende, puis activer/désactiver 3D ne réaffiche pas buildings-fill', async ({ page }) => {
+  test('masquer Bâtiments via légende, puis activer/désactiver 3D ne réaffiche pas buildings-fill', async ({
+    page,
+  }) => {
     const row = await findLegendRow(page, 'Bâtiments');
     test.skip(!row, 'Pas de ligne Bâtiments');
-    if (await getLayerVisibility(page, 'buildings-fill') === 'not-found') {
+    if ((await getLayerVisibility(page, 'buildings-fill')) === 'not-found') {
       test.skip(true, 'Layer buildings-fill absent');
       return;
     }
@@ -236,14 +245,18 @@ test.describe('Légende : construite depuis les données', () => {
     const missing = await page.evaluate(() => {
       const style = window.map.getStyle();
       const groups = style.metadata['brussels:legend'] || [];
-      const covered = new Set(groups.flatMap((g) => [...g.layers, ...g.items.flatMap((i) => i.layers)]));
+      const covered = new Set(
+        groups.flatMap((g) => [...g.layers, ...g.items.flatMap((i) => i.layers)])
+      );
       return style.layers.filter((l) => l.source && !covered.has(l.id)).map((l) => l.id);
     });
     expect(missing).toEqual([]);
   });
 
   test('une ligne par groupe déclaré, dans l’ordre des métadonnées', async ({ page }) => {
-    const expected = await page.evaluate(() => (window.map.getStyle().metadata['brussels:legend'] || []).map((g) => g.label));
+    const expected = await page.evaluate(() =>
+      (window.map.getStyle().metadata['brussels:legend'] || []).map((g) => g.label)
+    );
     const rows = page.locator('#legend-content .legend-row span');
     expect(await rows.allTextContents()).toEqual(expected);
   });
