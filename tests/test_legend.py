@@ -9,7 +9,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from build_map import LEGEND_FALLBACK_COLOR, SWATCH_TYPES, build_style, paint_color
+from zinneke import build_style
+from zinneke.legend import LEGEND_FALLBACK_COLOR, SWATCH_TYPES, paint_color
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 

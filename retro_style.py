@@ -21,7 +21,10 @@ try:
 except ImportError:
     print("✗  pip install pyyaml", file=sys.stderr); sys.exit(1)
 
-from build_map import _lighten, default_subtype_label, swatch_type, SWATCH_TYPES, INDOOR_DEFAULTS, PALETTE_DEFAULTS
+from zinneke.colors import lighten
+from zinneke.layers.indoor import INDOOR_DEFAULTS
+from zinneke.legend import SWATCH_TYPES, default_subtype_label, swatch_type
+from zinneke.palette import PALETTE_DEFAULTS
 
 # ── Groupes : préfixes de layer-id → nom de couche ────────────────────────────
 
@@ -576,7 +579,7 @@ def analyse_group(name, style_layers):
     cleaned = {}
     for k, v in subtypes.items():
         entry = {"tag": v["tag"]}
-        if "tunnel_color" in v and "color" in v and v["tunnel_color"] == _lighten(v["color"]):
+        if "tunnel_color" in v and "color" in v and v["tunnel_color"] == lighten(v["color"]):
             del v["tunnel_color"]
         if "pattern_at" in v and v["pattern_at"] == v.get("appear_at"):
             del v["pattern_at"]
