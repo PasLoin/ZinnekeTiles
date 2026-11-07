@@ -44,7 +44,9 @@ test.describe('Chargement de la carte', () => {
   });
 
   test('cliquer sur le titre ne replie pas le panneau', async ({ page, context }) => {
-    await context.route('https://github.com/**', (route) => route.fulfill({ status: 200, body: '' }));
+    await context.route('https://github.com/**', (route) =>
+      route.fulfill({ status: 200, body: '' })
+    );
     const panel = page.locator('#title-panel');
     const before = await panel.getAttribute('class');
     const popup = context.waitForEvent('page');
@@ -162,7 +164,7 @@ test.describe('Lien OSM', () => {
     await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
   });
 
-  test('le lien d\'édition OSM est présent', async ({ page }) => {
+  test("le lien d'édition OSM est présent", async ({ page }) => {
     const link = page.locator('#osm-edit');
     await expect(link).toBeVisible();
   });
@@ -184,7 +186,7 @@ test.describe('Contrôles MapLibre', () => {
     await expect(zoomIn).toBeVisible();
   });
 
-  test('le contrôle d\'inclinaison incline puis redresse la vue', async ({ page }) => {
+  test("le contrôle d'inclinaison incline puis redresse la vue", async ({ page }) => {
     const up = page.locator('.pitch-ctrl .pitch-up');
     const down = page.locator('.pitch-ctrl .pitch-down');
     await expect(up).toBeVisible();
@@ -196,7 +198,7 @@ test.describe('Contrôles MapLibre', () => {
     await expect.poll(() => page.evaluate(() => Math.round(window.map.getPitch()))).toBe(0);
   });
 
-  test('le contrôle d\'échelle est présent', async ({ page }) => {
+  test("le contrôle d'échelle est présent", async ({ page }) => {
     const scale = page.locator('.maplibregl-ctrl-scale');
     await expect(scale).toBeVisible();
   });

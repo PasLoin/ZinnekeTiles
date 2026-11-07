@@ -13,10 +13,7 @@ import { test, expect } from '@playwright/test';
 async function waitForMap(page) {
   await page.goto('/');
   await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 15_000 });
-  await page.waitForFunction(
-    () => window.map && window.map.isStyleLoaded(),
-    { timeout: 20_000 }
-  );
+  await page.waitForFunction(() => window.map && window.map.isStyleLoaded(), { timeout: 20_000 });
 }
 
 test.describe('Mode DATA : activation / désactivation', () => {
@@ -30,9 +27,7 @@ test.describe('Mode DATA : activation / désactivation', () => {
     await btn.click();
 
     await expect(btn).toHaveClass(/active/);
-    const cursor = await page.locator('canvas.maplibregl-canvas').evaluate(
-      (el) => el.style.cursor
-    );
+    const cursor = await page.locator('canvas.maplibregl-canvas').evaluate((el) => el.style.cursor);
     expect(cursor).toBe('crosshair');
   });
 
@@ -43,9 +38,7 @@ test.describe('Mode DATA : activation / désactivation', () => {
     await btn.click(); // désactiver
 
     await expect(btn).not.toHaveClass(/active/);
-    const cursor = await page.locator('canvas.maplibregl-canvas').evaluate(
-      (el) => el.style.cursor
-    );
+    const cursor = await page.locator('canvas.maplibregl-canvas').evaluate((el) => el.style.cursor);
     expect(cursor).toBe('');
   });
 
@@ -99,7 +92,7 @@ test.describe('Mode DATA : popup au hover', () => {
     const points = [
       { x: box.x + box.width / 2, y: box.y + box.height / 2 },
       { x: box.x + box.width / 3, y: box.y + box.height / 3 },
-      { x: box.x + box.width * 2 / 3, y: box.y + box.height * 2 / 3 },
+      { x: box.x + (box.width * 2) / 3, y: box.y + (box.height * 2) / 3 },
     ];
 
     let popupFound = false;
@@ -212,7 +205,7 @@ test.describe('Mode DATA : le popup disparaît correctement', () => {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.waitForTimeout(300);
 
-    const hadPopup = await page.locator('.data-popup').count() > 0;
+    const hadPopup = (await page.locator('.data-popup').count()) > 0;
 
     if (!hadPopup) {
       test.skip(true, 'Aucune feature rendue');
@@ -226,7 +219,10 @@ test.describe('Mode DATA : le popup disparaît correctement', () => {
       const h = canvas.height;
       // Tester les coins — souvent vides
       const corners = [
-        [5, 5], [w - 5, 5], [5, h - 5], [w - 5, h - 5],
+        [5, 5],
+        [w - 5, 5],
+        [5, h - 5],
+        [w - 5, h - 5],
       ];
       for (const [x, y] of corners) {
         const features = window.map.queryRenderedFeatures([x, y]);
@@ -243,10 +239,7 @@ test.describe('Mode DATA : le popup disparaît correctement', () => {
     // Déplacer la souris vers le point vide
     const canvasRect = await canvas.boundingBox();
     const scale = await page.evaluate(() => window.devicePixelRatio || 1);
-    await page.mouse.move(
-      canvasRect.x + emptyPoint.x / scale,
-      canvasRect.y + emptyPoint.y / scale
-    );
+    await page.mouse.move(canvasRect.x + emptyPoint.x / scale, canvasRect.y + emptyPoint.y / scale);
     await page.waitForTimeout(300);
 
     // Le popup doit avoir disparu
@@ -255,12 +248,12 @@ test.describe('Mode DATA : le popup disparaît correctement', () => {
   });
 });
 
-test.describe('Mode DATA : pas d\'interférence', () => {
+test.describe("Mode DATA : pas d'interférence", () => {
   test.beforeEach(async ({ page }) => {
     await waitForMap(page);
   });
 
-  test('le mode DATA n\'interfère pas avec le hover normal quand désactivé', async ({ page }) => {
+  test("le mode DATA n'interfère pas avec le hover normal quand désactivé", async ({ page }) => {
     const canvas = page.locator('canvas.maplibregl-canvas');
     const box = await canvas.boundingBox();
 
@@ -285,10 +278,7 @@ test.describe('Mode DATA : pas d\'interférence', () => {
     // Toggle rapide 5 fois
     for (let i = 0; i < 5; i++) {
       await btn.click();
-      await page.mouse.move(
-        box.x + box.width / 2 + i * 10,
-        box.y + box.height / 2
-      );
+      await page.mouse.move(box.x + box.width / 2 + i * 10, box.y + box.height / 2);
     }
 
     // Finir désactivé (5 clics = impair → actif, donc un de plus)
