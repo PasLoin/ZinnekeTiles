@@ -57,7 +57,7 @@ describe('buildIconImageExpression', () => {
     });
 
     const concatBranches = expr.filter(
-      e => Array.isArray(e) && e[0] === 'image' && Array.isArray(e[1]) && e[1][0] === 'concat'
+      (e) => Array.isArray(e) && e[0] === 'image' && Array.isArray(e[1]) && e[1][0] === 'concat'
     );
     expect(concatBranches).toHaveLength(3);
     expect(concatBranches[0]).toEqual(['image', ['concat', 'poi-', ['get', 'amenity']]]);
@@ -68,9 +68,7 @@ describe('buildIconImageExpression', () => {
   it('inclut les special_cases avant les type_keys', () => {
     const expr = buildIconImageExpression({
       type_keys: ['amenity'],
-      special_cases: [
-        { key: 'cuisine', value: 'friture', icon_key: 'cuisine-friture' },
-      ],
+      special_cases: [{ key: 'cuisine', value: 'friture', icon_key: 'cuisine-friture' }],
     });
 
     expect(expr[1][0]).toBe('case');
@@ -79,20 +77,29 @@ describe('buildIconImageExpression', () => {
     expect(expr[2]).toEqual(['image', ['concat', 'poi-', ['get', 'amenity']]]);
   });
 
-  it('combine les conditions multiples d\'un special_case en all', () => {
+  it("combine les conditions multiples d'un special_case en all", () => {
     const expr = buildIconImageExpression({
       type_keys: ['amenity'],
       special_cases: [
-        { conditions: [['amenity', 'toilets'], ['male', 'yes'], ['female', 'no']], icon_key: 'toilets-male' },
+        {
+          conditions: [
+            ['amenity', 'toilets'],
+            ['male', 'yes'],
+            ['female', 'no'],
+          ],
+          icon_key: 'toilets-male',
+        },
       ],
     });
 
     expect(expr[1]).toEqual([
       'case',
-      ['all',
+      [
+        'all',
         ['==', ['get', 'amenity'], 'toilets'],
         ['==', ['get', 'male'], 'yes'],
-        ['==', ['get', 'female'], 'no']],
+        ['==', ['get', 'female'], 'no'],
+      ],
       ['image', 'poi-toilets-male'],
       ['image', ''],
     ]);
@@ -119,12 +126,7 @@ describe('buildIconImageExpression', () => {
     });
 
     const last = expr[expr.length - 1];
-    expect(last).toEqual([
-      'case',
-      ['has', 'shop'],
-      ['image', 'poi-shop'],
-      ['image', ''],
-    ]);
+    expect(last).toEqual(['case', ['has', 'shop'], ['image', 'poi-shop'], ['image', '']]);
   });
 
   it('gère meta undefined / null', () => {
@@ -142,14 +144,14 @@ describe('buildIconImageExpression', () => {
 // ══════════════════════════════════════════════════════════
 
 describe('loadPoiIcon', () => {
-  it('retourne false si aucune source n\'est fournie', async () => {
+  it("retourne false si aucune source n'est fournie", async () => {
     const map = { addImage: vi.fn() };
     const result = await loadPoiIcon(map, 'test', null, null, null, null);
     expect(result).toBe(false);
     expect(map.addImage).not.toHaveBeenCalled();
   });
 
-  it('essaie les URLs dans l\'ordre local → temaki → maki → liberty', async () => {
+  it("essaie les URLs dans l'ordre local → temaki → maki → liberty", async () => {
     const fetchedUrls = [];
     const originalFetch = globalThis.fetch;
     globalThis.fetch = vi.fn(async (url) => {
@@ -218,7 +220,10 @@ describe('loadPoiIcon', () => {
 
 describe('recolorSvg', () => {
   it('recolore fill, stroke et currentColor', () => {
-    const out = recolorSvg('<svg><path fill="#000" stroke="black" style="fill:red"/><stop stop-color="currentColor"/></svg>', '#734a08');
+    const out = recolorSvg(
+      '<svg><path fill="#000" stroke="black" style="fill:red"/><stop stop-color="currentColor"/></svg>',
+      '#734a08'
+    );
     expect(out).toContain('fill="#734a08"');
     expect(out).toContain('stroke="#734a08"');
     expect(out).toContain('fill:#734a08');
@@ -227,14 +232,20 @@ describe('recolorSvg', () => {
   });
 
   it('conserve les références de dégradé url(#id)', () => {
-    const out = recolorSvg('<svg><path fill="url(#g)" stroke="url(#h)" style="fill:url(#g)"/></svg>', '#734a08');
+    const out = recolorSvg(
+      '<svg><path fill="url(#g)" stroke="url(#h)" style="fill:url(#g)"/></svg>',
+      '#734a08'
+    );
     expect(out).toContain('fill="url(#g)"');
     expect(out).toContain('stroke="url(#h)"');
     expect(out).toContain('fill:url(#g)');
   });
 
   it('conserve fill="none" et fill="transparent"', () => {
-    const out = recolorSvg('<svg fill="none"><path fill="transparent" stroke="none"/></svg>', '#734a08');
+    const out = recolorSvg(
+      '<svg fill="none"><path fill="transparent" stroke="none"/></svg>',
+      '#734a08'
+    );
     expect(out).toContain('fill="none"');
     expect(out).toContain('fill="transparent"');
     expect(out).toContain('stroke="none"');
@@ -243,7 +254,10 @@ describe('recolorSvg', () => {
   it('les dégradés de cannabis.svg prennent la couleur des icônes', async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const svg = fs.readFileSync(path.resolve(__dirname, '../../www/assets/icons/cannabis.svg'), 'utf-8');
+    const svg = fs.readFileSync(
+      path.resolve(__dirname, '../../www/assets/icons/cannabis.svg'),
+      'utf-8'
+    );
     const out = recolorSvg(svg, ICON_COLOR);
     expect(out).toMatch(/fill="url\(#[^)]+\)"/);
     expect(out).toContain(`stop-color="${ICON_COLOR}"`);

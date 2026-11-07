@@ -47,13 +47,15 @@ export function initStyleSelect(select, manifest, currentId, onPick) {
     select.hidden = true;
     return false;
   }
-  select.replaceChildren(...styles.map((s) => {
-    const option = document.createElement('option');
-    option.value = s.id;
-    option.textContent = s.label || s.id;
-    option.selected = s.id === currentId;
-    return option;
-  }));
+  select.replaceChildren(
+    ...styles.map((s) => {
+      const option = document.createElement('option');
+      option.value = s.id;
+      option.textContent = s.label || s.id;
+      option.selected = s.id === currentId;
+      return option;
+    })
+  );
   select.hidden = false;
   select.addEventListener('change', () => onPick(select.value));
   return true;

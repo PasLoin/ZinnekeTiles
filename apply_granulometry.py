@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-import argparse, json, math, sys
+import argparse
+import json
+import math
+import sys
 from pathlib import Path
 
 ZOOM_BLOCKS = [(z, z) for z in range(10, 19)]
@@ -20,14 +23,15 @@ def match_rule(rule, props):
 
 def apply(rule, props):
     action = rule.get("action", "keep")
-    kp     = rule.get("keep_properties", "ALL")
+    kp = rule.get("keep_properties", "ALL")
     if kp == "ALL":
         return action, None
     return action, list(kp)
 
 
 def filter_props(props, keep):
-    if keep is None: return dict(props)
+    if keep is None:
+        return dict(props)
     return {k: v for k, v in props.items() if k in keep}
 
 
@@ -35,8 +39,10 @@ def existing_range(feat):
     hint = feat.get("tippecanoe") or {}
     lo = hint.get("minzoom")
     hi = hint.get("maxzoom")
-    return (lo if isinstance(lo, (int, float)) else float("-inf"),
-            hi if isinstance(hi, (int, float)) else float("inf"))
+    return (
+        lo if isinstance(lo, (int, float)) else float("-inf"),
+        hi if isinstance(hi, (int, float)) else float("inf"),
+    )
 
 
 def process(feat, rules):
@@ -79,9 +85,12 @@ def process(feat, rules):
         hint = dict(base_hint)
         hint["minzoom"] = zmin
         hint["maxzoom"] = zmax
-        f = {"type": "Feature", "geometry": feat.get("geometry"),
-             "properties": filter_props(props, keep),
-             "tippecanoe": hint}
+        f = {
+            "type": "Feature",
+            "geometry": feat.get("geometry"),
+            "properties": filter_props(props, keep),
+            "tippecanoe": hint,
+        }
         if feat.get("id") is not None:
             f["id"] = feat["id"]
         out.append(f)
@@ -132,7 +141,7 @@ def point_of(geom):
 
 
 def grid_cell(lon, lat, zoom, size):
-    world = 512 * 2 ** zoom
+    world = 512 * 2**zoom
     lat = max(min(lat, 85.0511), -85.0511)
     s = math.sin(math.radians(lat))
     x = (lon + 180.0) / 360.0 * world
@@ -212,16 +221,21 @@ def process_file(path, rules, dry_run, rank=None):
         else:
             path.write_text(json.dumps(data, ensure_ascii=False))
 
-    return {"in": len(feats), "out": len(out),
-            "dropped": dropped, "expanded": expanded, "cells": cells}
+    return {
+        "in": len(feats),
+        "out": len(out),
+        "dropped": dropped,
+        "expanded": expanded,
+        "cells": cells,
+    }
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--gran",    default="granulometry.json")
-    p.add_argument("--layers",  default=None)
+    p.add_argument("--gran", default="granulometry.json")
+    p.add_argument("--layers", default=None)
     p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--report",  default="granulometry_report.md")
+    p.add_argument("--report", default="granulometry_report.md")
     args = p.parse_args()
 
     gran_path = Path(args.gran)
@@ -232,8 +246,11 @@ def main():
     gran = json.loads(gran_path.read_text())
     layer_cfgs = gran.get("layers", {})
 
-    targets = ([l.strip() for l in args.layers.split(",")]
-               if args.layers else list(layer_cfgs.keys()))
+    targets = (
+        [name.strip() for name in args.layers.split(",")]
+        if args.layers
+        else list(layer_cfgs.keys())
+    )
 
     if args.dry_run:
         print("  (dry-run — aucun fichier modifié)")
@@ -260,27 +277,36 @@ def main():
             exp = f" +{stats['expanded']} splits" if stats["expanded"] else ""
             mark = "○" if args.dry_run else "✓"
             rk = f", rang sur {stats['cells']} cellules" if stats.get("cells") else ""
-            print(f"{mark}  {stats['in']} → {stats['out']}  "
-                  f"({stats['dropped']} drop{exp}{rk})")
+            print(f"{mark}  {stats['in']} → {stats['out']}  ({stats['dropped']} drop{exp}{rk})")
 
-            total_in   += stats["in"]
-            total_out  += stats["out"]
+            total_in += stats["in"]
+            total_out += stats["out"]
             total_drop += stats["dropped"]
-            rows.append(f"| {label} | {stats['in']} | {stats['out']} "
-                        f"| {stats['dropped']} | {pct}% |")
+            rows.append(
+                f"| {label} | {stats['in']} | {stats['out']} | {stats['dropped']} | {pct}% |"
+            )
 
     pct_total = round(100 * total_out / total_in) if total_in else 0
-    report = ["# Granulometry report", "",
-              f"Config: `{args.gran}`",
-              f"Dry-run: {'oui' if args.dry_run else 'non'}", "",
-              "| Layer | In | Out | Drop | % kept |",
-              "| :--- | ---: | ---: | ---: | ---: |"] + rows + [
-              f"| **Total** | **{total_in}** | **{total_out}** "
-              f"| **{total_drop}** | **{pct_total}%** |"]
+    report = (
+        [
+            "# Granulometry report",
+            "",
+            f"Config: `{args.gran}`",
+            f"Dry-run: {'oui' if args.dry_run else 'non'}",
+            "",
+            "| Layer | In | Out | Drop | % kept |",
+            "| :--- | ---: | ---: | ---: | ---: |",
+        ]
+        + rows
+        + [
+            f"| **Total** | **{total_in}** | **{total_out}** "
+            f"| **{total_drop}** | **{pct_total}%** |"
+        ]
+    )
     Path(args.report).write_text("\n".join(report) + "\n")
     print(f"\n✓  rapport → {args.report}")
-    print(f"✓  {total_in} → {total_out} features  "
-          f"({pct_total}% conservés, {total_drop} supprimés)")
+    print(f"✓  {total_in} → {total_out} features  ({pct_total}% conservés, {total_drop} supprimés)")
+
 
 if __name__ == "__main__":
     main()

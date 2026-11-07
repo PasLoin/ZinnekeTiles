@@ -50,7 +50,7 @@ npx playwright install chromium
 La configuration et le style :
 
 - `map.config.yaml` est la source du style. On modifie ce fichier, jamais `www/style.json`.
-- `build_map.py` compile `map.config.yaml` en trois fichiers : `www/style.json`, `granulometry.json` (quels objets et quels attributs garder à chaque zoom) et `pmtiles_params.json` (zooms et simplification de chaque PMTiles).
+- `build_map.py` compile `map.config.yaml` en trois fichiers : `www/style.json`, `granulometry.json` (quels objets et quels attributs garder à chaque zoom) et `pmtiles_params.json` (zooms et simplification de chaque PMTiles). Le script n'est qu'un point d'entrée : le code vit dans le package `zinneke/` (voir [Le package zinneke](#le-package-zinneke)), et `python3 -m zinneke` accepte les mêmes options.
 - `styles/*.yaml` contient les variantes de style, des surcharges de `map.config.yaml` compilées en `www/style.<id>.json` (voir [Variantes de style](#variantes-de-style)).
 - `retro_style.py` reconstruit un `map.config.yaml` à partir d'un `style.json` (voir [Reconstruire la configuration depuis un style](#reconstruire-la-configuration-depuis-un-style)).
 - `poi-icons.config.yaml` déclare les icônes qui dépendent de plusieurs tags à la fois (toilettes hommes/femmes, types d'œuvres d'art…).
@@ -138,7 +138,7 @@ La section `density` des POI contient `grid` (taille de cellule en pixels), `sho
 | Champ | Description |
 | :--- | :--- |
 | `tag` | Tag OSM du filtre (`landuse`, `leisure`, `highway`…) |
-| `label` | Nom affiché dans la légende (défaut : libellé intégré à `build_map.py`) |
+| `label` | Nom affiché dans la légende (défaut : libellé intégré à `zinneke/legend.py`) |
 | `color` | Couleur principale du sous-type |
 | `color_private` | Couleur si `access=private` |
 | `pattern` | `fill-pattern` (ex : `military-hatch`) |
@@ -151,7 +151,7 @@ La section `density` des POI contient `grid` (taille de cellule en pixels), `sho
 | `by_color`, `by_pattern` | Couleur ou motif par valeur de la clé `by` |
 | `tunnel_color` | Couleur des tronçons en tunnel (défaut : `color` éclaircie) |
 
-Pour les routes, les sous-types sont les classes `highway` : `motorway`, `trunk`, `primary`, `secondary`, `tertiary` et leurs bretelles `_link`, puis `residential`, `unclassified`, `living_street`, `service`, `busway` et `track`. Les épaisseurs de trait sont fixées dans `build_map.py` et ne se règlent pas depuis la configuration.
+Pour les routes, les sous-types sont les classes `highway` : `motorway`, `trunk`, `primary`, `secondary`, `tertiary` et leurs bretelles `_link`, puis `residential`, `unclassified`, `living_street`, `service`, `busway` et `track`. Les épaisseurs de trait sont fixées dans `zinneke/layers/roads.py` et ne se règlent pas depuis la configuration.
 
 ### Section `patterns`
 
@@ -159,7 +159,7 @@ Chaque motif SVG utilisé par `pattern` ou `by_pattern` y est déclaré avec `fi
 
 ### Section `palette`
 
-Cette section facultative regroupe les couleurs secondaires qui ne dépendent pas d'un sous-type : ponts, tunnels, étiquettes, halos, flèches de sens unique. Sans elle, les valeurs par défaut de `build_map.py` s'appliquent.
+Cette section facultative regroupe les couleurs secondaires qui ne dépendent pas d'un sous-type : ponts, tunnels, étiquettes, halos, flèches de sens unique. Sans elle, les valeurs par défaut de `zinneke/palette.py` s'appliquent.
 
 | Groupe | Clés |
 | :--- | :--- |
@@ -183,7 +183,7 @@ Une clé inconnue déclenche un avertissement au build.
 
 ### Section `layers.indoor`
 
-Cette section est facultative et ne concerne que le rendu 3D de l'intérieur. Elle accepte `appear_at`, `level_height` (hauteur d'un niveau en mètres), `slab` (épaisseur des planchers), `volume_ratio` (hauteur des volumes rapportée à celle du niveau), `floor_opacity`, `volume_opacity`, et une couleur par type d'espace dans `subtypes` : `room`, `corridor`, `footway`, `pedestrian`, `platform`, `steps`, `escalator`, `elevator`, `wall`, `area` et `arrow`. Sans cette section, les valeurs par défaut de `build_map.py` s'appliquent.
+Cette section est facultative et ne concerne que le rendu 3D de l'intérieur. Elle accepte `appear_at`, `level_height` (hauteur d'un niveau en mètres), `slab` (épaisseur des planchers), `volume_ratio` (hauteur des volumes rapportée à celle du niveau), `floor_opacity`, `volume_opacity`, et une couleur par type d'espace dans `subtypes` : `room`, `corridor`, `footway`, `pedestrian`, `platform`, `steps`, `escalator`, `elevator`, `wall`, `area` et `arrow`. Sans cette section, les valeurs par défaut de `zinneke/layers/indoor.py` s'appliquent.
 
 ### Légende
 
@@ -433,12 +433,47 @@ npm run test:e2e
 
 Pour une autre source OSM, gardez le même nom de fichier ou modifiez la variable `SRC` dans `generate_json.bash`.
 
+## Le package zinneke
+
+`build_map.py` délègue tout au package `zinneke/`, découpé par responsabilité :
+
+| Module | Contenu |
+| :--- | :--- |
+| `colors.py`, `palette.py` | Noms de couleurs, éclaircissement, couleurs secondaires (`palette`) et leur validation. |
+| `config.py` | Lecture d'une couche (`lc`) et d'un sous-type (`sc`), sous-types par défaut, empreinte de la configuration. |
+| `expressions.py` | Expressions MapLibre communes : interpolation par zoom, `match` sur une clé `by`, couleur privée. |
+| `density.py` | Désencombrement des POI : rang, palier, filtre et clé de tri. |
+| `layers/` | Un module par couche (`roads.py`, `buildings.py`, `indoor.py`…), plus `lazy.py` pour les couches 3D chargées à la demande. |
+| `patterns.py` | Motifs de remplissage déclarés et utilisés. |
+| `sources.py` | Liste des sources vectorielles et description commune d'une source PMTiles. |
+| `layers/ordering.py` | Ordre d'empilement : sol, extrusions 3D, puis étiquettes et icônes. |
+| `style.py` | Assemblage de `style.json`. |
+| `legend.py` | Construction de la légende rangée dans les métadonnées du style. |
+| `variants.py`, `catalog.py` | Validation et fusion des variantes, puis écriture des `style.<id>.json` et de `styles.json`. |
+| `granulometry.py`, `pmtiles.py` | Règles de granulométrie et paramètres Tippecanoe. |
+| `cli.py` | Ligne de commande partagée par `build_map.py` et `python3 -m zinneke`. |
+
+Les fonctions principales s'importent depuis la racine du package (`from zinneke import build_style, build_granulometry, build_pmtiles_params, build_variants`), les autres depuis leur module (`from zinneke.layers.roads import ROAD_ORDER`).
+
+`pyproject.toml` déclare le package et ses dépendances. `pip install -e '.[dev]'` l'installe avec pytest et Ruff, et ajoute la commande `zinneke-build`, équivalente à `python3 build_map.py`.
+
+## Lint et formatage
+
+Tout le code Python du dépôt suit le format et les règles Ruff définis dans `pyproject.toml`. Le JavaScript (`www/*.js`, tests Vitest et Playwright, fichiers de configuration) suit ESLint (`eslint.config.mjs`) et Prettier (`.prettierrc.json`). Le job `lint` de la CI refuse une pull request qui ne les respecte pas. Avant de pousser :
+
+```bash
+ruff format && ruff check --fix
+npm run format
+```
+
+`ruff check` et `npm run lint` vérifient sans rien modifier. Prettier ne touche ni au HTML, ni au JSON, ni au YAML, ni au Markdown, ni aux fichiers générés de `www/`.
+
 ## Ajouter une couche
 
 Une nouvelle couche touche l'extraction, la compilation du style et la reconstruction inverse.
 
 1. Extrayez les objets OSM dans `generate_json.bash`, avec un appel `extract nouvelle_couche ...` pour un filtrage simple, ou un script Python dédié sur le modèle de `extract_stib_routes.py` pour une extraction plus complexe.
-2. Dans `build_map.py`, ajoutez le nom à `SOURCES` et à `PMTILES_DEFAULTS`, écrivez la fonction qui produit les layers de la couche et appelez-la dans `build_style()`. La source MapLibre, la légende, la granulométrie et les paramètres PMTiles en découlent. Si seuls les sous-types déclarés doivent rester dans les tuiles, ajoutez aussi la couche à `SUBTYPE_ONLY_LAYERS`.
+2. Ajoutez le nom à `SOURCES` (`zinneke/sources.py`) et à `PMTILES_DEFAULTS` (`zinneke/pmtiles.py`), écrivez la fonction qui produit les layers de la couche dans un nouveau module `zinneke/layers/nouvelle_couche.py` et appelez-la dans `build_style()` (`zinneke/style.py`). La source MapLibre, la légende, la granulométrie et les paramètres PMTiles en découlent. Si seuls les sous-types déclarés doivent rester dans les tuiles, ajoutez aussi la couche à `SUBTYPE_ONLY_LAYERS` (`zinneke/granulometry.py`).
 3. Déclarez la couche dans `map.config.yaml` avec ses couleurs, zooms et, au besoin, une section `tiles`, puis lancez `python3 build_map.py`.
 4. Ajoutez les préfixes d'identifiants de ses layers à `GROUPS` dans `retro_style.py`, pour que l'aller-retour la retrouve.
 5. Régénérez les données (granulométrie et PMTiles) et déplacez `nouvelle_couche.pmtiles` dans `www/`.
@@ -471,6 +506,9 @@ npm test -- tests/unit/poi_icons.test.js
 | `python3 retro_style.py --out map.config.new.yaml` | Reconstruit une configuration depuis `www/style.json`. |
 | `python3 apply_granulometry.py` | Applique les règles de granulométrie aux GeoJSON. |
 | `python3 -m pytest tests` | Lance tous les tests Python. |
+| `ruff check && ruff format --check` | Vérifie le lint et le format du Python. |
+| `npm run lint` | Vérifie le JavaScript avec ESLint et Prettier. |
+| `npm run format` | Reformate le JavaScript et corrige ce qu'ESLint sait corriger. |
 | `npm run serve` | Sert `www/` sur le port 8080. |
 | `npm test` | Lance les tests unitaires Vitest. |
 | `npm run test:watch` | Lance Vitest en mode interactif. |

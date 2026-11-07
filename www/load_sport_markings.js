@@ -17,7 +17,7 @@ var SPORT_MARKINGS = [
   'sport-markings-soccer',
   'sport-markings-basketball',
   'sport-markings-basketball-1hoop',
-  'sport-markings-boules'
+  'sport-markings-boules',
 ];
 
 var _pending = {};
@@ -29,14 +29,14 @@ function rasterizeAndAdd(map, name, basePath) {
   var img = new Image();
   img.crossOrigin = 'anonymous';
 
-  img.onload = function() {
+  img.onload = function () {
     if (map.hasImage(name)) return;
 
-    var w = img.naturalWidth  || img.width  || 200;
+    var w = img.naturalWidth || img.width || 200;
     var h = img.naturalHeight || img.height || 100;
 
-    var canvas  = document.createElement('canvas');
-    canvas.width  = w;
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
     canvas.height = h;
 
     var ctx = canvas.getContext('2d');
@@ -48,7 +48,7 @@ function rasterizeAndAdd(map, name, basePath) {
     console.log('[sport-markings] ' + name + ' (' + w + 'x' + h + ')');
   };
 
-  img.onerror = function() {
+  img.onerror = function () {
     console.warn('[sport-markings] ' + name + ': not found at ' + basePath + name + '.svg');
     _pending[name] = false;
   };
@@ -59,14 +59,14 @@ function rasterizeAndAdd(map, name, basePath) {
 function setupSportMarkings(map, basePath) {
   if (basePath === undefined) basePath = './assets/icons/';
 
-  map.on('styleimagemissing', function(e) {
+  map.on('styleimagemissing', function (e) {
     if (e.id.indexOf('sport-markings-') === 0) {
       rasterizeAndAdd(map, e.id, basePath);
     }
   });
 
   function preload() {
-    SPORT_MARKINGS.forEach(function(name) {
+    SPORT_MARKINGS.forEach(function (name) {
       rasterizeAndAdd(map, name, basePath);
     });
   }

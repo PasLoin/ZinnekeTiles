@@ -13,10 +13,7 @@ import path from 'path';
 let html;
 
 beforeAll(() => {
-  html = fs.readFileSync(
-    path.resolve(__dirname, '../../www/index.html'),
-    'utf-8'
-  );
+  html = fs.readFileSync(path.resolve(__dirname, '../../www/index.html'), 'utf-8');
   document.documentElement.innerHTML = html;
 });
 
@@ -54,7 +51,7 @@ describe('Structure HTML de base', () => {
     expect(link.getAttribute('rel')).toContain('noopener');
   });
 
-  it('ajoute le contrôle d\'inclinaison', () => {
+  it("ajoute le contrôle d'inclinaison", () => {
     expect(html).toContain("from './pitch_control.js'");
     expect(html).toContain('new PitchControl()');
     expect(html).toContain('visualizePitch: true');
@@ -66,7 +63,7 @@ describe('Structure HTML de base', () => {
     expect(html).toContain('trackLayout(');
   });
 
-  it('contient le lien d\'édition OSM', () => {
+  it("contient le lien d'édition OSM", () => {
     expect(html).toContain('id="osm-edit"');
   });
 });
@@ -144,7 +141,7 @@ describe('Architecture modulaire', () => {
 
 describe('Catégories de la légende', () => {
   const legend = JSON.parse(
-    fs.readFileSync(path.resolve(__dirname, '../../www/style.json'), 'utf-8'),
+    fs.readFileSync(path.resolve(__dirname, '../../www/style.json'), 'utf-8')
   ).metadata['brussels:legend'];
   const labels = legend.flatMap((g) => [g.label, ...g.items.map((i) => i.label)]);
 
@@ -156,13 +153,31 @@ describe('Catégories de la légende', () => {
 
   it('déclare les catégories attendues dans style.json', () => {
     const expectedLabels = [
-      'Résidentiel', 'Industriel', 'Commercial', 'Éducation',
-      'Forêt', 'Parcs', 'Pelouse', 'Eau', 'Bâtiments',
-      'Rail', 'Tram', 'Métro', 'Routes', 'Piétons', 'Cyclable',
-      'POI', 'Limites', 'Loisirs', 'Mobilier',
+      'Résidentiel',
+      'Industriel',
+      'Commercial',
+      'Éducation',
+      'Forêt',
+      'Parcs',
+      'Pelouse',
+      'Eau',
+      'Bâtiments',
+      'Rail',
+      'Tram',
+      'Métro',
+      'Routes',
+      'Piétons',
+      'Cyclable',
+      'POI',
+      'Limites',
+      'Loisirs',
+      'Mobilier',
     ];
     for (const label of expectedLabels) {
-      expect(labels.some((l) => l.startsWith(label)), label).toBe(true);
+      expect(
+        labels.some((l) => l.startsWith(label)),
+        label
+      ).toBe(true);
     }
   });
 
@@ -183,7 +198,7 @@ describe('Styles CSS critiques', () => {
     expect(html).toContain('.data-popup');
   });
 
-  it('gère l\'état collapsed des panneaux', () => {
+  it("gère l'état collapsed des panneaux", () => {
     expect(html).toContain('.collapsed .panel-content');
   });
 });

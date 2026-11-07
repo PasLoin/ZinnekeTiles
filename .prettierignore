@@ -1,0 +1,11 @@
+node_modules/
+coverage/
+test-results/
+playwright-report/
+www/*
+!www/*.js
+**/*.json
+**/*.md
+**/*.yaml
+**/*.yml
+**/*.html

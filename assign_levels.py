@@ -12,7 +12,10 @@ LEVEL_PROPS = ("level_min", "level_max", "level_approx", "level_hint")
 def level_props(props):
     values = parse_level_values(props.get("level"), props.get("repeat_on"))
     if values:
-        return {"level_min": format_level(values[0]), "level_max": format_level(values[-1])}, "level"
+        return {
+            "level_min": format_level(values[0]),
+            "level_max": format_level(values[-1]),
+        }, "level"
     approx = underground_level(props)
     if approx is not None:
         value = format_level(approx)
@@ -51,8 +54,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     for path in args.paths:
         s = assign_file(path)
-        print(f"  {path} : {s['level']} level, {s['underground']} souterrains déduits, "
-              f"{s['roof']} toits, {s['default']} au rez-de-chaussée par défaut")
+        print(
+            f"  {path} : {s['level']} level, {s['underground']} souterrains déduits, "
+            f"{s['roof']} toits, {s['default']} au rez-de-chaussée par défaut"
+        )
     return 0
 
 

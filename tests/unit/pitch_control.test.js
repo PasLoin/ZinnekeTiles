@@ -32,11 +32,21 @@ function fakeMap(pitch = 0, max = 85) {
   return {
     pitch,
     eased: [],
-    getPitch() { return this.pitch; },
+    getPitch() {
+      return this.pitch;
+    },
     getMaxPitch: () => max,
-    easeTo(opts) { this.eased.push(opts); this.pitch = opts.pitch; (handlers.pitch || []).forEach((fn) => fn()); },
-    on(evt, fn) { (handlers[evt] ||= []).push(fn); },
-    off(evt, fn) { handlers[evt] = (handlers[evt] || []).filter((f) => f !== fn); },
+    easeTo(opts) {
+      this.eased.push(opts);
+      this.pitch = opts.pitch;
+      (handlers.pitch || []).forEach((fn) => fn());
+    },
+    on(evt, fn) {
+      (handlers[evt] ||= []).push(fn);
+    },
+    off(evt, fn) {
+      handlers[evt] = (handlers[evt] || []).filter((f) => f !== fn);
+    },
     handlers,
   };
 }

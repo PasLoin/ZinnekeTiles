@@ -8,19 +8,19 @@ Aucune dépendance externe (xml.etree.ElementTree = stdlib).
 Entrée : _tmp_pt.osm  (généré par osmium cat)
 Sortie : public_transport.json  (GeoJSON newline-delimited)
 """
+
 import json
 import xml.etree.ElementTree as ET
 
 OSM_FILE = "_tmp_pt.osm"
 OUT = "public_transport.json"
 
-nodes = {}   # id → (lon, lat)
-ways = {}    # id → [(lon, lat), …]
-rels = []    # [{tags, way_ids}]
+nodes = {}  # id → (lon, lat)
+ways = {}  # id → [(lon, lat), …]
+rels = []  # [{tags, way_ids}]
 
 # ── Parse XML incrémental (économe en mémoire) ───────────
 for _, elem in ET.iterparse(OSM_FILE, events=("end",)):
-
     if elem.tag == "node":
         nid = int(elem.get("id"))
         lon = elem.get("lon")
@@ -36,12 +36,12 @@ for _, elem in ET.iterparse(OSM_FILE, events=("end",)):
 
     elif elem.tag == "relation":
         tags = {t.get("k"): t.get("v") for t in elem.findall("tag")}
-        if (tags.get("type") == "route"
-                and tags.get("operator") == "STIB/MIVB"
-                and tags.get("access") != "no"):
-            wids = [int(m.get("ref"))
-                    for m in elem.findall("member")
-                    if m.get("type") == "way"]
+        if (
+            tags.get("type") == "route"
+            and tags.get("operator") == "STIB/MIVB"
+            and tags.get("access") != "no"
+        ):
+            wids = [int(m.get("ref")) for m in elem.findall("member") if m.get("type") == "way"]
             rels.append({"tags": tags, "ways": wids})
         elem.clear()
 
@@ -62,9 +62,11 @@ with open(OUT, "w") as f:
         if not lines:
             continue
 
-        geom = ({"type": "LineString", "coordinates": lines[0]}
-                if len(lines) == 1
-                else {"type": "MultiLineString", "coordinates": lines})
+        geom = (
+            {"type": "LineString", "coordinates": lines[0]}
+            if len(lines) == 1
+            else {"type": "MultiLineString", "coordinates": lines}
+        )
 
         feature = {
             "type": "Feature",

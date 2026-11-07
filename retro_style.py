@@ -12,14 +12,13 @@ Garantie bidirectionnelle : (expérimental sur styles extérieurs)
   style.json → retro_style.py → map.config.yaml
             → build_map.py   → style.json  (sémantiquement équivalent)
 """
-import argparse, json, re, sys
+
+import argparse
+import json
+import re
+import sys
 from collections import defaultdict
 from pathlib import Path
-
-try:
-    import yaml
-except ImportError:
-    print("✗  pip install pyyaml", file=sys.stderr); sys.exit(1)
 
 from zinneke.colors import lighten
 from zinneke.layers.indoor import INDOOR_DEFAULTS
@@ -29,61 +28,62 @@ from zinneke.palette import PALETTE_DEFAULTS
 # ── Groupes : préfixes de layer-id → nom de couche ────────────────────────────
 
 GROUPS = {
-    "landuse":          ["landuse-"],
-    "water":            ["water-", "waterway-"],
-    "green":            ["green-"],
-    "trees":            ["trees-"],
-    "buildings":        ["buildings-"],
-    "leisure":          ["leisure-", "pitch-sport-"],
-    "roads":            ["roads-", "road-", "man_made-"],
-    "pedestrian":       ["pedestrian-"],
-    "cycleway":         ["cycleway"],
-    "railway":          ["railway-"],
+    "landuse": ["landuse-"],
+    "water": ["water-", "waterway-"],
+    "green": ["green-"],
+    "trees": ["trees-"],
+    "buildings": ["buildings-"],
+    "leisure": ["leisure-", "pitch-sport-"],
+    "roads": ["roads-", "road-", "man_made-"],
+    "pedestrian": ["pedestrian-"],
+    "cycleway": ["cycleway"],
+    "railway": ["railway-"],
     "public_transport": ["public_transport-"],
-    "boundaries":       ["boundaries"],
-    "poi":              ["poi-", "leisure-icon"],
+    "boundaries": ["boundaries"],
+    "poi": ["poi-", "leisure-icon"],
     "street_furniture": ["street-furniture-"],
-    "addresses":        ["address-"],
+    "addresses": ["address-"],
 }
 
 LABELS = {
-    "landuse":          "Occupation du sol",
-    "water":            "Eau",
-    "green":            "Espaces verts",
-    "trees":            "Arbres et haies",
-    "buildings":        "Bâtiments",
-    "leisure":          "Loisirs",
-    "roads":            "Routes",
-    "pedestrian":       "Piétons",
-    "cycleway":         "Cyclable",
-    "railway":          "Ferroviaire",
+    "landuse": "Occupation du sol",
+    "water": "Eau",
+    "green": "Espaces verts",
+    "trees": "Arbres et haies",
+    "buildings": "Bâtiments",
+    "leisure": "Loisirs",
+    "roads": "Routes",
+    "pedestrian": "Piétons",
+    "cycleway": "Cyclable",
+    "railway": "Ferroviaire",
     "public_transport": "Transport STIB",
-    "boundaries":       "Limites administratives",
-    "poi":              "POI",
+    "boundaries": "Limites administratives",
+    "poi": "POI",
     "street_furniture": "Mobilier",
-    "addresses":        "Numéros de rue",
+    "addresses": "Numéros de rue",
 }
 
 # Tag OSM principal par couche (pour identifier les sous-types)
 GROUP_TAGS = {
-    "landuse":          ["landuse"],
-    "water":            ["waterway", "natural"],
-    "green":            ["leisure", "natural", "landuse"],
-    "trees":            ["natural", "barrier"],
-    "buildings":        ["building"],
-    "leisure":          ["leisure"],
-    "roads":            ["highway"],
-    "pedestrian":       ["highway"],
-    "railway":          ["railway"],
-    "poi":              ["amenity", "shop", "tourism", "office", "historic"],
-    "boundaries":       ["boundary"],
-    "cycleway":         ["highway"],
+    "landuse": ["landuse"],
+    "water": ["waterway", "natural"],
+    "green": ["leisure", "natural", "landuse"],
+    "trees": ["natural", "barrier"],
+    "buildings": ["building"],
+    "leisure": ["leisure"],
+    "roads": ["highway"],
+    "pedestrian": ["highway"],
+    "railway": ["railway"],
+    "poi": ["amenity", "shop", "tourism", "office", "historic"],
+    "boundaries": ["boundary"],
+    "cycleway": ["highway"],
     "public_transport": ["route"],
     "street_furniture": ["amenity", "barrier", "highway", "entrance", "emergency", "tourism"],
-    "addresses":        ["addr:housenumber"],
+    "addresses": ["addr:housenumber"],
 }
 
 # ── Helpers d'extraction d'expressions MapLibre ───────────────────────────────
+
 
 def first_hex(expr):
     """Retourne la première couleur #hex trouvée dans une expression."""
@@ -117,11 +117,15 @@ def parse_color_expr(expr):
 
     if op == "case" and len(expr) == 4:
         cond, val_true, val_false = expr[1], expr[2], expr[3]
-        if (isinstance(cond, list) and len(cond) == 3
-                and cond[0] == "==" and cond[1] == ["get", "access"]
-                and cond[2] == "private"):
-            pub  = val_false if isinstance(val_false, str) and val_false.startswith("#") else None
-            priv = val_true  if isinstance(val_true,  str) and val_true.startswith("#")  else None
+        if (
+            isinstance(cond, list)
+            and len(cond) == 3
+            and cond[0] == "=="
+            and cond[1] == ["get", "access"]
+            and cond[2] == "private"
+        ):
+            pub = val_false if isinstance(val_false, str) and val_false.startswith("#") else None
+            priv = val_true if isinstance(val_true, str) and val_true.startswith("#") else None
             return pub, priv
         if isinstance(val_false, str) and val_false.startswith("#"):
             return val_false, None
@@ -234,11 +238,18 @@ def is_label_layer(layer):
 
 
 def parse_by(expr, group_tags):
-    if (isinstance(expr, list) and len(expr) >= 5 and expr[0] == "match"
-            and isinstance(expr[1], list) and len(expr[1]) == 2 and expr[1][0] == "get"
-            and expr[1][1] not in group_tags and not is_label_key(expr[1][1])):
+    if (
+        isinstance(expr, list)
+        and len(expr) >= 5
+        and expr[0] == "match"
+        and isinstance(expr[1], list)
+        and len(expr[1]) == 2
+        and expr[1][0] == "get"
+        and expr[1][1] not in group_tags
+        and not is_label_key(expr[1][1])
+    ):
         mapping = {}
-        for label, out in zip(expr[2:-1:2], expr[3:-1:2]):
+        for label, out in zip(expr[2:-1:2], expr[3:-1:2], strict=False):
             if isinstance(label, str) and isinstance(out, str):
                 mapping[label] = out
         if mapping and isinstance(expr[-1], str):
@@ -260,8 +271,13 @@ def is_outline_layer(layer):
 
 
 def step_threshold(expr):
-    if (isinstance(expr, list) and len(expr) >= 5 and expr[0] == "step"
-            and expr[1] == ["zoom"] and isinstance(expr[3], (int, float))):
+    if (
+        isinstance(expr, list)
+        and len(expr) >= 5
+        and expr[0] == "step"
+        and expr[1] == ["zoom"]
+        and isinstance(expr[3], (int, float))
+    ):
         return int(expr[3])
     return None
 
@@ -270,21 +286,21 @@ def has_private_condition(filt):
     """Détecte si un filtre conditionne access=private."""
     if not isinstance(filt, list):
         return False
-    if (filt[0] == "==" and len(filt) == 3
-            and filt[1] == ["get", "access"] and filt[2] == "private"):
+    if filt[0] == "==" and len(filt) == 3 and filt[1] == ["get", "access"] and filt[2] == "private":
         return True
     return any(has_private_condition(sub) for sub in filt[1:] if isinstance(sub, list))
 
 
 # ── Extraction des symboles (labels_at) ───────────────────────────────────────
 
+
 def extract_labels_at(layers, prefixes):
-    for l in layers:
-        if not any(l["id"].startswith(p) for p in prefixes):
+    for layer in layers:
+        if not any(layer["id"].startswith(p) for p in prefixes):
             continue
-        if is_label_layer(l):
-            z = int(l.get("minzoom", 10))
-            st = step_threshold(l["layout"]["text-field"])
+        if is_label_layer(layer):
+            z = int(layer.get("minzoom", 10))
+            st = step_threshold(layer["layout"]["text-field"])
             if st is not None:
                 z = max(z, st)
             return max(z, 10)
@@ -293,58 +309,61 @@ def extract_labels_at(layers, prefixes):
 
 # ── Extraction des border_color (buildings) ───────────────────────────────────
 
+
 def extract_border_color(layers, prefixes):
-    for l in layers:
-        if not any(l["id"].startswith(p) for p in prefixes):
+    for layer in layers:
+        if not any(layer["id"].startswith(p) for p in prefixes):
             continue
-        if l.get("type") == "line" and "outline" in l["id"]:
-            col = l.get("paint", {}).get("line-color")
+        if layer.get("type") == "line" and "outline" in layer["id"]:
+            col = layer.get("paint", {}).get("line-color")
             if isinstance(col, str) and col.startswith("#"):
                 return col
     return None
 
 
 def extract_materials(layers):
-    for l in layers:
-        if l.get("type") != "fill-extrusion":
+    for layer in layers:
+        if layer.get("type") != "fill-extrusion":
             continue
-        stack = [l.get("paint", {}).get("fill-extrusion-color")]
+        stack = [layer.get("paint", {}).get("fill-extrusion-color")]
         while stack:
             expr = stack.pop()
             if not isinstance(expr, list):
                 continue
-            if (len(expr) >= 4 and expr[0] == "match"
-                    and expr[1] == ["get", "building:material"]):
+            if len(expr) >= 4 and expr[0] == "match" and expr[1] == ["get", "building:material"]:
                 pairs = expr[2:-1]
-                return {str(pairs[i]): pairs[i + 1] for i in range(0, len(pairs) - 1, 2)
-                        if isinstance(pairs[i], str) and isinstance(pairs[i + 1], str)}
+                return {
+                    str(pairs[i]): pairs[i + 1]
+                    for i in range(0, len(pairs) - 1, 2)
+                    if isinstance(pairs[i], str) and isinstance(pairs[i + 1], str)
+                }
             stack.extend(expr[1:])
     return {}
 
 
 PALETTE_SOURCES = {
-    ("water", "tunnel_core"):           ("water-tunnel-core", "line-color", ()),
-    ("buildings", "roof"):              ("buildings-3d", "fill-extrusion-color", (2,)),
-    ("leisure", "outline"):             ("leisure-outline", "line-color", (-1,)),
-    ("roads", "bridge_casing"):         ("roads-bridge-casing-motorway", "line-color", ()),
-    ("roads", "busway_center"):         ("roads-center-busway", "line-color", ()),
-    ("roads", "tunnel_area"):           ("man_made-tunnel-fill", "fill-color", ()),
-    ("roads", "tunnel_area_outline"):   ("man_made-tunnel-outline", "line-color", ()),
-    ("roads", "bridge_area"):           ("man_made-bridge-fill", "fill-color", ()),
-    ("roads", "bridge_area_outline"):   ("man_made-bridge-outline", "line-color", ()),
-    ("roads", "label"):                 ("road-labels", "text-color", ()),
-    ("roads", "label_halo"):            ("road-labels", "text-halo-color", ()),
-    ("roads", "oneway"):                ("road-oneway-arrows", "text-color", ()),
-    ("roads", "oneway_halo"):           ("road-oneway-arrows", "text-halo-color", ()),
-    ("pedestrian", "no_access"):        ("pedestrian-footway-paved", "line-color", (2,)),
-    ("cycleway", "oneway"):             ("cycleway-oneway-arrows", "text-color", ()),
-    ("railway", "bridge_casing"):       ("railway-bridge-casing", "line-color", ()),
-    ("public_transport", "casing"):     ("public_transport-casing", "line-color", ()),
-    ("public_transport", "label"):      ("public_transport-label", "text-color", (2,)),
+    ("water", "tunnel_core"): ("water-tunnel-core", "line-color", ()),
+    ("buildings", "roof"): ("buildings-3d", "fill-extrusion-color", (2,)),
+    ("leisure", "outline"): ("leisure-outline", "line-color", (-1,)),
+    ("roads", "bridge_casing"): ("roads-bridge-casing-motorway", "line-color", ()),
+    ("roads", "busway_center"): ("roads-center-busway", "line-color", ()),
+    ("roads", "tunnel_area"): ("man_made-tunnel-fill", "fill-color", ()),
+    ("roads", "tunnel_area_outline"): ("man_made-tunnel-outline", "line-color", ()),
+    ("roads", "bridge_area"): ("man_made-bridge-fill", "fill-color", ()),
+    ("roads", "bridge_area_outline"): ("man_made-bridge-outline", "line-color", ()),
+    ("roads", "label"): ("road-labels", "text-color", ()),
+    ("roads", "label_halo"): ("road-labels", "text-halo-color", ()),
+    ("roads", "oneway"): ("road-oneway-arrows", "text-color", ()),
+    ("roads", "oneway_halo"): ("road-oneway-arrows", "text-halo-color", ()),
+    ("pedestrian", "no_access"): ("pedestrian-footway-paved", "line-color", (2,)),
+    ("cycleway", "oneway"): ("cycleway-oneway-arrows", "text-color", ()),
+    ("railway", "bridge_casing"): ("railway-bridge-casing", "line-color", ()),
+    ("public_transport", "casing"): ("public_transport-casing", "line-color", ()),
+    ("public_transport", "label"): ("public_transport-label", "text-color", (2,)),
     ("public_transport", "label_halo"): ("public_transport-label", "text-halo-color", ()),
-    ("addresses", "halo"):              ("address-labels", "text-halo-color", ()),
-    ("poi", "stroke"):                  ("poi-circle", "circle-stroke-color", ()),
-    ("poi", "label_halo"):              ("poi-icon", "text-halo-color", ()),
+    ("addresses", "halo"): ("address-labels", "text-halo-color", ()),
+    ("poi", "stroke"): ("poi-circle", "circle-stroke-color", ()),
+    ("poi", "label_halo"): ("poi-icon", "text-halo-color", ()),
 }
 
 
@@ -362,7 +381,7 @@ def color_at(expr, path):
 
 
 def parse_palette(layers):
-    by_id = {l.get("id"): l for l in layers}
+    by_id = {item.get("id"): item for item in layers}
     out = {}
     for (group, key), (lid, prop, path) in PALETTE_SOURCES.items():
         layer = by_id.get(lid)
@@ -376,11 +395,16 @@ def parse_palette(layers):
 
 def uses_osm_colour(layers):
     for lid, index in (("buildings-3d", 3), ("building-parts-3d", None)):
-        layer = next((l for l in layers if l.get("id") == lid), None)
+        layer = next((item for item in layers if item.get("id") == lid), None)
         if not layer:
             continue
         expr = (layer.get("paint") or {}).get("fill-extrusion-color")
-        if index is not None and isinstance(expr, list) and expr[:1] == ["case"] and len(expr) > index:
+        if (
+            index is not None
+            and isinstance(expr, list)
+            and expr[:1] == ["case"]
+            and len(expr) > index
+        ):
             expr = expr[index]
         return isinstance(expr, list) and expr[:1] == ["to-color"]
     return True
@@ -390,14 +414,22 @@ INDOOR_SCALARS = ("level_height", "slab", "volume_ratio")
 
 
 def parse_indoor(lazy):
-    layers = {l.get("id"): l for l in (lazy or {}).get("layers") or [] if l.get("source") == "indoor"}
+    layers = {
+        layer.get("id"): layer
+        for layer in (lazy or {}).get("layers") or []
+        if layer.get("source") == "indoor"
+    }
     if not layers:
         return {}
     out = {}
     for key in INDOOR_SCALARS:
         if key in lazy and lazy[key] != INDOOR_DEFAULTS[key]:
             out[key] = lazy[key]
-    zooms = [l["minzoom"] for l in layers.values() if isinstance(l.get("minzoom"), (int, float))]
+    zooms = [
+        layer["minzoom"]
+        for layer in layers.values()
+        if isinstance(layer.get("minzoom"), (int, float))
+    ]
     if zooms and min(zooms) != INDOOR_DEFAULTS["appear_at"]:
         out["appear_at"] = min(zooms)
     for lid, key in (("indoor-3d-floor", "floor_opacity"), ("indoor-3d-volume", "volume_opacity")):
@@ -408,8 +440,11 @@ def parse_indoor(lazy):
     if isinstance(expr, list) and expr[:2] == ["match", ["get", "kind"]]:
         pairs = expr[2:-1]
         colors = {pairs[i]: pairs[i + 1] for i in range(0, len(pairs) - 1, 2)}
-        changed = {k: {"color": v} for k, v in sorted(colors.items())
-                   if k in INDOOR_DEFAULTS["colors"] and v != INDOOR_DEFAULTS["colors"][k]}
+        changed = {
+            k: {"color": v}
+            for k, v in sorted(colors.items())
+            if k in INDOOR_DEFAULTS["colors"] and v != INDOOR_DEFAULTS["colors"][k]
+        }
         if changed:
             out["subtypes"] = changed
     return out
@@ -429,27 +464,30 @@ def dump_indoor(indoor):
 
 # ── Analyse principale d'un groupe ───────────────────────────────────────────
 
+
 def analyse_group(name, style_layers):
     prefixes = GROUPS[name]
-    matched = [l for l in style_layers
-               if any(l["id"].startswith(p) for p in prefixes)
-               and l.get("source")]
+    matched = [
+        layer
+        for layer in style_layers
+        if any(layer["id"].startswith(p) for p in prefixes) and layer.get("source")
+    ]
     if not matched:
         return None
 
     # ── Visibilité ──
     visible = not any(
-        l.get("layout", {}).get("visibility") == "none"
-        for l in matched
-        if not l["id"].endswith("-3d")
+        layer.get("layout", {}).get("visibility") == "none"
+        for layer in matched
+        if not layer["id"].endswith("-3d")
     )
 
     # ── Zoom d'apparition ──
-    zmins = [min_zoom_of(l) for l in matched]
+    zmins = [min_zoom_of(layer) for layer in matched]
     appear = min(zmins) if zmins else 10
 
     # ── extrusion_3d ──
-    extrusion_3d = any(l.get("type") == "fill-extrusion" for l in matched)
+    extrusion_3d = any(layer.get("type") == "fill-extrusion" for layer in matched)
 
     # ── labels_at ──
     labels_at = extract_labels_at(matched, prefixes)
@@ -460,10 +498,13 @@ def analyse_group(name, style_layers):
     # ── Couleur principale du groupe ──
     # Priorité : premier fill, puis premier line
     main_color = None
-    primary = [l for l in matched
-               if not (is_casing_layer(l) or is_variant_layer(l) or is_label_layer(l))]
-    for l in primary + matched:
-        paint = l.get("paint", {})
+    primary = [
+        layer
+        for layer in matched
+        if not (is_casing_layer(layer) or is_variant_layer(layer) or is_label_layer(layer))
+    ]
+    for layer in primary + matched:
+        paint = layer.get("paint", {})
         for key in ("fill-color", "line-color", "circle-color"):
             col, _ = parse_color_expr(paint.get(key))
             if col:
@@ -474,15 +515,15 @@ def analyse_group(name, style_layers):
 
     # ── Sous-types ──
     tags_to_check = GROUP_TAGS.get(name, ["type"])
-    subtypes = {}   # val → {tag, color, color_private, pattern, pattern_private,
-                    #         outline_color, appear_at, opacity}
+    subtypes = {}  # val → {tag, color, color_private, pattern, pattern_private,
+    #         outline_color, appear_at, opacity}
 
     # Précollecte des outline_color depuis layers de type "line" avec match
     outline_map = {}
-    for l in matched:
-        if l.get("type") != "line":
+    for layer in matched:
+        if layer.get("type") != "line":
             continue
-        paint = l.get("paint", {})
+        paint = layer.get("paint", {})
         for color_key in ("line-color",):
             expr = paint.get(color_key)
             for tag in tags_to_check:
@@ -490,29 +531,31 @@ def analyse_group(name, style_layers):
                 outline_map.update(om)
 
     # Parcours des layers pour extraire les sous-types
-    for l in matched:
-        paint  = l.get("paint", {})
-        layout = l.get("layout", {})
-        filt   = l.get("filter")
-        ltype  = l.get("type")
-        lz     = min_zoom_of(l)
+    for layer in matched:
+        paint = layer.get("paint", {})
+        filt = layer.get("filter")
+        lz = min_zoom_of(layer)
 
-        if is_label_layer(l):
+        if is_label_layer(layer):
             continue
 
         pattern = paint.get("fill-pattern")
         is_private_layer = has_private_condition(filt) if filt else False
-        variant = is_variant_layer(l)
-        casing = is_casing_layer(l)
-        outline = is_outline_layer(l)
+        variant = is_variant_layer(layer)
+        casing = is_casing_layer(layer)
+        outline = is_outline_layer(layer)
 
         for tag in tags_to_check:
             if not filt:
                 continue
             vals = filter_values(filt, tag)
             for v in vals:
-                color_expr = (paint.get("fill-color") or paint.get("line-color") or
-                              paint.get("circle-color") or paint.get("text-color"))
+                color_expr = (
+                    paint.get("fill-color")
+                    or paint.get("line-color")
+                    or paint.get("circle-color")
+                    or paint.get("text-color")
+                )
                 col, col_priv = parse_color_expr(color_expr)
                 by_col = parse_by(color_expr, tags_to_check)
                 if by_col:
@@ -525,7 +568,7 @@ def analyse_group(name, style_layers):
                 subtypes[v]["appear_at"] = min(subtypes[v].get("appear_at", lz), lz)
 
                 if variant:
-                    if "tunnel" in l["id"] and not casing and col:
+                    if "tunnel" in layer["id"] and not casing and col:
                         subtypes[v]["tunnel_color"] = col
                     continue
                 if casing or outline:
@@ -558,8 +601,9 @@ def analyse_group(name, style_layers):
         # Match expressions sur fill-color pour les layers sans filtre explicite
         # (ex: leisure-fill utilise un ["match", ["get","leisure"], ...])
         filt_str = json.dumps(filt) if filt else ""
-        if not filt or (isinstance(filt, list) and filt[0] in ("==", "all")
-                        and "geometry-type" in filt_str):
+        if not filt or (
+            isinstance(filt, list) and filt[0] in ("==", "all") and "geometry-type" in filt_str
+        ):
             for tag in tags_to_check:
                 for color_key in ("fill-color", "line-color"):
                     expr = paint.get(color_key)
@@ -589,29 +633,43 @@ def analyse_group(name, style_layers):
         cleaned[k] = entry
 
     return {
-        "appear_at":    appear,
-        "main_color":   main_color,
+        "appear_at": appear,
+        "main_color": main_color,
         "border_color": border_color,
-        "visible":      visible,
+        "visible": visible,
         "extrusion_3d": extrusion_3d,
-        "materials":    extract_materials(matched) if extrusion_3d else {},
-        "labels_at":    labels_at,
-        "subtypes":     cleaned,
+        "materials": extract_materials(matched) if extrusion_3d else {},
+        "labels_at": labels_at,
+        "subtypes": cleaned,
     }
 
 
 # ── Sérialisation YAML ────────────────────────────────────────────────────────
 
 FIELD_ORDER = [
-    "tag", "label", "color", "color_private", "tunnel_color", "pattern", "pattern_private",
-    "pattern_at", "outline_color", "appear_at", "labels_at", "opacity",
-    "by", "by_color", "by_pattern"
+    "tag",
+    "label",
+    "color",
+    "color_private",
+    "tunnel_color",
+    "pattern",
+    "pattern_private",
+    "pattern_at",
+    "outline_color",
+    "appear_at",
+    "labels_at",
+    "opacity",
+    "by",
+    "by_color",
+    "by_pattern",
 ]
 
 
 def flow_value(v):
     if isinstance(v, dict):
-        return "{ " + ", ".join(f"{flow_key(k)}: {flow_value(x)}" for k, x in sorted(v.items())) + " }"
+        return (
+            "{ " + ", ".join(f"{flow_key(k)}: {flow_value(x)}" for k, x in sorted(v.items())) + " }"
+        )
     if isinstance(v, list):
         return "[" + ", ".join(flow_value(x) for x in v) + "]"
     if isinstance(v, str):
@@ -634,7 +692,7 @@ def format_subtype_inline(scfg):
 
 
 def parse_sports(style_layers):
-    by_id = {l["id"]: l for l in style_layers}
+    by_id = {layer["id"]: layer for layer in style_layers}
     fill = by_id.get("pitch-sport-fill")
     if not fill:
         return None
@@ -643,7 +701,7 @@ def parse_sports(style_layers):
 
     def collect(expr, field):
         if isinstance(expr, list) and expr and expr[0] == "match":
-            for label, out in zip(expr[2:-1:2], expr[3:-1:2]):
+            for label, out in zip(expr[2:-1:2], expr[3:-1:2], strict=False):
                 values[label][field] = out
             default[field] = expr[-1]
         elif expr is not None:
@@ -673,8 +731,10 @@ def dump_sports(sports):
     if "markings_at" in sports:
         lines.append(f"      markings_at: {sports['markings_at']}")
     order = ("color", "outline_color", "length")
+
     def entry(d):
         return "{ " + ", ".join(f"{k}: {flow_value(d[k])}" for k in order if k in d) + " }"
+
     lines.append(f"      default: {entry(sports['default'])}")
     if sports["values"]:
         lines.append("      values:")
@@ -688,9 +748,14 @@ NO_LAYER_COLOR = {"roads"}
 
 def subtype_from_legend_item(item):
     filt = item.get("filter")
-    if not (isinstance(filt, list) and len(filt) == 3 and filt[0] == "=="
-            and isinstance(filt[1], list) and filt[1][:1] == ["get"]
-            and filt[2] == item.get("id")):
+    if not (
+        isinstance(filt, list)
+        and len(filt) == 3
+        and filt[0] == "=="
+        and isinstance(filt[1], list)
+        and filt[1][:1] == ["get"]
+        and filt[2] == item.get("id")
+    ):
         return None
     restored = {"tag": filt[1][1]}
     if item.get("appear_at") is not None:
@@ -705,7 +770,7 @@ def apply_legend(name, info, group, style_layers):
     if group.get("color"):
         info["main_color"] = group["color"]
     info["visible"] = info["visible"] and group.get("visible", True)
-    own = [l for l in style_layers if l.get("source") == name]
+    own = [layer for layer in style_layers if layer.get("source") == name]
     if group.get("swatch") in SWATCH_TYPES and own and group["swatch"] != swatch_type(own):
         info["swatch"] = group["swatch"]
     if isinstance(group.get("colors"), list) and len(group["colors"]) > 1:
@@ -748,11 +813,11 @@ def dump_density(density):
 
 def dump_layer(name, info):
     lines = []
-    label  = info.get("label") or LABELS.get(name, name.capitalize())
+    label = info.get("label") or LABELS.get(name, name.capitalize())
     appear = info["appear_at"]
-    col    = info["main_color"]
-    bc     = info["border_color"]
-    la     = info["labels_at"]
+    col = info["main_color"]
+    bc = info["border_color"]
+    la = info["labels_at"]
 
     lines.append(f"  {name}:")
     lines.append(f"    label: {label}")
@@ -763,11 +828,13 @@ def dump_layer(name, info):
     if info.get("swatch"):
         lines.append(f"    swatch: {info['swatch']}")
     if info.get("swatch_colors"):
-        lines.append("    swatch_colors: [" + ", ".join(json.dumps(v) for v in info["swatch_colors"]) + "]")
+        lines.append(
+            "    swatch_colors: [" + ", ".join(json.dumps(v) for v in info["swatch_colors"]) + "]"
+        )
     if not info["visible"]:
-        lines.append(f"    visible: false")
+        lines.append("    visible: false")
     if info["extrusion_3d"]:
-        lines.append(f"    extrusion_3d: true")
+        lines.append("    extrusion_3d: true")
     if info.get("materials"):
         lines.append(f"    materials: {flow_value(info['materials'])}")
     if info.get("osm_colour") is False:
@@ -780,7 +847,7 @@ def dump_layer(name, info):
     if info.get("density"):
         lines += dump_density(info["density"])
     if info["subtypes"]:
-        lines.append(f"    subtypes:")
+        lines.append("    subtypes:")
         for val, scfg in ordered_subtypes(info):
             lines.append(f"      {val}: {format_subtype_inline(scfg)}")
     if info.get("sports"):
@@ -790,10 +857,11 @@ def dump_layer(name, info):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
 def main():
     p = argparse.ArgumentParser(description="style.json → map.config.yaml")
     p.add_argument("--style", default="www/style.json")
-    p.add_argument("--out",   default="map.config.yaml")
+    p.add_argument("--out", default="map.config.yaml")
     args = p.parse_args()
 
     style_path = Path(args.style)
@@ -808,14 +876,18 @@ def main():
 
     # Métadonnées globales
     bg = next(
-        (l.get("paint", {}).get("background-color", "#f2efe9")
-         for l in style_layers if l.get("type") == "background"),
-        "#f2efe9"
+        (
+            layer.get("paint", {}).get("background-color", "#f2efe9")
+            for layer in style_layers
+            if layer.get("type") == "background"
+        ),
+        "#f2efe9",
     )
     if not isinstance(bg, str):
         bg = first_hex(bg) or "#f2efe9"
-    glyphs = style.get("glyphs",
-        "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf")
+    glyphs = style.get(
+        "glyphs", "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
+    )
     map_meta = (style.get("metadata") or {}).get("brussels:map") or {}
     map_name = style.get("name") or map_meta.get("name") or "Map"
     map_version = map_meta.get("version")
@@ -842,22 +914,30 @@ def main():
             info["sports"] = parse_sports(style_layers)
         if name == "buildings":
             info["osm_colour"] = uses_osm_colour(
-                style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or []))
+                style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or [])
+            )
         if name == "buildings" and not info.get("materials"):
             info["materials"] = extract_materials(
-                [l for l in (metadata.get("brussels:lazy") or {}).get("layers") or []
-                 if l.get("source") == "building_parts"])
+                [
+                    layer
+                    for layer in (metadata.get("brussels:lazy") or {}).get("layers") or []
+                    if layer.get("source") == "building_parts"
+                ]
+            )
         groups[name] = info
         st_n = len(info["subtypes"])
         specials = sum(
-            1 for s in info["subtypes"].values()
+            1
+            for s in info["subtypes"].values()
             if any(k in s for k in ("color_private", "pattern", "pattern_private", "outline_color"))
         )
         extr = " [3d]" if info["extrusion_3d"] else ""
-        lab  = f" labels_at={info['labels_at']}" if info["labels_at"] else ""
-        print(f"   {name:22s} appear_at={info['appear_at']:2d}"
-              f"  color={info['main_color'] or '—':9s}"
-              f"  {st_n} sous-types  {specials} spéciaux{extr}{lab}")
+        lab = f" labels_at={info['labels_at']}" if info["labels_at"] else ""
+        print(
+            f"   {name:22s} appear_at={info['appear_at']:2d}"
+            f"  color={info['main_color'] or '—':9s}"
+            f"  {st_n} sous-types  {specials} spéciaux{extr}{lab}"
+        )
 
     out_lines = [
         "# ─────────────────────────────────────────────────────────────────────",
@@ -876,7 +956,7 @@ def main():
         "#   labels_at      zoom minimum des étiquettes (défaut: appear_at+3)",
         "#   opacity        opacité globale (0.0–1.0)",
         "#   swatch         pastille de légende : fill, line ou dot (défaut: type majoritaire)",
-        "#   swatch_colors  pastille de légende multicolore (ex: [\"#007cc2\", \"#ef3e42\"])",
+        '#   swatch_colors  pastille de légende multicolore (ex: ["#007cc2", "#ef3e42"])',
         "#   tiles          paramètres PMTiles (min_zoom, max_zoom, simplification,",
         "#                  detail_from pour buildings)",
         "#   sports         leisure uniquement : rendu des terrains par sport_render",
@@ -899,8 +979,8 @@ def main():
         "#   opacity        opacité fill (0.0–1.0)",
         "#   pattern_at     zoom d'apparition du motif (défaut: appear_at)",
         "#   by             clé OSM secondaire (ex: religion, leaf_type)",
-        "#   by_color       couleur par valeur de la clé \"by\" (défaut: color)",
-        "#   by_pattern     motif par valeur de la clé \"by\" (défaut: pattern)",
+        '#   by_color       couleur par valeur de la clé "by" (défaut: color)',
+        '#   by_pattern     motif par valeur de la clé "by" (défaut: pattern)',
         "#   tunnel_color   couleur des tronçons en tunnel (défaut: color éclaircie)",
         "#",
         "# Section palette (facultative) : couleurs annexes par groupe",
@@ -937,7 +1017,9 @@ def main():
         for pname, pcfg in sorted(meta_patterns.items()):
             out_lines.append(f"  {flow_key(pname)}: {flow_value(pcfg)}")
         out_lines.append("")
-    palette = parse_palette(style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or []))
+    palette = parse_palette(
+        style_layers + list((metadata.get("brussels:lazy") or {}).get("layers") or [])
+    )
     if palette:
         out_lines.append("palette:")
         for group, values in palette.items():

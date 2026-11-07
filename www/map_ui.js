@@ -42,7 +42,9 @@ export function initPanels(win = globalThis) {
   if (typeof win.matchMedia !== 'function') return;
   const query = win.matchMedia(COMPACT_QUERY);
   if (typeof query.addEventListener === 'function') {
-    query.addEventListener('change', (e) => { if (e.matches) enforceSinglePanel(); });
+    query.addEventListener('change', (e) => {
+      if (e.matches) enforceSinglePanel();
+    });
   }
 }
 
