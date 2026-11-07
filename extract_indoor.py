@@ -234,12 +234,14 @@ def chevron(point, tangent, half_width):
     nx, ny = -ty, tx
     px, py = point
     a = half_width
-    return Polygon([
-        (px + tx * a, py + ty * a),
-        (px - tx * a * 0.6 + nx * a, py - ty * a * 0.6 + ny * a),
-        (px - tx * a * 0.1, py - ty * a * 0.1),
-        (px - tx * a * 0.6 - nx * a, py - ty * a * 0.6 - ny * a),
-    ])
+    return Polygon(
+        [
+            (px + tx * a, py + ty * a),
+            (px - tx * a * 0.6 + nx * a, py - ty * a * 0.6 + ny * a),
+            (px - tx * a * 0.1, py - ty * a * 0.1),
+            (px - tx * a * 0.6 - nx * a, py - ty * a * 0.6 - ny * a),
+        ]
+    )
 
 
 def tangent_at(line, distance):
@@ -255,7 +257,10 @@ def sloped_features(kind, line, levels, base_props, climbs_forward):
     lo, hi = levels[0], levels[-1]
     scale = metric_scale(line)
     metric = shapely.transform(line, lambda c: c * scale)
-    back = lambda g: mapping(shapely.transform(g, lambda c: np.round(c / scale, 7)))
+
+    def back(g):
+        return mapping(shapely.transform(g, lambda c: np.round(c / scale, 7)))
+
     length = metric.length
     if length <= 0:
         return []
@@ -273,11 +278,15 @@ def sloped_features(kind, line, levels, base_props, climbs_forward):
         if poly.is_empty:
             continue
         fraction = (i + 1) / n if climbs_forward else i / n
-        source = base_props if i == 0 else {k: base_props[k] for k in SLICE_PROPS if k in base_props}
+        source = (
+            base_props if i == 0 else {k: base_props[k] for k in SLICE_PROPS if k in base_props}
+        )
         props = dict(source, z_top=top_at(fraction))
         out.append({"type": "Feature", "geometry": back(poly), "properties": props})
 
-    directions = CONVEYING_DIRECTIONS.get(base_props.get("conveying")) if kind == "escalator" else None
+    directions = (
+        CONVEYING_DIRECTIONS.get(base_props.get("conveying")) if kind == "escalator" else None
+    )
     if directions:
         count = max(1, int(length // ARROW_SPACING))
         for j in range(count):
@@ -290,7 +299,12 @@ def sloped_features(kind, line, levels, base_props, climbs_forward):
                 shift = 0.0 if len(directions) == 1 else (0.35 if k == 0 else -0.35)
                 center = (point.x + tx * shift, point.y + ty * shift)
                 arrow = chevron(center, (tx * direction, ty * direction), width * 0.38)
-                props = {"kind": "arrow", "level_min": lo, "level_max": hi, "z_top": top_at(fraction)}
+                props = {
+                    "kind": "arrow",
+                    "level_min": lo,
+                    "level_max": hi,
+                    "z_top": top_at(fraction),
+                }
                 if base_props.get("level_approx"):
                     props["level_approx"] = "yes"
                 out.append({"type": "Feature", "geometry": back(arrow), "properties": props})
@@ -342,12 +356,14 @@ def main():
         for value in levels:
             level_counts[value] += 1
 
-    Path(args.output).write_text(json.dumps(
-        {"type": "FeatureCollection", "features": out}, ensure_ascii=False))
+    Path(args.output).write_text(
+        json.dumps({"type": "FeatureCollection", "features": out}, ensure_ascii=False)
+    )
 
     levels_doc = {
-        "levels": [{"level": format_level(v), "count": level_counts[v]}
-                   for v in sorted(level_counts)],
+        "levels": [
+            {"level": format_level(v), "count": level_counts[v]} for v in sorted(level_counts)
+        ],
     }
     Path(args.levels_out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.levels_out).write_text(json.dumps(levels_doc, indent=2, ensure_ascii=False) + "\n")

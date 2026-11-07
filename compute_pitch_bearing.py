@@ -71,7 +71,7 @@ def process_polygon(coords):
         proj_perp.append(mx * cos_a - my * sin_a)
 
     pitch_length = max(proj_long) - min(proj_long)
-    pitch_width  = max(proj_perp) - min(proj_perp)
+    pitch_width = max(proj_perp) - min(proj_perp)
 
     if pitch_width > pitch_length:
         pitch_length, pitch_width = pitch_width, pitch_length
@@ -102,9 +102,9 @@ def polygon_centroid(coords):
 def is_generated_point(feat):
     geom = feat.get("geometry") or {}
     props = feat.get("properties") or {}
-    return (geom.get("type") == "Point"
-            and props.get("leisure") == "pitch"
-            and "sport_render" in props)
+    return (
+        geom.get("type") == "Point" and props.get("leisure") == "pitch" and "sport_render" in props
+    )
 
 
 def main():
@@ -173,11 +173,13 @@ def main():
         if props.get("hoops"):
             point_props["hoops"] = props["hoops"]
 
-        new_points.append({
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": centroid},
-            "properties": point_props,
-        })
+        new_points.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": centroid},
+                "properties": point_props,
+            }
+        )
 
         enriched += 1
 
