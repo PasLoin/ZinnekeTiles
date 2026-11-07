@@ -1,7 +1,6 @@
 from ..expressions import zoom
 from ..palette import palette
 
-
 ADDRESS_LABEL_OFFSET = 1.5
 
 
@@ -36,14 +35,25 @@ def address_anchor_expr():
 def addresses(cfg, pal=None):
     pal = pal or palette({}, "addresses")
     ap = cfg["appear_at"]
-    return [{"id":"address-labels","type":"symbol",
-        "source":"addresses","source-layer":"addresses","minzoom":ap,
-        "layout":{"text-field":["get","addr:housenumber"],
-                  "text-font":["Noto Sans Regular"],
-                  "text-size":zoom([(ap,9),(18,11)]),
-                  "text-variable-anchor-offset":address_anchor_expr(),
-                  "text-padding":1,
-                  "text-allow-overlap":False},
-        "paint":{"text-color":cfg["color"] or "#6f5e50",
-                 "text-halo-color":pal["halo"],
-                 "text-halo-width":1.2}}]
+    return [
+        {
+            "id": "address-labels",
+            "type": "symbol",
+            "source": "addresses",
+            "source-layer": "addresses",
+            "minzoom": ap,
+            "layout": {
+                "text-field": ["get", "addr:housenumber"],
+                "text-font": ["Noto Sans Regular"],
+                "text-size": zoom([(ap, 9), (18, 11)]),
+                "text-variable-anchor-offset": address_anchor_expr(),
+                "text-padding": 1,
+                "text-allow-overlap": False,
+            },
+            "paint": {
+                "text-color": cfg["color"] or "#6f5e50",
+                "text-halo-color": pal["halo"],
+                "text-halo-width": 1.2,
+            },
+        }
+    ]
