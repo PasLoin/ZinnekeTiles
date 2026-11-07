@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from apply_granulometry import assign_ranks, grid_cell, tier_of
-from build_map import build_granulometry, build_style, zoom
+from zinneke import build_granulometry, build_style
+from zinneke.expressions import zoom
 
 CONFIG = yaml.safe_load((ROOT / "map.config.yaml").read_text())
 
