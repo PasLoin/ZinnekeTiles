@@ -2,10 +2,19 @@ export const FALLBACK_COLOR = '#cccccc';
 export const SWATCHES = ['fill', 'line', 'dot'];
 
 const PAINT_COLOR_KEYS = [
-  'fill-color', 'line-color', 'circle-color', 'fill-extrusion-color', 'icon-color', 'text-color',
+  'fill-color',
+  'line-color',
+  'circle-color',
+  'fill-extrusion-color',
+  'icon-color',
+  'text-color',
 ];
 const SWATCH_OF_TYPE = {
-  fill: 'fill', 'fill-extrusion': 'fill', line: 'line', circle: 'dot', symbol: 'dot',
+  fill: 'fill',
+  'fill-extrusion': 'fill',
+  line: 'line',
+  circle: 'dot',
+  symbol: 'dot',
 };
 const NAMED_COLORS = new Set(['white', 'black', 'transparent']);
 
@@ -25,9 +34,10 @@ export function exprColor(expr) {
   return null;
 }
 
-const colorRank = (layer) => ['casing', 'tunnel', 'bridge']
-  .map((part) => (String(layer.id).split('-').includes(part) ? 1 : 0))
-  .join('');
+const colorRank = (layer) =>
+  ['casing', 'tunnel', 'bridge']
+    .map((part) => (String(layer.id).split('-').includes(part) ? 1 : 0))
+    .join('');
 
 export function paintColor(layers) {
   const sorted = [...(layers || [])].sort((a, b) => colorRank(a).localeCompare(colorRank(b)));
@@ -54,9 +64,16 @@ export function swatchType(layers) {
 function resolveEntry(entry, byId, inheritedColor) {
   const ids = (Array.isArray(entry.layers) ? entry.layers : []).filter((id) => byId.has(id));
   const layers = ids.map((id) => byId.get(id));
-  const color = (isColor(entry.color) && entry.color) || paintColor(layers) || inheritedColor || FALLBACK_COLOR;
+  const color =
+    (isColor(entry.color) && entry.color) || paintColor(layers) || inheritedColor || FALLBACK_COLOR;
   const swatch = SWATCHES.includes(entry.swatch) ? entry.swatch : swatchType(layers);
-  const out = { id: String(entry.id), label: String(entry.label || entry.id), color, swatch, layers: ids };
+  const out = {
+    id: String(entry.id),
+    label: String(entry.label || entry.id),
+    color,
+    swatch,
+    layers: ids,
+  };
   if (Array.isArray(entry.filter) && entry.filter.length) out.filter = entry.filter;
   const colors = (Array.isArray(entry.colors) ? entry.colors : []).filter(isColor);
   if (colors.length > 1) out.colors = colors;
@@ -116,7 +133,9 @@ export function swatchBackground(entry) {
   const colors = entry.colors || [];
   if (colors.length < 2) return entry.color;
   const step = 100 / colors.length;
-  const stops = colors.map((c, i) => `${c} ${(i * step).toFixed(2)}% ${((i + 1) * step).toFixed(2)}%`);
+  const stops = colors.map(
+    (c, i) => `${c} ${(i * step).toFixed(2)}% ${((i + 1) * step).toFixed(2)}%`
+  );
   return `linear-gradient(170deg, ${stops.join(', ')})`;
 }
 
@@ -142,12 +161,17 @@ function rowEl(className, entry) {
 function onActivate(el, fn) {
   el.addEventListener('click', fn);
   el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fn(e);
+    }
   });
 }
 
 export function exclusionFilter(group, isItemOn) {
-  const hidden = group.items.filter((item) => item.filter && !isItemOn(item.id)).map((item) => item.filter);
+  const hidden = group.items
+    .filter((item) => item.filter && !isItemOn(item.id))
+    .map((item) => item.filter);
   if (!hidden.length) return null;
   return ['!', hidden.length === 1 ? hidden[0] : ['any', ...hidden]];
 }
@@ -159,7 +183,8 @@ export function createLegend(root, groups, { onChange = () => {}, onFilter = () 
     const on = group.visible !== false;
     state.set(group.id, { on, items: new Map(group.items.map((i) => [i.id, on])) });
     for (const id of group.layers) owner.set(id, [group.id, null]);
-    for (const item of group.items) for (const id of item.layers) owner.set(id, [group.id, item.id]);
+    for (const item of group.items)
+      for (const id of item.layers) owner.set(id, [group.id, item.id]);
   }
 
   const groupOn = (gid) => {
@@ -184,7 +209,7 @@ export function createLegend(root, groups, { onChange = () => {}, onFilter = () 
     const none = !values.some(Boolean);
     view.row.classList.toggle('off', none);
     view.row.classList.toggle('mixed', !all && !none);
-    view.row.setAttribute('aria-checked', all ? 'true' : (none ? 'false' : 'mixed'));
+    view.row.setAttribute('aria-checked', all ? 'true' : none ? 'false' : 'mixed');
     for (const [iid, el] of view.items) {
       const on = s.items.get(iid);
       el.classList.toggle('off', !on);
