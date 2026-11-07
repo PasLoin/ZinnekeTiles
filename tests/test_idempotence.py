@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import apply_granulometry
-from build_map import ROAD_ORDER, config_hash
+from zinneke.config import config_hash
+from zinneke.layers.roads import ROAD_ORDER
 
 CONFIG = ROOT / "map.config.yaml"
 EXTERNAL_STYLES = [ROOT / "www" / "style.json", ROOT / "www" / "bright-test.json"]

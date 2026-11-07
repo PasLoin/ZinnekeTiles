@@ -60,6 +60,6 @@ def test_assign_file_is_idempotent(tmp_path):
 
 
 def test_poi_granulometry_keeps_level_props():
-    import build_map
+    from zinneke.granulometry import POI_PROPS
     for key in ("level", "level_min", "level_max", "level_approx", "level_hint"):
-        assert key in build_map.POI_PROPS
+        assert key in POI_PROPS
