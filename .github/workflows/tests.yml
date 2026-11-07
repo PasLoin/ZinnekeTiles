@@ -76,6 +76,28 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
 
+  lint:
+    name: Ruff (package zinneke)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install Ruff
+        run: pip install ruff==0.17.4
+
+      - name: Lint
+        run: ruff check --output-format=github
+
+      - name: Format
+        run: ruff format --check --diff
+
   # ═══════════════════════════════════════════════════════
   # Validation style.json ↔ PMTiles ↔ assets
   # ═══════════════════════════════════════════════════════
