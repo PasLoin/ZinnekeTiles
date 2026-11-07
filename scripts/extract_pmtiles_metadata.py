@@ -62,9 +62,7 @@ def extract_metadata(pmtiles_path: Path) -> tuple[dict, int]:
     if metadata_end > len(data):
         raise ValueError(f"{pmtiles_path} metadata section extends beyond the file size")
 
-    metadata_bytes = decompress_metadata(
-        data[metadata_offset:metadata_end], internal_compression
-    )
+    metadata_bytes = decompress_metadata(data[metadata_offset:metadata_end], internal_compression)
     metadata = json.loads(metadata_bytes.decode("utf-8"))
     if not isinstance(metadata, dict):
         raise ValueError(f"{pmtiles_path} metadata must be a JSON object")
@@ -122,4 +120,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
