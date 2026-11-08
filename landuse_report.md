@@ -30,7 +30,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.landus
 | :--- | ---: |
 | `residential` | 2455 |
 | `commercial` | 466 |
-| `construction` | 331 |
+| `construction` | 333 |
 | `industrial` | 315 |
 | `allotments` | 290 |
 | `farmland` | 242 |
