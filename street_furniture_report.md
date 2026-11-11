@@ -5,7 +5,7 @@ Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` / `
 - ✓ rendus : 37
 - ⚠ manquants (présents mais sans style) : 11
 - · sans donnée dans le pbf Bxl : 4
-- `entrance=*` (toutes valeurs confondues) : 12599 features — rendu (rendu uniforme par clé, pas par valeur)
+- `entrance=*` (toutes valeurs confondues) : 12602 features — rendu (rendu uniforme par clé, pas par valeur)
 
 ## ⚠ Présents dans Bxl mais non rendus
 
@@ -34,7 +34,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `barrier` | `bollard` | 7350 |
 | `amenity` | `waste_basket` | 6865 |
 | `barrier` | `fence` | 4662 |
-| `barrier` | `gate` | 3526 |
+| `barrier` | `gate` | 3527 |
 | `amenity` | `vending_machine` | 1812 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
