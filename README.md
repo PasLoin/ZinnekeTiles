@@ -2,8 +2,6 @@
 
 Is it possible to run Brussels on a mini maximal vector tile on github page ?
 
-*Anciennement « Brussels minimal vector tile ».*
-
 Carte MapLibre de la Région de Bruxelles-Capitale, générée à partir d'un extrait OpenStreetMap et publiée sur GitHub Pages sous forme de fichiers PMTiles statiques, sans serveur de tuiles : [pasloin.github.io/ZinnekeTiles](https://pasloin.github.io/ZinnekeTiles/).
 
 Chaque thème a son propre fichier PMTiles dans `www/`, et le style MapLibre est compilé depuis un seul fichier de configuration, `map.config.yaml`. La carte est régénérée chaque mois à partir des données OSM du jour.
@@ -293,6 +291,14 @@ python3 build_map.py --variants styles
 
 Sans `--variants`, seul le style de base est compilé.
 
+Les PMTiles et `roofs.glb` ne sont pas versionnés. Pour travailler sur le style sans relancer toute la chaîne, récupérez la dernière version publiée sur GitHub Pages :
+
+```bash
+python3 scripts/fetch_published_tiles.py --params pmtiles_params.json roofs.glb
+```
+
+Le script écrit dans `www/`. Un fichier introuvable est signalé sans arrêter le script, sauf avec `--strict`.
+
 ### 2. Extraire les couches GeoJSON
 
 ```bash
@@ -336,7 +342,7 @@ python3 apply_granulometry.py --layers roads,poi
 mv *.pmtiles www/
 ```
 
-Le script produit un `.pmtiles` par couche à la racine, avec les zooms et la simplification de `pmtiles_params.json`, et met à jour `sizepmtiles.md`. Une couche sans données est sautée avec un avertissement et l'ancienne version reste dans `www/`.
+Le script produit un `.pmtiles` par couche à la racine, avec les zooms et la simplification de `pmtiles_params.json`, et met à jour `sizepmtiles.md`. Une couche sans données est sautée avec un avertissement et l'ancienne version reste dans `www/`. En CI, cette ancienne version est celle publiée sur GitHub Pages, récupérée au début du build.
 
 ### 6. Valider le style et les PMTiles
 
@@ -394,9 +400,9 @@ En mode compact (largeur ≤ 600 px ou hauteur ≤ 500 px), le panneau Niveaux p
 
 Le workflow `deploy.yml` reconstruit et publie la carte. Il se lance à chaque push sur `main` qui ne touche pas seulement des fichiers générés, à la main depuis l'onglet Actions, et le 1er de chaque mois à 3 h UTC.
 
-Il compile la configuration et les variantes, télécharge l'extrait OSM du jour, puis enchaîne l'extraction, les toits, les icônes, la fusion des bâtiments, la granulométrie et les PMTiles. Il commite ensuite les fichiers générés (PMTiles, `style.json`, styles des variantes et `styles.json`, `poi-icons.json`, `data-info.json`, `roofs.glb`, rapports) et publie `www/` sur GitHub Pages avec les rapports. Si `map.config.yaml` est absent, il garde `www/style.json` tel quel.
+Il compile la configuration et les variantes, récupère les PMTiles publiés sur GitHub Pages pour servir de repli, télécharge l'extrait OSM du jour, puis enchaîne l'extraction, les toits, les icônes, la fusion des bâtiments, la granulométrie et les PMTiles. Il commite ensuite les fichiers générés légers (`style.json`, styles des variantes et `styles.json`, `poi-icons.json`, `data-info.json`, rapports) et publie `www/` sur GitHub Pages avec les rapports. Le PBF, les PMTiles et `roofs.glb` ne sont pas commités : ils ne vivent que dans le site publié. Si `map.config.yaml` est absent, il garde `www/style.json` tel quel.
 
-Sur chaque pull request, `tests.yml` compile les variantes puis lance les tests unitaires, la validation de chaque style, les tests Python de compilation, de variantes et d'aller-retour, et les tests E2E. `validate-pmtiles-metadata.yml` confronte chaque style à la spécification MapLibre et aux métadonnées des PMTiles.
+Sur chaque pull request, `tests.yml` compile les variantes puis lance les tests unitaires, la validation de chaque style, les tests Python de compilation, de variantes et d'aller-retour, et les tests E2E. `validate-pmtiles-metadata.yml` confronte chaque style à la spécification MapLibre et aux métadonnées des PMTiles publiés. Les tests E2E tournent eux aussi sur les PMTiles publiés.
 
 Le déploiement vers GitHub Pages n'est autorisé que depuis `main`. Pour tester une branche, ouvrez une pull request : les tests compilent et valident les variantes.
 
