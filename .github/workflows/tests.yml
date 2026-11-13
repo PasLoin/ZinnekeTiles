@@ -134,6 +134,14 @@ jobs:
       - name: Build style from config
         run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
 
+      - name: Fetch published PMTiles
+        run: |
+          args=()
+          for f in www/style.json www/style.*.json; do
+            if [ -e "$f" ]; then args+=(--style "$f"); fi
+          done
+          python3 scripts/fetch_published_tiles.py "${args[@]}"
+
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
@@ -207,6 +215,14 @@ jobs:
 
       - name: Build style from config
         run: python3 build_map.py --config map.config.yaml --style-out www/style.json --only style --variants styles
+
+      - name: Fetch published PMTiles
+        run: |
+          args=()
+          for f in www/style.json www/style.*.json; do
+            if [ -e "$f" ]; then args+=(--style "$f"); fi
+          done
+          python3 scripts/fetch_published_tiles.py "${args[@]}"
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
