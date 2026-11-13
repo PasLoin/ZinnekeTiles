@@ -14,7 +14,7 @@
       "font": "#000000",
       "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
     },
-    "brussels:config_hash": "4669e1fd7da4",
+    "brussels:config_hash": "ef964aa1fa41",
     "brussels:patterns": {
       "grave_yard_christian": {
         "file": "assets/patterns/grave_yard_christian.svg",

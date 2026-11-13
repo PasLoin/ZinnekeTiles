@@ -2,7 +2,7 @@
 
 Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` / `emergency=*` présents dans l'extrait Bruxelles et ceux rendus par `map.config.yaml` (cf. issue #51 — "Streets furnitures, small object (micromapping)").
 
-- ✓ rendus : 37
+- ✓ rendus : 38
 - ⚠ manquants (présents mais sans style) : 11
 - · sans donnée dans le pbf Bxl : 4
 - `entrance=*` (toutes valeurs confondues) : 12607 features — rendu (rendu uniforme par clé, pas par valeur)
@@ -60,12 +60,13 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `emergency` | `life_ring` | 39 |
 | `amenity` | `parcel_locker` | 37 |
 | `amenity` | `photo_booth` | 24 |
-| `emergency` | `assembly_point` | 22 |
+| `emergency` | `assembly_point` | 23 |
 | `barrier` | `bus_trap` | 15 |
 | `emergency` | `fire_extinguisher` | 6 |
 | `amenity` | `give_box` | 4 |
 | `emergency` | `phone` | 4 |
 | `emergency` | `fire_hose` | 2 |
+| `amenity` | `meeting_point` | 1 |
 
 ## · Sans donnée dans le pbf Bxl
 
