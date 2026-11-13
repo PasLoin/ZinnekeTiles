@@ -5,7 +5,7 @@ Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` / `
 - ✓ rendus : 38
 - ⚠ manquants (présents mais sans style) : 11
 - · sans donnée dans le pbf Bxl : 4
-- `entrance=*` (toutes valeurs confondues) : 12607 features — rendu (rendu uniforme par clé, pas par valeur)
+- `entrance=*` (toutes valeurs confondues) : 12609 features — rendu (rendu uniforme par clé, pas par valeur)
 
 ## ⚠ Présents dans Bxl mais non rendus
 
@@ -32,10 +32,10 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `highway` | `street_lamp` | 10248 |
 | `amenity` | `bench` | 7823 |
 | `barrier` | `bollard` | 7350 |
-| `amenity` | `waste_basket` | 6865 |
+| `amenity` | `waste_basket` | 6863 |
 | `barrier` | `fence` | 4662 |
 | `barrier` | `gate` | 3527 |
-| `amenity` | `vending_machine` | 1812 |
+| `amenity` | `vending_machine` | 1813 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
 | `barrier` | `lift_gate` | 845 |
@@ -91,8 +91,8 @@ Configurés et/ou listés comme candidats (wiki OSM), mais absents de l'extrait 
 | `newspapers` | 18 |
 | `coffee` | 15 |
 | `condoms` | 6 |
+| `drinks` | 3 |
 | `admission_tickets` | 3 |
-| `drinks` | 2 |
 | `sweets` | 1 |
 | `candles` | 1 |
 | `snacks` | 1 |
