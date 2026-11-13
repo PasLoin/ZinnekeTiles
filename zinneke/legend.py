@@ -101,6 +101,7 @@ SUBTYPE_LABELS = {
         "life_ring": "Bouées de sauvetage",
         "phone": "Téléphones d’urgence",
         "assembly_point": "Points de rassemblement",
+        "meeting_point": "Points de rencontre",
         "atm": "Distributeurs de billets",
         "charging_station": "Bornes de recharge",
         "bicycle_rental": "Vélos partagés",

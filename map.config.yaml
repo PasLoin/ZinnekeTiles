@@ -271,6 +271,7 @@ layers:
       clock: { tag: amenity }
       photo_booth: { tag: amenity }
       give_box: { tag: amenity }
+      meeting_point: { tag: amenity }
       # barrier
       bollard: { tag: barrier }
       gate: { tag: barrier }
