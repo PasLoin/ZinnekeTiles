@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'www/*.pmtiles'
       - 'sizepmtiles.md'
       - 'granulometry_report.md'
       - 'landuse_report.md'
@@ -58,6 +57,14 @@ jobs:
           else
             echo "⚠️  map.config.yaml absent — style.json utilisé tel quel (mode legacy)"
             echo "   Pour migrer : déclencher le workflow 'Retro-engineer config from style'"
+          fi
+
+      - name: Fetch published PMTiles
+        run: |
+          if [ -f pmtiles_params.json ]; then
+            python3 scripts/fetch_published_tiles.py --params pmtiles_params.json
+          else
+            python3 scripts/fetch_published_tiles.py --style www/style.json
           fi
 
       # ── Étape 2 : Télécharger les données OSM ──────────────────────────────────────────
@@ -133,15 +140,12 @@ jobs:
       - name: Commit artifacts to repo
         if: github.ref == 'refs/heads/main'
         run: |
-          cp *.pmtiles www/
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f \
-            www/*.pmtiles \
             www/style.json \
             www/poi-icons.json \
             www/data-info.json \
-            www/roofs.glb \
             missing-icons.txt \
             sizepmtiles.md
           # Optionnel : commiter aussi les rapports
