@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - 'www/*.pmtiles'
       - 'sizepmtiles.md'
-      - 'brussels_capital_region-latest.osm.pbf'
       - 'granulometry_report.md'
       - 'landuse_report.md'
       - 'street_furniture_report.md'
@@ -87,17 +86,8 @@ jobs:
 
           file brussels_capital_region-latest.osm.pbf
           ls -lh Brussels-daily.pbf brussels_capital_region-latest.osm.pbf
-
-      - name: Check PBF freshness
-        run: |
-          echo "=== Downloaded PBF ==="
           md5sum brussels_capital_region-latest.osm.pbf
           osmium fileinfo brussels_capital_region-latest.osm.pbf
-          echo "=== Repo PBF ==="
-          git show HEAD:brussels_capital_region-latest.osm.pbf > /tmp/repo.pbf 2>/dev/null \
-            && md5sum /tmp/repo.pbf \
-            && osmium fileinfo /tmp/repo.pbf \
-            || echo "Pas encore dans le repo"
 
       # ── Étape 3 : Extraction GeoJSON (inclut street_furniture.json, issue #51) ─────────
       - name: Extract GeoJSON layers
@@ -153,8 +143,7 @@ jobs:
             www/data-info.json \
             www/roofs.glb \
             missing-icons.txt \
-            sizepmtiles.md \
-            brussels_capital_region-latest.osm.pbf
+            sizepmtiles.md
           # Optionnel : commiter aussi les rapports
           [ -f granulometry_report.md ] && git add granulometry_report.md || true
           [ -f landuse_report.md ] && git add landuse_report.md || true
