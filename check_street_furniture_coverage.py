@@ -84,6 +84,7 @@ WIKI_VALUES = {
         "kick-scooter_parking",
         "motorcycle_parking",
         "waste_disposal",
+        "meeting_point",
     ],
     "barrier": [
         "bollard",

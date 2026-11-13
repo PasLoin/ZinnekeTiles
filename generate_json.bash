@@ -188,14 +188,14 @@ extract boundaries \
   nwr/boundary=administrative
 
 SF_FILTERS=$(config_filters street_furniture \
-  "nwr/amenity=bench,lounger,waste_basket,vending_machine,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,drinking_water,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,clock,photo_booth,give_box nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=* nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone nwr/tourism=artwork")
+  "nwr/amenity=bench,lounger,waste_basket,vending_machine,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,drinking_water,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,clock,photo_booth,give_box,meeting_point nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence nwr/highway=street_lamp n/entrance=* nwr/emergency=assembly_point,defibrillator,fire_extinguisher,fire_hose,fire_hydrant,life_ring,phone nwr/tourism=artwork")
 echo "  filtres street_furniture (map.config.yaml) : ${SF_FILTERS}"
 read -r -a SF_FILTER_ARGS <<< "$SF_FILTERS"
 extract street_furniture "${SF_FILTER_ARGS[@]}"
 
 echo "→ street_furniture coverage check (vs wiki + map.config.yaml)"
 osmium tags-filter "$SRC" \
-  nwr/amenity=bench,lounger,waste_basket,vending_machine,drinking_water,clock,bicycle_parking,shelter,give_box,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,photo_booth,kick-scooter_parking,motorcycle_parking,waste_disposal \
+  nwr/amenity=bench,lounger,waste_basket,vending_machine,drinking_water,clock,bicycle_parking,shelter,give_box,atm,charging_station,bicycle_rental,car_sharing,taxi,parcel_locker,toilets,fountain,public_bookcase,bicycle_repair_station,dog_toilet,post_box,recycling,photo_booth,kick-scooter_parking,motorcycle_parking,waste_disposal,meeting_point \
   nwr/tourism=artwork \
   nwr/barrier=bollard,gate,bus_trap,cycle_barrier,lift_gate,planter,fence,kissing_gate,block,full-height_turnstile,swing_gate,stile \
   nwr/highway=street_lamp \
