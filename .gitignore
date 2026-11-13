@@ -7,3 +7,6 @@ test-results/
 coverage/
 playwright-report/
 *.pbf
+www/*.pmtiles
+www/*.pmtiles.gz
+www/roofs.glb
