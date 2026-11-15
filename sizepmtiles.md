@@ -1,6 +1,6 @@
 | Layer | Source Features | Tippecanoe Features | File Size |
 | :--- | :---: | :---: | :--- |
-| landuse (z10-18) | 2553 | 2553 | 5.2M |
+| landuse (z10-18) | 2554 | 2554 | 5.2M |
 | roads (z10-18) | 53475 | 53475 | 12M |
 | water (z10-18) | 1691 | 1691 | 1.8M |
 | green (z10-18) | 11805 | 11805 | 8.0M |
@@ -8,13 +8,13 @@
 | leisure (z10-18) | 2932 | 2932 | 1.7M |
 | boundaries (z10-14) | 319 | 319 | 560K |
 | poi (z10-16) | 21366 | 21366 | 2.0M |
-| pedestrian (z10-18) | 70362 | 70362 | 13M |
+| pedestrian (z10-18) | 70393 | 70393 | 13M |
 | cycleway (z10-18) | 2849 | 2849 | 1.6M |
 | railway (z10-18) | 4999 | 4999 | 2.9M |
 | public_transport (z10-16) | 176 | 176 | 1.6M |
-| street_furniture (z10-18) | 61347 | 61347 | 3.1M |
-| buildings (z13-18) | 253641 | 253641 | 61M |
+| street_furniture (z10-18) | 61350 | 61350 | 3.1M |
+| buildings (z13-18) | 253638 | 253638 | 61M |
 | building_parts (z13-18) | 1992 | 1992 | 797K |
 | indoor (z15-18) | 20882 | 20882 | 1.8M |
-| addresses (z16-18) | 229346 | 229346 | 8.9M |
-| **Total** | **814682** | **814682** | **127M** |
+| addresses (z16-18) | 229369 | 229369 | 8.9M |
+| **Total** | **814737** | **814737** | **127M** |

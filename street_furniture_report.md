@@ -34,12 +34,12 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `barrier` | `bollard` | 7350 |
 | `amenity` | `waste_basket` | 6863 |
 | `barrier` | `fence` | 4662 |
-| `barrier` | `gate` | 3527 |
-| `amenity` | `vending_machine` | 1813 |
+| `barrier` | `gate` | 3528 |
+| `amenity` | `vending_machine` | 1814 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 946 |
 | `barrier` | `lift_gate` | 845 |
-| `amenity` | `charging_station` | 771 |
+| `amenity` | `charging_station` | 772 |
 | `emergency` | `fire_hydrant` | 647 |
 | `amenity` | `fountain` | 496 |
 | `amenity` | `post_box` | 414 |
@@ -85,7 +85,7 @@ Configurés et/ou listés comme candidats (wiki OSM), mais absents de l'extrait 
 
 | vending | features |
 | :--- | ---: |
-| `parking_tickets` | 1449 |
+| `parking_tickets` | 1450 |
 | `public_transport_tickets` | 232 |
 | `excrement_bags` | 63 |
 | `newspapers` | 18 |
