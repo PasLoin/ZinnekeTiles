@@ -5,7 +5,7 @@ Comparaison entre les tags `amenity=*` / `barrier=*` / `highway=street_lamp` / `
 - ✓ rendus : 38
 - ⚠ manquants (présents mais sans style) : 11
 - · sans donnée dans le pbf Bxl : 4
-- `entrance=*` (toutes valeurs confondues) : 12609 features — rendu (rendu uniforme par clé, pas par valeur)
+- `entrance=*` (toutes valeurs confondues) : 12614 features — rendu (rendu uniforme par clé, pas par valeur)
 
 ## ⚠ Présents dans Bxl mais non rendus
 
@@ -34,10 +34,10 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `barrier` | `bollard` | 7350 |
 | `amenity` | `waste_basket` | 6863 |
 | `barrier` | `fence` | 4662 |
-| `barrier` | `gate` | 3528 |
+| `barrier` | `gate` | 3529 |
 | `amenity` | `vending_machine` | 1814 |
 | `tourism` | `artwork` | 1212 |
-| `amenity` | `recycling` | 946 |
+| `amenity` | `recycling` | 948 |
 | `barrier` | `lift_gate` | 845 |
 | `amenity` | `charging_station` | 772 |
 | `emergency` | `fire_hydrant` | 647 |
@@ -45,7 +45,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `amenity` | `post_box` | 414 |
 | `amenity` | `dog_toilet` | 380 |
 | `amenity` | `bicycle_rental` | 367 |
-| `emergency` | `defibrillator` | 272 |
+| `emergency` | `defibrillator` | 273 |
 | `amenity` | `car_sharing` | 217 |
 | `amenity` | `toilets` | 211 |
 | `amenity` | `taxi` | 193 |
