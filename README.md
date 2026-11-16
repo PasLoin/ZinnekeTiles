@@ -415,7 +415,7 @@ Le workflow `deploy.yml` télécharge l'extrait quotidien `Brussels-daily.pbf` p
 ```bash
 curl -L \
   -o brussels_capital_region-latest.osm.pbf \
-  https://raw.githubusercontent.com/PasLoin/Osm-python-analyse_Belgium/main/pbf_analyse/history/Brussels-daily.pbf
+  https://github.com/PasLoin/Osm-python-analyse_Belgium/releases/download/daily/Brussels-daily.pbf
 file brussels_capital_region-latest.osm.pbf
 osmium fileinfo brussels_capital_region-latest.osm.pbf
 ```
