@@ -38,7 +38,7 @@ Ces valeurs existent dans le pbf mais n'ont pas de sous-type dans `layers.street
 | `amenity` | `vending_machine` | 1814 |
 | `tourism` | `artwork` | 1212 |
 | `amenity` | `recycling` | 948 |
-| `barrier` | `lift_gate` | 845 |
+| `barrier` | `lift_gate` | 847 |
 | `amenity` | `charging_station` | 772 |
 | `emergency` | `fire_hydrant` | 647 |
 | `amenity` | `fountain` | 496 |
